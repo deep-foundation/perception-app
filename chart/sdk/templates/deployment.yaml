@@ -55,7 +55,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       imagePullSecrets:
-        - name: deep-sdk
+        - name: deepmemo-app
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -1,11 +1,11 @@
 {
-  "name": "@deep-foundation/sdk",
+  "name": "@deep-foundation/deepmemo-app",
   "version": "0.0.0-dev.11",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
   "bin": {
-    "deep-sdk": "./bin/server.js"
+    "deepmemo-app": "./bin/server.js"
   },
   "scripts": {
     "build-pack": "(cd electron && npm run electron:pack)",
@@ -31,6 +31,7 @@
     "build-ios": "rimraf app && npm run export && npx cap sync ios"
   },
   "dependencies": {
+    "@deep-foundation/deepmemo-imports": "^0.0.1",
     "dotenv-load": "^2.0.1",
     "next": "^14.2.2",
     "next-env": "^1.1.1",
@@ -39,8 +40,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-focus-lock": "^2.12.1",
-    "typescript": "5.0.4",
-    "react-i18next": "^14.1.0"
+    "react-i18next": "^14.1.0",
+    "typescript": "5.0.4"
   },
   "devDependencies": {
     "@capacitor-community/electron": "^5.0.1",
