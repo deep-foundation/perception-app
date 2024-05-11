@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "experimentalDecorators": true,
     "lib": [
       "dom",
       "dom.iterable",
@@ -13,6 +14,7 @@
     "downlevelIteration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "noImplicitAny": false,
     "isolatedModules": true,
     "declaration": true,
     "allowJs": true,
@@ -30,7 +32,7 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": false
   },
   "types": [
     "chrome"
