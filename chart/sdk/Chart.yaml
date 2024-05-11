@@ -1,6 +1,6 @@
 apiVersion: v2
-name: deep-sdk
-description: Deep SDK sample application
+name: deepmemo-app
+description: Deep.Memo application
 
 type: application
 

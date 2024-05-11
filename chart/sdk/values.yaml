@@ -1,18 +1,18 @@
 replicaCount: 1
 
 image:
-  repository: registry.sdk.deep.foundation/deep-sdk
+  repository: registry.deepmemo-app.deep.foundation/deepmemo-app
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets: false
-nameOverride: "deep-sdk"
+nameOverride: "deepmemo-app"
 fullnameOverride: ""
 
 serviceAccount:
   create: true
   annotations: {}
-  name: "deep-sdk"
+  name: "deepmemo-app"
 
 podAnnotations: {}
 
@@ -34,13 +34,13 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/ingress.class: nginx
   hosts:
-    - host: sdk.deep.foundation
+    - host: deepmemo.deep.foundation
       paths:
         path: /
   tls:
     - hosts:
-        - sdk.deep.foundation
-      secretName: sdk-tls
+        - deepmemo.deep.foundation
+      secretName: deepmemo-tls
 
 resources: {}
 
