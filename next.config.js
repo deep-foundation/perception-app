@@ -14,6 +14,8 @@ const config =  {
   distDir: 'app',
   strictMode: false,
   output: (+process.env.NEXT_PUBLIC_EXPORT) ? 'export' : 'standalone',
+
+  transpilePackages: ['@deep-foundation/deepmemo-imports'],
   
   webpack: (config) => {   
     config.resolve.fallback = {
