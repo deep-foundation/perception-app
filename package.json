@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.0-dev.11",
+  "version": "0.0.1",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -31,7 +31,9 @@
     "build-ios": "rimraf app && npm run export && npx cap sync ios"
   },
   "dependencies": {
-    "@deep-foundation/deepmemo-imports": "^0.0.1",
+    "@deep-foundation/deepcase": "^0.0.121",
+    "@deep-foundation/deeplinks": "^0.0.343",
+    "@deep-foundation/deepmemo-imports": "^0.0.3",
     "dotenv-load": "^2.0.1",
     "next": "^14.2.2",
     "next-env": "^1.1.1",
@@ -50,8 +52,6 @@
     "@capacitor/core": "^5.7.4",
     "@capacitor/ios": "^5.7.4",
     "@chakra-ui/react": "^2.5.5",
-    "@deep-foundation/deepcase": "^0.0.110",
-    "@deep-foundation/deeplinks": "~0.0.312",
     "@deep-foundation/react-with-packages-installed": "^0.5.3",
     "@deep-foundation/store": "~0.0.28",
     "@emotion/react": "^11.10.6",

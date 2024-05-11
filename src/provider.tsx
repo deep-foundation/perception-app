@@ -7,6 +7,7 @@ import { CookiesStoreProvider } from '@deep-foundation/store/cookies';
 import { LocalStoreProvider, useLocalStore } from '@deep-foundation/store/local';
 import { QueryStoreProvider } from '@deep-foundation/store/query';
 import { CustomI18nProvider } from './i18n';
+import themeChakra from '@deep-foundation/deepcase/imports/theme/theme';
 
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
   return useLocalStore('dc-dg-path', defaultValue);
@@ -53,7 +54,7 @@ export function Provider({
   children: JSX.Element;
 }) {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={themeChakra}>
       <CapacitorStoreProvider>
         <QueryStoreProvider>
           <CookiesStoreProvider>
