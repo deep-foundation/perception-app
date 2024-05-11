@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -33,7 +33,7 @@
   "dependencies": {
     "@deep-foundation/deepcase": "^0.0.121",
     "@deep-foundation/deeplinks": "^0.0.343",
-    "@deep-foundation/deepmemo-imports": "^0.0.3",
+    "@deep-foundation/deepmemo-imports": "^0.0.4",
     "dotenv-load": "^2.0.1",
     "next": "^14.2.2",
     "next-env": "^1.1.1",
