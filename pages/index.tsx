@@ -30,24 +30,31 @@ const Loading = React.memo(function Loading({ factor, interval }: { factor: any,
   </CircularProgress>;
 });
 
-function DeviceView({ interval }: { interval: number }) {
-  const device = useDevice();
+const Graph = React.memo(function Graph() {
   const deep = useDeep();
+  const device = useDevice();
   const cyRef = useRef();
   const cytoViewportRef = useRefstarter<{ pan: { x: number; y: number; }; zoom: number }>();
   const { data: containTree } = deep.useDeepId('@deep-foundation/core', 'containTree');
   const { data: links = [] }: { data?: Link<Id>[] } = deep.useDeepSubscription({ up: { parent_id: device?.id || 0, tree_id: containTree || 0 } });
+  return <>
+    {!!device?.id && <Box w={500} h={500} border={'1px'} rounded='md' position="relative">
+      {deep?.linkId && <CytoGraph links={links} cyRef={cyRef} cytoViewportRef={cytoViewportRef}/>}
+    </Box>}
+  </>;
+});
 
+const DeviceView = React.memo(function DeviceView({ interval }: { interval: number }) {
+  const deep = useDeep();
+  const device = useDevice();
   return <>
     <Heading>Device {device?.id ? <>{device?.id} <Loading factor={device} interval={interval}/></> : <>{'syncing'}</>}</Heading>
     <SimpleGrid columns={{sm: 1, md: 2}}>
       <Box><pre>{JSON.stringify(device, null, 2)}</pre></Box>
-      {!!device?.id && <Box w={500} h={500} border={'1px'} rounded='md' position="relative">
-        <CytoGraph links={links} cyRef={cyRef} cytoViewportRef={cytoViewportRef}/>
-      </Box>}
+      {deep?.linkId && <Graph/>}
     </SimpleGrid>
   </>;
-}
+})
 
 export default function Page() {
   const deep = useDeep();
@@ -60,11 +67,9 @@ export default function Page() {
 
   return (<>
     <Connection/>
-    {!!deep?.linkId && <>
-      <DeviceProvider containerId={deep.linkId} interval={5000}>
-        <DeviceView interval={5000}/>
-      </DeviceProvider>
-    </>}
+    <DeviceProvider containerId={deep?.linkId} interval={5000}>
+      <DeviceView interval={5000}/>
+    </DeviceProvider>
   </>);
 }
 
