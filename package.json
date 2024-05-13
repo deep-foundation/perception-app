@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -35,7 +35,7 @@
     "@capacitor/geolocation": "^5.0.7",
     "@deep-foundation/deepcase": "^0.0.121",
     "@deep-foundation/deeplinks": "^0.0.343",
-    "@deep-foundation/deepmemo-imports": "^0.0.4",
+    "@deep-foundation/deepmemo-imports": "^0.0.5",
     "@solid-primitives/geolocation": "^1.4.14",
     "dotenv-load": "^2.0.1",
     "next": "^14.2.2",
