@@ -1,10 +1,12 @@
 import {
-  Box, Button, CircularProgress, CircularProgressLabel, Heading, SimpleGrid,
+  Box, Button, CircularProgress, CircularProgressLabel, FormControl, FormLabel, Heading, SimpleGrid,
   Slider,
   SliderFilledTrack,
   SliderMark,
   SliderThumb,
   SliderTrack,
+  Switch,
+  useToast,
 } from '@chakra-ui/react';
 import CytoGraph from '@deep-foundation/deepcase/imports/cyto/graph';
 import { useRefstarter } from '@deep-foundation/deepcase/imports/refstater';
@@ -21,6 +23,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { Connection } from '../src/connection';
 import { i18nGetStaticProps } from '../src/i18n';
+import { SaverProvider } from '@deep-foundation/deepmemo-imports/imports/saver';
 
 const Loading = React.memo(function Loading({ factor, interval }: { factor: any, interval: number }) {
   const [value, setValue] = useState(0);
@@ -72,8 +75,16 @@ const Graph = React.memo(function Graph({ linkId }: { linkId: Id }) {
   const deep = useDeep();
   const cyRef = useRef();
   const cytoViewportRef = useRefstarter<{ pan: { x: number; y: number; }; zoom: number }>();
-  const { data: containTree } = deep.useDeepId('@deep-foundation/core', 'containTree');
-  const { data: links = [] }: { data?: Link<Id>[] } = deep.useDeepSubscription({ up: { parent_id: linkId || 0, tree_id: containTree || 0 } });
+  const { data: links = [] }: { data?: Link<Id>[] } = deep.useDeepSubscription({
+    up: { parent_id: linkId || 0, tree_id: deep.idLocal('@deep-foundation/core', 'containTree') },
+    _not: { type_id: { _in: [
+      deep.idLocal('@deep-foundation/core', 'Promise'),
+      deep.idLocal('@deep-foundation/core', 'Then'),
+      deep.idLocal('@deep-foundation/core', 'Resolved'),
+      deep.idLocal('@deep-foundation/core', 'Rejected'),
+      deep.idLocal('@deep-foundation/core', 'PromiseResult'),
+    ] } },
+  });
   return <>
     {!!linkId && <Box w={500} h={500} border={'1px'} rounded='md' position="relative">
       {deep?.linkId && <CytoGraph links={links} cyRef={cyRef} cytoViewportRef={cytoViewportRef}/>}
@@ -85,7 +96,7 @@ const DeviceView = React.memo(function DeviceView({ interval }: { interval: numb
   const deep = useDeep();
   const device = useDevice();
   return <>
-    <Heading>Device {device?.id ? <>{device?.id}</> : <>{'syncing'}</>} <Loading factor={device} interval={interval}/></Heading>
+    <Heading>Device {device?.id ? <>{device?.id}</> : <>{'id not defined'}</>} <Loading factor={device} interval={interval}/></Heading>
     <SimpleGrid columns={{sm: 1, md: 2}}>
       <Box><pre>{JSON.stringify(device, null, 2)}</pre></Box>
       {deep?.linkId && device?.id && <Graph linkId={device.id}/>}
@@ -97,16 +108,18 @@ const GeolocationView = React.memo(function GeolocationView({ interval }: { inte
   const deep = useDeep();
   const geolocation = useGeolocation();
   return <>
-    <Heading>Geolocation <><Loading factor={geolocation.position} interval={interval}/></></Heading>
+    <Heading>Geolocation {geolocation?.position?.id ? <>{geolocation?.position?.id}</> : <>{'id not defined'}</>} <><Loading factor={geolocation.position} interval={interval}/></></Heading>
     <Button onClick={() => geolocation.request()}>request</Button>
     <SimpleGrid columns={{sm: 1, md: 2}}>
       <Box><pre>{JSON.stringify(geolocation, null, 2)}</pre></Box>
+      {deep?.linkId && geolocation?.position?.id && <Graph linkId={geolocation.position.id}/>}
     </SimpleGrid>
   </>;
 });
 
 export default function Page() {
   const deep = useDeep();
+  const toast = useToast();
 
   // @ts-ignore
   if (typeof(window) === 'object') window.deep = deep;
@@ -114,18 +127,40 @@ export default function Page() {
 
   const [deviceInterval, setDeviceInterval] = useState(5000);
   const [geolocationInterval, setGeolocationInterval] = useState(5000);
+  const [saver, setSaver] = useState<boolean>(false);
+  useEffect(() => {
+    if (!deep) setSaver(false);
+  }, [deep]);
 
   return (<>
     <Connection/>
     <Box p={4}>
-      <DeviceProvider containerId={deep?.linkId} interval={deviceInterval}>
-        <GeolocationProvider containerId={deep?.linkId} interval={geolocationInterval}>
-          <Interval value={deviceInterval} onChange={setDeviceInterval}/>
-          <DeviceView interval={deviceInterval}/>
-          <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
-          <GeolocationView interval={geolocationInterval}/>
-        </GeolocationProvider>
-      </DeviceProvider>
+    <FormControl display='flex' alignItems='center'>
+      <FormLabel htmlFor='syncing' mb='0'>
+        Enable syncing with deep backend?
+      </FormLabel>
+      <Switch id='syncing'
+        isChecked={saver}
+        onChange={() => setSaver(s => !s)}
+        disabled={!deep?.id}
+      />
+    </FormControl>
+      <SaverProvider onSave={({ Type, id, object, mode, promise }) => {
+        toast.promise(promise, {
+          success: { title: `Saved ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+          error: { title: `Error with saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+          loading: { title: `Saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+        })
+      }}>
+        <DeviceProvider saver={saver} containerId={deep?.linkId} interval={deviceInterval}>
+          <GeolocationProvider saver={saver} interval={geolocationInterval}>
+            <Interval value={deviceInterval} onChange={setDeviceInterval}/>
+            <DeviceView interval={deviceInterval}/>
+            <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
+            <GeolocationView interval={geolocationInterval}/>
+          </GeolocationProvider>
+        </DeviceProvider>
+      </SaverProvider>
     </Box>
   </>);
 }
