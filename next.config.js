@@ -17,7 +17,7 @@ const config =  {
 
   transpilePackages: ['@deep-foundation/deepmemo-imports'],
   
-  webpack: (config) => {   
+  webpack: (config) => {
     config.resolve.fallback = {
       "buffer":false,
       "events": false,

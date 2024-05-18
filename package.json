@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -37,6 +37,8 @@
     "@deep-foundation/deeplinks": "^0.0.343",
     "@deep-foundation/deepmemo-imports": "^0.0.6",
     "@solid-primitives/geolocation": "^1.4.14",
+    "base64-blob": "^1.4.1",
+    "capacitor-voice-recorder": "^5.0.0",
     "dotenv-load": "^2.0.1",
     "next": "^14.2.2",
     "next-env": "^1.1.1",

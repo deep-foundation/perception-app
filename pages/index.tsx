@@ -1,5 +1,5 @@
 import {
-  Box, Button, CircularProgress, CircularProgressLabel, FormControl, FormLabel, Heading, SimpleGrid,
+  Box, Button, CircularProgress, CircularProgressLabel, FormControl, FormLabel, Heading, Input, SimpleGrid,
   Slider,
   SliderFilledTrack,
   SliderMark,
@@ -17,6 +17,10 @@ import {
   useDevice
 } from '@deep-foundation/deepmemo-imports/imports/device';
 import {
+  VoiceProvider,
+  useVoice
+} from '@deep-foundation/deepmemo-imports/imports/voice';
+import {
   GeolocationProvider,
   useGeolocation
 } from '@deep-foundation/deepmemo-imports/imports/geolocation';
@@ -24,6 +28,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Connection } from '../src/connection';
 import { i18nGetStaticProps } from '../src/i18n';
 import { SaverProvider } from '@deep-foundation/deepmemo-imports/imports/saver';
+import { useLocalStore } from '@deep-foundation/store/local';
 
 const Loading = React.memo(function Loading({ factor, interval }: { factor: any, interval: number }) {
   const [value, setValue] = useState(0);
@@ -117,6 +122,58 @@ const GeolocationView = React.memo(function GeolocationView({ interval }: { inte
   </>;
 });
 
+const VoiceView = React.memo(function VoiceView() {
+  const deep = useDeep();
+  const voice = useVoice();
+  const [voices, setVoices] = useState([]);
+  const [active, setActive] = useState(-1);
+  return <>
+    <Heading>Voice</Heading>
+    <Box>
+      {voices.map((v, i) => <Button key={i}
+        onClick={() => setActive(id => i === id ? -1 : i)}
+        variant={active === i ? 'solid' : 'outline'}
+      >{v?.id || i}</Button>)}
+      <Box>
+    </Box>
+      {active >= 0 && <audio controls>
+        <source src={`data:audio/mpeg;base64,${voices[active]?.record}`} type="audio/mpeg"></source>
+      </audio>}
+    </Box>
+    {voice.status ? (
+      voice.recording ? (<>
+        <Button onClick={async () => {
+          const record = await voice.stop();
+          setVoices(v => [...v, record]);
+        }}>stop</Button>
+        {voice.paused ? (
+          <Button onClick={() => voice.pause()}>pause</Button>
+        ) : (
+          <Button onClick={() => voice.resume()}>resume</Button>
+        )}
+      </>) : (
+        <Button onClick={() => voice.start()}>start</Button>
+      )
+    ) : (
+      <Button onClick={() => voice.request()}>request</Button>
+    )}
+  </>;
+});
+
+export function Syncing({ title, value, setValue }) {
+  const deep = useDeep();
+  return <FormControl display='flex' alignItems='center'>
+    <FormLabel htmlFor='syncing' mb='0'>
+      {title}
+    </FormLabel>
+    <Switch id='syncing'
+      isChecked={value}
+      onChange={() => setValue(s => !s)}
+      disabled={!deep?.id}
+    />
+  </FormControl>;
+}
+
 export default function Page() {
   const deep = useDeep();
   const toast = useToast();
@@ -125,39 +182,49 @@ export default function Page() {
   if (typeof(window) === 'object') window.deep = deep;
   console.log('deep', deep);
 
+  const [containerId, setContainerId] = useLocalStore('deepmemo-app-containerId', null);
   const [deviceInterval, setDeviceInterval] = useState(5000);
+  const [deviceSaver, setDeviceSaver] = useState(true);
   const [geolocationInterval, setGeolocationInterval] = useState(5000);
+  const [geolocationSaver, setGeolocationSaver] = useState(true);
   const [saver, setSaver] = useState<boolean>(false);
   useEffect(() => {
     if (!deep) setSaver(false);
+    else deep.local = false;
   }, [deep]);
 
   return (<>
     <Connection/>
     <Box p={4}>
-    <FormControl display='flex' alignItems='center'>
-      <FormLabel htmlFor='syncing' mb='0'>
-        Enable syncing with deep backend?
-      </FormLabel>
-      <Switch id='syncing'
-        isChecked={saver}
-        onChange={() => setSaver(s => !s)}
-        disabled={!deep?.id}
-      />
-    </FormControl>
+      <Syncing title={'Enable syncing with deep backend?'} value={saver} setValue={setSaver}/>
+      <FormControl display='flex' alignItems='center'>
+        <FormLabel htmlFor='syncing' mb='0'>
+          ContainerId
+        </FormLabel>
+        <Input
+          placeholder={`${deep?.linkId}`}
+          value={containerId} onChange={(e) => setContainerId(e.target.value)}
+          w={'10em'}
+        />
+      </FormControl>
       <SaverProvider onSave={({ Type, id, object, mode, promise }) => {
         toast.promise(promise, {
           success: { title: `Saved ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
-          error: { title: `Error with saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+          error: (e) => ({ title: `Error with saving ${mode} #${id || '?'} of type (#${Type}) to deep`, description: e.toString(), isClosable: true }),
           loading: { title: `Saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
         })
       }}>
-        <DeviceProvider saver={saver} containerId={deep?.linkId} interval={deviceInterval}>
-          <GeolocationProvider saver={saver} interval={geolocationInterval}>
-            <Interval value={deviceInterval} onChange={setDeviceInterval}/>
-            <DeviceView interval={deviceInterval}/>
-            <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
-            <GeolocationView interval={geolocationInterval}/>
+        <DeviceProvider saver={saver && deviceSaver} containerId={containerId} interval={deviceInterval}>
+          <GeolocationProvider saver={saver && geolocationSaver} interval={geolocationInterval}>
+            <VoiceProvider saver={saver}>
+              <VoiceView/>
+              <Interval value={deviceInterval} onChange={setDeviceInterval}/>
+              <Syncing title={'Enable voice syncing with deep backend?'} value={deviceSaver} setValue={setDeviceSaver}/>
+              <DeviceView interval={deviceInterval}/>
+              <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
+              <Syncing title={'Enable geolocation syncing with deep backend?'} value={geolocationSaver} setValue={setGeolocationSaver}/>
+              <GeolocationView interval={geolocationInterval}/>
+            </VoiceProvider>
           </GeolocationProvider>
         </DeviceProvider>
       </SaverProvider>
