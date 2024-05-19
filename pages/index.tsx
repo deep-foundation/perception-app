@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box, Button, CircularProgress, CircularProgressLabel, FormControl, FormLabel, Heading, Input, SimpleGrid,
   Slider,
   SliderFilledTrack,
@@ -6,6 +11,7 @@ import {
   SliderThumb,
   SliderTrack,
   Switch,
+  Text,
   useToast,
 } from '@chakra-ui/react';
 import CytoGraph from '@deep-foundation/deepcase/imports/cyto/graph';
@@ -17,18 +23,19 @@ import {
   useDevice
 } from '@deep-foundation/deepmemo-imports/imports/device';
 import {
-  VoiceProvider,
-  useVoice
-} from '@deep-foundation/deepmemo-imports/imports/voice';
-import {
   GeolocationProvider,
   useGeolocation
 } from '@deep-foundation/deepmemo-imports/imports/geolocation';
+import { SaverProvider } from '@deep-foundation/deepmemo-imports/imports/saver';
+import {
+  VoiceProvider,
+  useVoice
+} from '@deep-foundation/deepmemo-imports/imports/voice';
+import { useLocalStore } from '@deep-foundation/store/local';
 import React, { useEffect, useRef, useState } from 'react';
 import { Connection } from '../src/connection';
 import { i18nGetStaticProps } from '../src/i18n';
-import { SaverProvider } from '@deep-foundation/deepmemo-imports/imports/saver';
-import { useLocalStore } from '@deep-foundation/store/local';
+import useAxios from 'axios-hooks';
 
 const Loading = React.memo(function Loading({ factor, interval }: { factor: any, interval: number }) {
   const [value, setValue] = useState(0);
@@ -76,7 +83,7 @@ const Interval = React.memo(function Loading({ value, onChange }: { value: any, 
   </Slider></Box>;
 });
 
-const Graph = React.memo(function Graph({ linkId }: { linkId: Id }) {
+const Graph = React.memo(function Graph({ linkId, query = {} }: { linkId: Id; query?: any }) {
   const deep = useDeep();
   const cyRef = useRef();
   const cytoViewportRef = useRefstarter<{ pan: { x: number; y: number; }; zoom: number }>();
@@ -89,6 +96,7 @@ const Graph = React.memo(function Graph({ linkId }: { linkId: Id }) {
       deep.idLocal('@deep-foundation/core', 'Rejected'),
       deep.idLocal('@deep-foundation/core', 'PromiseResult'),
     ] } },
+    ...(query)
   });
   return <>
     {!!linkId && <Box w={500} h={500} border={'1px'} rounded='md' position="relative">
@@ -122,29 +130,91 @@ const GeolocationView = React.memo(function GeolocationView({ interval }: { inte
   </>;
 });
 
+const VoicesVoiceView = React.memo(function VoicesVoiceView({ voice, i }: { voice: any, i: number }) {
+  const deep = useDeep();
+
+  const ssl = deep.apolloClient.ssl;
+  const path = deep.apolloClient.path.slice(0, -4);
+  const url = `${ssl ? "https://" : "http://"}${path}/file?linkId=${voice.id}`;
+
+  const [{ data, loading, error }, refetch] = useAxios({ 
+    method: 'get', url: `${ssl ? "https://" : "http://"}${path}/file?linkId=${voice.id}`,
+    headers: { 'Authorization': `Bearer ${deep.token}` },
+    responseType: "blob",
+  });
+  const [src, setSrc] = useState<any>();
+  useEffect(() => {
+    if (!loading && data) {
+      const reader = new window.FileReader();
+      reader.onload = () => {
+        setSrc(reader.result);
+      }
+      reader.readAsDataURL(data);
+    }
+  }, [data, loading]);
+
+  const [text] = deep.useMinilinksSubscription({
+    type_id: deep.idLocal('@deep-foundation/core', 'SyncTextFile'),
+    in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: voice.id },
+  });
+
+  return <>
+    <AccordionItem>{({ isExpanded }) => (<>
+      <h2>
+        <AccordionButton>
+          <Box>
+            <Text noOfLines={1}>
+              {voice?.id || i} {text?.value?.value || ''}
+            </Text>
+          </Box>
+          <AccordionIcon />
+        </AccordionButton>
+      </h2>
+      <AccordionPanel pb={4}>
+        {!!isExpanded && !!src && <audio src={src} controls>Your browser does not support the audio element.</audio>}
+        {!!text && <Box>{text?.value?.value}</Box>}
+      </AccordionPanel>
+    </>)}</AccordionItem>
+  </>;
+});
+
+const VoicesView = React.memo(function VoiceView() {
+  const deep = useDeep();
+  const device = useDevice();
+  const voice = useVoice();
+  // const [voices, setVoices] = useState([]);
+  const voices = deep.useMinilinksSubscription({
+    type_id: deep.idLocal('@deep-foundation/core', 'AsyncFile'),
+    in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: device?.id || 0 },
+    order_by: {id: 'asc'},
+  });
+  return <>
+    <SimpleGrid columns={{sm: 1, md: 2}}>
+      <Box>
+        <Accordion allowToggle>
+          {voices.map((v, i) => <>
+            <VoicesVoiceView key={v.id} voice={v} i={i}/>
+          </>)}
+        </Accordion>
+      </Box>
+      {deep?.linkId && device?.id && <Graph linkId={device.id} query={{
+        up: { parent: { type_id: deep.idLocal('@deep-foundation/core', 'AsyncFile') } }
+      }}/>}
+    </SimpleGrid>
+  </>;
+});
+
 const VoiceView = React.memo(function VoiceView() {
   const deep = useDeep();
   const voice = useVoice();
-  const [voices, setVoices] = useState([]);
-  const [active, setActive] = useState(-1);
+  const device = useDevice();
   return <>
     <Heading>Voice</Heading>
-    <Box>
-      {voices.map((v, i) => <Button key={i}
-        onClick={() => setActive(id => i === id ? -1 : i)}
-        variant={active === i ? 'solid' : 'outline'}
-      >{v?.id || i}</Button>)}
-      <Box>
-    </Box>
-      {active >= 0 && <audio controls>
-        <source src={`data:audio/mpeg;base64,${voices[active]?.record}`} type="audio/mpeg"></source>
-      </audio>}
-    </Box>
+    {!!deep && !!device?.id && <VoicesView/>}
     {voice.status ? (
       voice.recording ? (<>
         <Button onClick={async () => {
           const record = await voice.stop();
-          setVoices(v => [...v, record]);
         }}>stop</Button>
         {voice.paused ? (
           <Button onClick={() => voice.pause()}>pause</Button>
