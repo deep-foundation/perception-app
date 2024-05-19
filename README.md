@@ -20,9 +20,9 @@ Application support:
 
 | Feature | web-chrome | web-safari | web-ios | web-android | app-ios | app-android | app-mac | app-win | app-linux | chrome-extension | firefox-extension | vsc-extension |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Device | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | 🔵 | 🟢 | 🔵 | 🔵 | 🔵 |🔵 | 🔵 | 🔵 |
-| Geolocation | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | 🔵 | 🟢 | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | 🔵 | 🔵 | 🔵 |
-| Voice | 🟢 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 |
+| Device | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | 🔵 | 🟢 | 🔵 | 🔵 | 🔵 |🔵 | 🔴 | 🔴 |
+| Geolocation | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | 🔵 | 🟢 | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | [🟠](https://github.com/ionic-team/capacitor/issues/1858) | 🔵 | 🔴 | 🔴 |
+| Voice | 🟢 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔴 | 🔴 |
 | Contacts | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 | Camera | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 | Action | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
