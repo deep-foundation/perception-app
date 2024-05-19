@@ -34,8 +34,8 @@ Application support:
 | Mouse | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 | Terminals | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 
-- 🔴 not realized
-- 🟣 in process
-- 🟠 has problem, may  be link to issue
-- 🔵 realized but not tested
-- 🟢 tested
+- 🔴 not implemented
+- 🟣 in progress
+- 🟠 has problem (may have a link to the issue)
+- 🔵 implemented, but not tested
+- 🟢 implemented and tested
