@@ -10,6 +10,9 @@ const config: CapacitorConfig = {
       presentationOptions: ["badge", "sound", "alert"],
     },
   },
+  android: {
+    useLegacyBridge: true,
+  },
 };
 
 export default config;
