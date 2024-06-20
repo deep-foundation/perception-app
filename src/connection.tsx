@@ -1,7 +1,7 @@
 import { Box, Button, Card, CardBody, CardHeader, Code, FormControl, FormLabel, HStack, Heading, Input, SimpleGrid } from "@chakra-ui/react";
 import { AutoGuest } from "@deep-foundation/deepcase/imports/auto-guest";
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
 import { useDeepPath, useDeepToken } from "./provider";
 
@@ -14,6 +14,9 @@ export function Connection() {
 
   const [_path, _setPath] = useState<string|undefined>(path);
   const [_token, _setToken] = useState<string|undefined>(token);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   // useEffect(() => {
   //   if(!deep.linkId && connection && deepToken) {
@@ -75,7 +78,7 @@ export function Connection() {
           {!!autoGuest && <AutoGuest><></></AutoGuest>}
         </SimpleGrid>
       </CardBody>
-      <CardBody>
+      {mounted && <CardBody>
         <Code wordBreak={'break-all'}>useDeepPath()[0] // {path || ''}</Code>
         <Code wordBreak={'break-all'}>useDeepToken()[0] // {token || ''}</Code>
         <Code wordBreak={'break-all'}>useDeep() // {typeof(deep)}</Code>
@@ -83,7 +86,7 @@ export function Connection() {
           <Code wordBreak={'break-all'}>useDeep().linkId // {deep?.linkId}</Code>
           <Code wordBreak={'break-all'}>useDeep().token // {deep?.token}</Code>
         </Box>}
-      </CardBody>
+      </CardBody>}
     </Card>
   );
 }
