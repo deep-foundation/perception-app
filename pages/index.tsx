@@ -4,7 +4,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Box, Button, Card, CardBody, CardHeader, CircularProgress, CircularProgressLabel, FormControl, FormLabel, Heading, Input, InputGroup, InputRightElement, List, ListIcon, ListItem, Select, SimpleGrid,
+  Box, Button, Card, CardBody, CardHeader, CircularProgress, CircularProgressLabel, FormControl, FormLabel, HStack, Heading, Input, InputGroup, InputRightElement, List, ListIcon, ListItem, Select, SimpleGrid,
   Slider,
   SliderFilledTrack,
   SliderMark,
@@ -14,7 +14,7 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { CheckCircleIcon, WarningIcon, SpinnerIcon } from '@chakra-ui/icons'
+import { CheckCircleIcon, WarningIcon, SpinnerIcon, CheckIcon, TriangleDownIcon } from '@chakra-ui/icons'
 import CytoGraph from '@deep-foundation/deepcase/imports/cyto/graph';
 import { useRefstarter } from '@deep-foundation/deepcase/imports/refstater';
 import { useDeep } from '@deep-foundation/deeplinks/imports/client';
@@ -45,6 +45,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Connection } from '../src/connection';
 import { i18nGetStaticProps } from '../src/i18n';
 import useAxios from 'axios-hooks';
+import { EditorTextArea } from '@deep-foundation/deepcase/imports/editor/editor-textarea';
+import times from 'lodash/times';
+import { deepEqual } from 'assert';
 
 const { version } = require('../package.json');
 
@@ -121,73 +124,78 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
         </Heading>
       </CardHeader>
       <CardBody>
-        {!installer?.installing ? <Button colorScheme={'blue'} onClick={() => installer.install()}>install</Button> : <Button disabled variant='outline'>{installer?.installing ? 'installing' : 'installed'}</Button>}
-        {<Button colorScheme={'blue'} onClick={() => installer.reset()}>reset</Button>}
-        <List spacing={3}>
-          <ListItem>
-            <ListIcon as={installer?.status ? CheckCircleIcon : WarningIcon} color={installer?.status ? 'green.500' : 'red.500'} />
-            status
-          </ListItem>
-          <ListItem>
-            <ListIcon as={deep ? CheckCircleIcon : WarningIcon} color={deep ? 'green.500' : 'red.500'} />
-            connected
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.isAdmin ? CheckCircleIcon : WarningIcon} color={installer?.isAdmin ? 'green.500' : 'red.500'} />
-            isAdmin
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['@deep-foundation/chatgpt-azure']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure']?.length ? 'green.500' : 'red.500'} />
-            @deep-foundation/chatgpt-azure
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? 'green.500' : 'red.500'} />
-            @deep-foundation/chatgpt-azure-deep
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? 'green.500' : 'red.500'} />
-            @deep-foundation/chatgpt-azure-templates
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['@deep-foundation/deepmemo-links']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/deepmemo-links']?.length ? 'green.500' : 'red.500'} />
-            @deep-foundation/deepmemo-links
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.installed ? CheckCircleIcon : WarningIcon} color={installer?.installed ? 'green.500' : 'red.500'} />
-            installed
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['ApiKey']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['ApiKey']?.length ? 'green.500' : 'red.500'} />
-            ApiKey ({installer?.['ApiKey']?.[0]?.value?.value || ''})
-            <InputGroup size='md'>
-              <Input placeholder='Enter token for choosen model' value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
-              <InputRightElement>
-                <Button size='sm' onClick={async () => {
-                  await installer.saveApiKey(apiKey);
-                }}>save</Button>
-              </InputRightElement>
-            </InputGroup>
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['UsesApiKey']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['UsesApiKey']?.length ? 'green.500' : 'red.500'} />
-            UsesApiKey
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['Model']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['Model']?.length ? 'green.500' : 'red.500'} />
-            Model
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['UsesModel']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['UsesModel']?.length ? 'green.500' : 'red.500'} />
-            UsesModel
-            <Select placeholder='Choose model' value={String(installer?.['UsesModel']?.[0]?.to_id)} onChange={e => installer.saveUsesModel(+e.target.value)}>
-              {installer?.['Model']?.map(l => <option value={String(l.id)}>{l?.value?.value}</option>)}
-            </Select>
-          </ListItem>
-          <ListItem>
-            <ListIcon as={installer?.['space'] ? CheckCircleIcon : WarningIcon} color={installer?.['space'] ? 'green.500' : 'red.500'} />
-            space ({installer?.['space']?.id || ''}) <Button disabled={!installer?.space} variant={!!installer?.space ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.defineSpace()}>define</Button>
-          </ListItem>
-        </List>
+        <SimpleGrid columns={{sm: 1, md: 2}}>
+          <Box>
+            {!installer?.installing ? <Button colorScheme={'blue'} onClick={() => installer.install()}>install</Button> : <Button disabled variant='outline'>{installer?.installing ? 'installing' : 'installed'}</Button>}
+            {<Button colorScheme={'blue'} onClick={() => installer.reset()}>reset</Button>}
+            <List spacing={3}>
+              <ListItem>
+                <ListIcon as={installer?.status ? CheckCircleIcon : WarningIcon} color={installer?.status ? 'green.500' : 'red.500'} />
+                status
+              </ListItem>
+              <ListItem>
+                <ListIcon as={deep ? CheckCircleIcon : WarningIcon} color={deep ? 'green.500' : 'red.500'} />
+                connected
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.isAdmin ? CheckCircleIcon : WarningIcon} color={installer?.isAdmin ? 'green.500' : 'red.500'} />
+                isAdmin
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/chatgpt-azure']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/chatgpt-azure
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/chatgpt-azure-deep
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/chatgpt-azure-templates
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/deepmemo-links']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/deepmemo-links']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/deepmemo-links
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.installed ? CheckCircleIcon : WarningIcon} color={installer?.installed ? 'green.500' : 'red.500'} />
+                installed
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['ApiKey']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['ApiKey']?.length ? 'green.500' : 'red.500'} />
+                ApiKey ({installer?.['ApiKey']?.[0]?.value?.value || ''})
+                <InputGroup size='md'>
+                  <Input placeholder='Enter token for choosen model' value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
+                  <InputRightElement>
+                    <Button size='sm' onClick={async () => {
+                      await installer.saveApiKey(apiKey);
+                    }}>save</Button>
+                  </InputRightElement>
+                </InputGroup>
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['UsesApiKey']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['UsesApiKey']?.length ? 'green.500' : 'red.500'} />
+                UsesApiKey
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['Model']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['Model']?.length ? 'green.500' : 'red.500'} />
+                Model
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['UsesModel']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['UsesModel']?.length ? 'green.500' : 'red.500'} />
+                UsesModel
+                <Select placeholder='Choose model' value={String(installer?.['UsesModel']?.[0]?.to_id)} onChange={e => installer.saveUsesModel(+e.target.value)}>
+                  {installer?.['Model']?.map(l => <option value={String(l.id)}>{l?.value?.value}</option>)}
+                </Select>
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['space'] ? CheckCircleIcon : WarningIcon} color={installer?.['space'] ? 'green.500' : 'red.500'} />
+                space ({installer?.['space']?.id || ''}) <Button disabled={!installer?.space} variant={!!installer?.space ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.defineSpace()}>define</Button>
+              </ListItem>
+            </List>
+          </Box>
+          {deep?.linkId && <Graph linkId={deep.linkId}/>}
+        </SimpleGrid>
       </CardBody>
     </Card>
   </>;
@@ -212,6 +220,146 @@ const Graph = React.memo(function Graph({ linkId, query = {} }: { linkId: Id; qu
     {!!linkId && <Box w={500} h={500} border={'1px'} rounded='md' position="relative">
       {deep?.linkId && <CytoGraph links={links} cyRef={cyRef} cytoViewportRef={cytoViewportRef}/>}
     </Box>}
+  </>;
+});
+
+const TemplateView = React.memo(function TemplateView({ template }: { template: any }) {
+  const deep = useDeep();
+  const refEditor = useRef<any>();
+  const [value, setValue] = useState(template?.value?.value || '');
+  
+  const savedValue = template?.value?.value;
+  const [saving, setSaving] = useState(false);
+  
+  const save = async (value) => {
+    setSaving(true);
+    await deep.update({ link_id: template.id }, { value }, { table: 'strings' });
+    setSaving(false);
+  }
+
+  const { data: promises } = deep.useDeepSubscription({
+    up: {
+      tree_id: deep.idLocal('@deep-foundation/core', 'promiseTree'),
+      parent: {
+        from_id: template.id,
+        type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Apply'] },
+      },
+    },
+  });
+
+  const rejectsAndResolves = deep.useMinilinksSubscription({
+    type_id: { _in: [deep.idLocal('@deep-foundation/core', 'Resolved'), deep.idLocal('@deep-foundation/core', 'Rejected')] },
+    from: {
+      type_id: deep.idLocal('@deep-foundation/core', 'Promise'),
+      in: {
+        type_id: deep.idLocal('@deep-foundation/core', 'Then'),
+        from: {
+          from_id: template.id,
+        }
+      },
+    }
+  });
+
+  return <Box borderBottom={'1px'} borderColor={'gray.300'}>
+    <SimpleGrid columns={{sm: 1, md: 2}}>
+      <Box>
+        <Box h={'10em'} p={2}>
+          <EditorTextArea
+            refEditor={refEditor}
+            value={value}
+            defaultLanguage={`javascript`}
+            minimap={false}
+            onChange={(value) => {
+              setValue(value);
+            }}
+            onClose={() => {
+            }}
+            onSave={save}
+            onMount={() => {}}
+          />
+        </Box>
+        <HStack p={2} pt={0} spacing={2}>
+          <Button
+            colorScheme={savedValue === value || saving ? 'grey' : 'blue'} disabled={savedValue === value || saving} variant={'solid'} size="sm"
+            onClick={() => save(value)}
+          >
+            {saving ? <SpinnerIcon/> : savedValue === value ? <CheckIcon/> : <TriangleDownIcon/>}
+          </Button>
+          <Button colorScheme={'blue'} variant={'solid'} size="sm">disabled</Button>
+          <Button colorScheme={'blue'} variant={'outline'} size="sm">every minute</Button>
+          <Button colorScheme={'green'} variant={'outline'} size="sm"
+            onClick={async () => deep.insert({
+              type_id: await deep.id('@deep-foundation/chatgpt-azure-templates', 'Apply'),
+              from_id: template.id,
+              to_id: deep?.linkId,
+              in: { data: [
+                { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: template.id },
+              ]},
+            })}
+          >manual</Button>
+          <Button
+            colorScheme={'red'} variant={'solid'} size="sm"
+            onClick={() => deep.delete({ _or: [
+              { id: template.id },
+              { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: deep?.linkId, to_id: template.id },
+            ] })}
+          >x</Button>
+        </HStack>
+      </Box>
+      <Box p={2} h={'11em'} overflowY={'scroll'}>
+        {rejectsAndResolves.map(n => <Box
+          borderBottom={'1px'} borderColor={'gray.300'} p={2}
+          color={n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') ? 'red.500' : 'green.500'}
+        >
+          {n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') && <pre><code>{JSON.stringify(n?.to?.value?.value, null, 2)}</code></pre>}
+          {n.type_id === deep.idLocal('@deep-foundation/core', 'Resolved') && <pre><code>{n?.id}</code></pre>}
+        </Box>)}
+      </Box>
+    </SimpleGrid>
+  </Box>;
+});
+
+const TemplatesViewCore = React.memo(function TemplatesView({ }: { }) {
+  const deep = useDeep();
+  const device = useDevice();
+  deep.useDeepSubscription({
+    type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Template'] },
+    in: {
+      type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: deep?.linkId,
+    }
+  });
+  const templates = deep.useMinilinksSubscription({
+    type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Template'] },
+  });
+  return <>
+    <Box borderTop={'1px'} borderColor={'gray.300'}>
+      {templates.map(t => (<TemplateView template={t}/>))}
+    </Box>
+  </>;
+});
+
+const TemplatesView = React.memo(function TemplatesView({ }: { }) {
+  const deep = useDeep();
+  return <>
+    <Heading>Templates
+      <Button
+        disabled={!deep?.linkId}
+        colorScheme={'blue'} variant={'solid'} size="sm"
+        onClick={async () => {
+          await deep.insert({
+            type_id: await deep.id('@deep-foundation/chatgpt-azure-templates', 'Template'),
+            string: { data: { value: `Ниже я приведу последние созданные ассоциативные связи в памяти, расскажи что ты думаешь об этой памяти? Что случилось за этот запомненный период? Какие ты можешь дать рекомендации?
+
+\${JSON.stringify((await deep.select({ order_by: { id: 'desc' }, limit: 10 })).data)}` } },
+            in: { data: {
+              type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+              from_id: deep.linkId,
+            } }
+          });
+        }}
+      >+</Button>
+    </Heading>
+    {!!deep?.linkId && <TemplatesViewCore/>}
   </>;
 });
 
@@ -418,6 +566,7 @@ export default function Page() {
               <BackgroundGeolocationProvider saver={saver && backgroundgeolocationSaver} manual={backgroundGeolocationManual}>
                 <VoiceProvider saver={saver}>
                   {NEXT_PUBLIC_BUILD}
+                  <TemplatesView/>
                   <VoiceView/>
                   <Interval value={deviceInterval} onChange={setDeviceInterval}/>
                   <Syncing title={'Enable voice syncing with deep backend?'} value={deviceSaver} setValue={setDeviceSaver}/>
