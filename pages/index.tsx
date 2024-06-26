@@ -41,12 +41,13 @@ import {
   useVoice
 } from '@deep-foundation/deepmemo-imports/imports/voice';
 import { useLocalStore } from '@deep-foundation/store/local';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Connection } from '../src/connection';
 import { i18nGetStaticProps } from '../src/i18n';
 import useAxios from 'axios-hooks';
 import { EditorTextArea } from '@deep-foundation/deepcase/imports/editor/editor-textarea';
-import times from 'lodash/times';
+import sortBy from 'lodash/sortBy';
+import reverse from 'lodash/reverse';
 import { deepEqual } from 'assert';
 
 const { version } = require('../package.json');
@@ -106,11 +107,16 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
   const installer = useInstaller();
   const deep = useDeep();
   const [apiKey, setApiKey] = useState('');
+  const [telegramToken, setTelegramToken] = useState('');
   const [containerId, setContainerId] = useLocalStore('deepmemo-app-containerId', null);
 
   useEffect(() => {
     if (installer?.['ApiKey']?.[0]?.value?.value) setApiKey(installer?.['ApiKey']?.[0]?.value?.value);
   }, [installer?.['ApiKey']?.[0]?.value?.value]);
+
+  useEffect(() => {
+    if (installer?.['TelegramToken']?.[0]?.value?.value) setTelegramToken(installer?.['TelegramToken']?.[0]?.value?.value);
+  }, [installer?.['TelegramToken']?.[0]?.value?.value]);
 
   useEffect(() => {
     if (installer?.['space']?.id) setContainerId(installer?.['space']?.id);
@@ -148,6 +154,10 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
               <ListItem>
                 <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-deep']?.length ? 'green.500' : 'red.500'} />
                 @deep-foundation/chatgpt-azure-deep
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/voice-to-sync-text-file']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/voice-to-sync-text-file']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/voice-to-sync-text-file
               </ListItem>
               <ListItem>
                 <ListIcon as={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/chatgpt-azure-templates']?.length ? 'green.500' : 'red.500'} />
@@ -189,12 +199,36 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
                 </Select>
               </ListItem>
               <ListItem>
+                <ListIcon as={installer?.['TelegramToken']?.[0]?.value?.value ? CheckCircleIcon : WarningIcon} color={installer?.['TelegramToken']?.[0]?.value?.value ? 'green.500' : 'red.500'} />
+                TelegramToken ({installer?.['TelegramToken']?.[0]?.value?.value || ''})
+                <InputGroup size='md'>
+                  <Input placeholder='Enter Telegram Token for Deep.Memory chat bot' value={telegramToken} onChange={(e) => setTelegramToken(e.target.value)} />
+                  <InputRightElement>
+                    <Button size='sm' onClick={async () => {
+                      await installer.saveDeepmemoryTelegramToken(telegramToken);
+                    }}>save</Button>
+                  </InputRightElement>
+                </InputGroup>
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['TelegramActive']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['TelegramActive']?.length ? 'green.500' : 'red.500'} />
+                Telegram bot for Deep.Memory ({installer?.['TelegramActive']?.[0]?.id || ''})
+                <Button disabled={!!installer?.['TelegramActive']?.length} variant={!!installer?.['TelegramActive']?.length ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.telegramDeepmemoryBotStatus(true)}>enable</Button>
+                <Button disabled={!installer?.['TelegramActive']?.length} variant={!installer?.['TelegramActive']?.length ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.telegramDeepmemoryBotStatus(false)}>disable</Button>
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['DeepmemoryActive']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['DeepmemoryActive']?.length ? 'green.500' : 'red.500'} />
+                Deep.Memory ({installer?.['DeepmemoryActive']?.[0]?.id || ''})
+                <Button disabled={!!installer?.['DeepmemoryActive']?.length} variant={!!installer?.['DeepmemoryActive']?.length ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.deepmemoryBotStatus(true)}>enable</Button>
+                <Button disabled={!installer?.['DeepmemoryActive']?.length} variant={!installer?.['DeepmemoryActive']?.length ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.deepmemoryBotStatus(false)}>disable</Button>
+              </ListItem>
+              <ListItem>
                 <ListIcon as={installer?.['space'] ? CheckCircleIcon : WarningIcon} color={installer?.['space'] ? 'green.500' : 'red.500'} />
                 space ({installer?.['space']?.id || ''}) <Button disabled={!installer?.space} variant={!!installer?.space ? 'outline' : 'solid'} colorScheme={'blue'} onClick={() => installer.defineSpace()}>define</Button>
               </ListItem>
             </List>
           </Box>
-          {deep?.linkId && <Graph linkId={deep.linkId}/>}
+          {false && deep?.linkId && <Graph linkId={deep.linkId} query={{}}/>}
         </SimpleGrid>
       </CardBody>
     </Card>
@@ -247,7 +281,23 @@ const TemplateView = React.memo(function TemplateView({ template }: { template: 
     },
   });
 
-  const rejectsAndResolves = deep.useMinilinksSubscription({
+  const { data: messages } = deep.useDeepSubscription({
+    type_id: { _id: ['@deep-foundation/messaging', 'Message'] },
+    up: {
+      tree_id: { _id: ['@deep-foundation/messaging', 'messagingTree'] },
+      parent: {
+        in: {
+          type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Result'] },
+          from: {
+            type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Apply'] },
+            from_id: template.id
+          }
+        }
+      },
+    },
+  });
+
+  const resolvesAndRejects = deep.useMinilinksSubscription({
     type_id: { _in: [deep.idLocal('@deep-foundation/core', 'Resolved'), deep.idLocal('@deep-foundation/core', 'Rejected')] },
     from: {
       type_id: deep.idLocal('@deep-foundation/core', 'Promise'),
@@ -257,8 +307,13 @@ const TemplateView = React.memo(function TemplateView({ template }: { template: 
           from_id: template.id,
         }
       },
-    }
+    },
   });
+
+  const results = useMemo(
+    () => reverse(sortBy([...resolvesAndRejects, ...messages], ['id'])),
+    [resolvesAndRejects, messages],
+  );
 
   return <Box borderBottom={'1px'} borderColor={'gray.300'}>
     <SimpleGrid columns={{sm: 1, md: 2}}>
@@ -280,7 +335,7 @@ const TemplateView = React.memo(function TemplateView({ template }: { template: 
         </Box>
         <HStack p={2} pt={0} spacing={2}>
           <Button
-            colorScheme={savedValue === value || saving ? 'grey' : 'blue'} disabled={savedValue === value || saving} variant={'solid'} size="sm"
+            colorScheme={savedValue === value || saving ? 'gray' : 'blue'} disabled={savedValue === value || saving} variant={'solid'} size="sm"
             onClick={() => save(value)}
           >
             {saving ? <SpinnerIcon/> : savedValue === value ? <CheckIcon/> : <TriangleDownIcon/>}
@@ -306,13 +361,20 @@ const TemplateView = React.memo(function TemplateView({ template }: { template: 
           >x</Button>
         </HStack>
       </Box>
-      <Box p={2} h={'11em'} overflowY={'scroll'}>
-        {rejectsAndResolves.map(n => <Box
+      <Box p={2} h={'11em'} overflowY={'scroll'} overflowX={'hidden'}>
+        {results.map(n => <Box
           borderBottom={'1px'} borderColor={'gray.300'} p={2}
-          color={n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') ? 'red.500' : 'green.500'}
+          color={
+            n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') ? 'red.500' :
+            n.type_id === deep.idLocal('@deep-foundation/core', 'Resolved') ? 'green.500' :
+            'black'
+          }
         >
-          {n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') && <pre><code>{JSON.stringify(n?.to?.value?.value, null, 2)}</code></pre>}
-          {n.type_id === deep.idLocal('@deep-foundation/core', 'Resolved') && <pre><code>{n?.id}</code></pre>}
+          <Text fontSize='xs' as='pre' sx={{ textWrap: 'wrap' }}>{n.type_id === deep.idLocal('@deep-foundation/core', 'Rejected') ? (
+            <code>{JSON.stringify(n?.to?.value?.value, null, 2)}</code>
+          ) : n.type_id === deep.idLocal('@deep-foundation/core', 'Resolved') ? (
+            <code>{n?.id}</code>
+          ) : n?.value?.value}</Text>
         </Box>)}
       </Box>
     </SimpleGrid>
@@ -322,18 +384,15 @@ const TemplateView = React.memo(function TemplateView({ template }: { template: 
 const TemplatesViewCore = React.memo(function TemplatesView({ }: { }) {
   const deep = useDeep();
   const device = useDevice();
-  deep.useDeepSubscription({
+  const { data: templates } = deep.useDeepSubscription({
     type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Template'] },
     in: {
       type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: deep?.linkId,
     }
   });
-  const templates = deep.useMinilinksSubscription({
-    type_id: { _id: ['@deep-foundation/chatgpt-azure-templates', 'Template'] },
-  });
   return <>
     <Box borderTop={'1px'} borderColor={'gray.300'}>
-      {templates.map(t => (<TemplateView template={t}/>))}
+      {templates.map(t => (<TemplateView key={t.id} template={t}/>))}
     </Box>
   </>;
 });
