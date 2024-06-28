@@ -168,8 +168,16 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
                 @deep-foundation/deepmemo-links
               </ListItem>
               <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/semantic']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/semantic']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/semantic
+              </ListItem>
+              <ListItem>
                 <ListIcon as={installer?.installed ? CheckCircleIcon : WarningIcon} color={installer?.installed ? 'green.500' : 'red.500'} />
                 installed
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['semantic']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['semantic']?.length ? 'green.500' : 'red.500'} />
+                semantic
               </ListItem>
               <ListItem>
                 <ListIcon as={installer?.['ApiKey']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['ApiKey']?.length ? 'green.500' : 'red.500'} />
@@ -574,6 +582,22 @@ export function Syncing({ title, value, setValue }) {
   </FormControl>;
 }
 
+export function OnlyConnectedAndAdmin({ children }: { children: any }) {
+  const deep = useDeep();
+  const installer = useInstaller();
+  return <>
+    {deep?.linkId && installer?.isAdmin ? children : <Heading size="md">Deep.Memory Installer unavailable, you are not admin.</Heading>}
+  </>
+}
+
+export function OnlyInstalled({ children }: { children: any }) {
+  const deep = useDeep();
+  const installer = useInstaller();
+  return <>
+    {deep?.linkId && installer?.status ? children : <Heading size="md">Deep.Memo unavailable, {!deep?.linkId ? 'deep not connected' : 'not installed'}.</Heading>}
+  </>
+}
+
 export default function Page() {
   const deep = useDeep();
   const toast = useToast();
@@ -601,47 +625,51 @@ export default function Page() {
     <InstallerProvider>
       <Box p={4}>
         Version: {version}
-        <InstallerView/>
-        <Syncing title={'Enable syncing with deep backend?'} value={saver} setValue={setSaver}/>
-        <FormControl display='flex' alignItems='center'>
-          <FormLabel htmlFor='syncing' mb='0'>
-            ContainerId
-          </FormLabel>
-          <Input
-            placeholder={`${deep?.linkId}`}
-            value={containerId} onChange={(e) => setContainerId(e.target.value)}
-            w={'10em'}
-          />
-        </FormControl>
-        <SaverProvider onSave={({ Type, id, object, mode, promise }) => {
-          toast.promise(promise, {
-            success: { title: `Saved ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
-            error: (e) => ({ title: `Error with saving ${mode} #${id || '?'} of type (#${Type}) to deep`, description: e.toString(), isClosable: true }),
-            loading: { title: `Saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
-          })
-        }}>
-          <DeviceProvider saver={saver && deviceSaver} containerId={containerId} interval={deviceInterval}>
-            <GeolocationProvider saver={saver && geolocationSaver} interval={geolocationInterval} manual={geolocationManual}>
-              <BackgroundGeolocationProvider saver={saver && backgroundgeolocationSaver} manual={backgroundGeolocationManual}>
-                <VoiceProvider saver={saver}>
-                  {NEXT_PUBLIC_BUILD}
-                  <TemplatesView/>
-                  <VoiceView/>
-                  <Interval value={deviceInterval} onChange={setDeviceInterval}/>
-                  <Syncing title={'Enable voice syncing with deep backend?'} value={deviceSaver} setValue={setDeviceSaver}/>
-                  <DeviceView interval={deviceInterval}/>
-                  <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
-                  <Syncing title={'Enable geolocation syncing with deep backend?'} value={geolocationSaver} setValue={setGeolocationSaver}/>
-                  <Syncing title={'Enable auto request foregraund geolocation?'} value={!geolocationManual} setValue={(v) => setGeolocationManual(!v)}/>
-                  <GeolocationView interval={geolocationInterval}/>
-                  <Syncing title={'Enable background geolocation syncing with deep backend?'} value={backgroundgeolocationSaver} setValue={setBackgroundGeolocationSaver}/>
-                  <Syncing title={'Enable auto request background geolocation?'} value={!backgroundGeolocationManual} setValue={(v) => setBackgroundGeolocationManual(!v)}/>
-                  <BackgroundGeolocationView/>
-                </VoiceProvider>
-              </BackgroundGeolocationProvider>
-            </GeolocationProvider>
-          </DeviceProvider>
-        </SaverProvider>
+        <OnlyConnectedAndAdmin>
+          <InstallerView/>
+        </OnlyConnectedAndAdmin>
+        <OnlyInstalled>
+          <Syncing title={'Enable syncing with deep backend?'} value={saver} setValue={setSaver}/>
+          <FormControl display='flex' alignItems='center'>
+            <FormLabel htmlFor='syncing' mb='0'>
+              ContainerId
+            </FormLabel>
+            <Input
+              placeholder={`${deep?.linkId}`}
+              value={containerId} onChange={(e) => setContainerId(e.target.value)}
+              w={'10em'}
+            />
+          </FormControl>
+          <SaverProvider onSave={({ Type, id, object, mode, promise }) => {
+            toast.promise(promise, {
+              success: { title: `Saved ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+              error: (e) => ({ title: `Error with saving ${mode} #${id || '?'} of type (#${Type}) to deep`, description: e.toString(), isClosable: true }),
+              loading: { title: `Saving ${mode} #${id || '?'} of type (#${Type}) to deep`, isClosable: true },
+            })
+          }}>
+            <DeviceProvider saver={saver && deviceSaver} containerId={containerId} interval={deviceInterval}>
+              <GeolocationProvider saver={saver && geolocationSaver} interval={geolocationInterval} manual={geolocationManual}>
+                <BackgroundGeolocationProvider saver={saver && backgroundgeolocationSaver} manual={backgroundGeolocationManual}>
+                  <VoiceProvider saver={saver}>
+                    {NEXT_PUBLIC_BUILD}
+                    <TemplatesView/>
+                    <VoiceView/>
+                    <Interval value={deviceInterval} onChange={setDeviceInterval}/>
+                    <Syncing title={'Enable voice syncing with deep backend?'} value={deviceSaver} setValue={setDeviceSaver}/>
+                    <DeviceView interval={deviceInterval}/>
+                    <Interval value={geolocationInterval} onChange={setGeolocationInterval}/>
+                    <Syncing title={'Enable geolocation syncing with deep backend?'} value={geolocationSaver} setValue={setGeolocationSaver}/>
+                    <Syncing title={'Enable auto request foregraund geolocation?'} value={!geolocationManual} setValue={(v) => setGeolocationManual(!v)}/>
+                    <GeolocationView interval={geolocationInterval}/>
+                    <Syncing title={'Enable background geolocation syncing with deep backend?'} value={backgroundgeolocationSaver} setValue={setBackgroundGeolocationSaver}/>
+                    <Syncing title={'Enable auto request background geolocation?'} value={!backgroundGeolocationManual} setValue={(v) => setBackgroundGeolocationManual(!v)}/>
+                    <BackgroundGeolocationView/>
+                  </VoiceProvider>
+                </BackgroundGeolocationProvider>
+              </GeolocationProvider>
+            </DeviceProvider>
+          </SaverProvider>
+        </OnlyInstalled>
       </Box>
     </InstallerProvider>
   </>);
