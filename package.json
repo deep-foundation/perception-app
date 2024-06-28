@@ -37,7 +37,7 @@
     "@capacitor/geolocation": "^5.0.7",
     "@deep-foundation/deepcase": "^0.0.121",
     "@deep-foundation/deeplinks": "^0.0.343",
-    "@deep-foundation/deepmemo-imports": "^0.0.11",
+    "@deep-foundation/deepmemo-imports": "^0.0.12",
     "@solid-primitives/geolocation": "^1.4.14",
     "axios-hooks": "^5.0.2",
     "base64-blob": "^1.4.1",
