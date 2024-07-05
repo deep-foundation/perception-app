@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.7-dev.7",
+  "version": "0.0.7-dev.8",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
