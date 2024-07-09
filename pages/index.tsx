@@ -164,12 +164,16 @@ const InstallerView = React.memo(function InstallerView({}: {}) {
                 @deep-foundation/chatgpt-azure-templates
               </ListItem>
               <ListItem>
-                <ListIcon as={installer?.['@deep-foundation/deepmemo-links']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/deepmemo-links']?.length ? 'green.500' : 'red.500'} />
-                @deep-foundation/deepmemo-links
+                <ListIcon as={installer?.['@deep-foundation/telegram-bot']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/telegram-bot']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/telegram-bot
               </ListItem>
               <ListItem>
                 <ListIcon as={installer?.['@deep-foundation/semantic']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/semantic']?.length ? 'green.500' : 'red.500'} />
                 @deep-foundation/semantic
+              </ListItem>
+              <ListItem>
+                <ListIcon as={installer?.['@deep-foundation/deepmemo-links']?.length ? CheckCircleIcon : WarningIcon} color={installer?.['@deep-foundation/deepmemo-links']?.length ? 'green.500' : 'red.500'} />
+                @deep-foundation/deepmemo-links
               </ListItem>
               <ListItem>
                 <ListIcon as={installer?.installed ? CheckCircleIcon : WarningIcon} color={installer?.installed ? 'green.500' : 'red.500'} />
