@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/deepmemo-app",
-  "version": "0.0.7-dev.8",
+  "version": "0.0.7-dev.9",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -37,7 +37,7 @@
     "@capacitor/geolocation": "^5.0.7",
     "@deep-foundation/deepcase": "^0.0.121",
     "@deep-foundation/deeplinks": "^0.0.343",
-    "@deep-foundation/deepmemo-imports": "^0.0.12",
+    "@deep-foundation/deepmemo-imports": "^0.0.13",
     "@solid-primitives/geolocation": "^1.4.14",
     "axios-hooks": "^5.0.2",
     "base64-blob": "^1.4.1",
