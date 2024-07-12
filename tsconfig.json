@@ -13,6 +13,7 @@
     ],
     "downlevelIteration": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "noImplicitAny": false,
     "isolatedModules": true,
