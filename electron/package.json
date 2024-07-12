@@ -1,7 +1,7 @@
 {
-  "name": "sdk",
-  "version": "0.0.7-dev.11",
-  "description": "Data-oriented operating space of associative data representation. Wellcome to the deep universe",
+  "name": "deep-memo",
+  "version": "0.0.7-dev.12",
+  "description": "Your second memory.",
   "homepage": "https://deep.foundation/",
   "author": {
     "name": "Deep Foundation",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/deep-foundation"
+    "url": "https://github.com/deep-foundation/deepmemo-app"
   },
   "license": "MIT",
   "main": "build/src/index.js",
