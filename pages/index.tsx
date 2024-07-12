@@ -8,10 +8,6 @@ import {
   Input,
   Text,
 } from '@chakra-ui/react';
-// import { AutoGuest } from '@deep-foundation/deepcase/imports/auto-guest';
-// import { Connector, parseUrl } from '@deep-foundation/deepcase/imports/connector/connector';
-// import { useContainer, useSpaceId } from '@deep-foundation/deepcase/imports/hooks';
-// import { Provider as ProviderDeepcase } from '@deep-foundation/deepcase/imports/provider';
 import { DeepNamespaceProvider, DeepProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
 import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
 import { useQueryStore } from '@deep-foundation/store/query';
