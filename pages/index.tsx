@@ -106,6 +106,7 @@ export function Status() {
 
 export const StatusWithDeep = memo(function StatusWithDeep() {
   const deep = useDeep();
+  // @ts-ignore
   const status = deep?.client?.useApolloNetworkStatus();
   console.log('status', status);
   return <>
