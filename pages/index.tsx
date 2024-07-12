@@ -50,7 +50,8 @@ import sortBy from 'lodash/sortBy';
 import reverse from 'lodash/reverse';
 import { deepEqual } from 'assert';
 
-const { version } = require('../package.json');
+const { version: appVersion } = require('../package.json');
+const { version: importsVersion } = require('../node_modules/@deep-foundation/deepmemo-imports/package.json');
 
 // force junk for connection
 await import('@deep-foundation/deeplinks/imports/client');
@@ -628,7 +629,8 @@ export default function Page() {
     <Connection/>
     <InstallerProvider>
       <Box p={4}>
-        Version: {version}
+        Application Version: {appVersion}
+        Imports Version: {importsVersion}
         <OnlyConnectedAndAdmin>
           <InstallerView/>
         </OnlyConnectedAndAdmin>
