@@ -43,9 +43,13 @@ export const Tab = ({
   side?: 'left' | 'right';
 }) => {
   return <Box position='relative' display='inline-flex' h='3em' role="group">
-    <LinkButton id={id} name={name} type={type} icon={icon} isActive={isActive} onClick={onClick}/>
+    <LinkButton
+      id={id} name={name} type={type} icon={icon} isActive={isActive} onClick={onClick} 
+      zIndex={1}
+    />
     <Box
       _groupHover={{ top: '100%' }}
+      boxShadow='dark-lg'
       position='absolute' top='0%' {...({ [side]: '0px' })}
       transition='all 0.3s ease'
     >
@@ -79,6 +83,7 @@ export const LayoutButton = ({
     </Button>
     <Box
       _groupHover={{ left: '100%' }}
+      boxShadow='dark-lg'
       position='absolute' left='0%' top='0px'
       transition='all 0.3s ease'
     >
@@ -126,10 +131,17 @@ export function Auth() {
     >{deep ? <IoExitOutline /> : <IoEnterOutline/>}</Button>
     <Box
       _groupHover={{ left: '0%' }}
-      position='absolute' left='-30em' bottom='0px' w={canAdmin ? '26em' : '23em'}
+      boxShadow='dark-lg'
+      position='absolute' left='-30em' bottom='0px' w={canAdmin ? '29em' : '26em'}
       transition='all 1s ease' overflow="hidden"
       bg="deepBg"
     >
+      <Button  w="3em" h="3em" onClick={() => {
+        setPath(''); _setPath('');
+        setToken(''); _setToken('');
+      }}>
+        <IoExitOutline/>
+      </Button>
       <Box p={1} display="inline-flex">
         <Input ml={'1em'} value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='10em' size='sm'/>
         <Input ml={'1em'} type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='10em' size='sm'/>
