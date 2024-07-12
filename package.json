@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -33,8 +33,7 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/deeplinks": "^0.0.343",
-    "@deep-foundation/perception-imports": "^0.0.3",
+    "@deep-foundation/perception-imports": "^0.0.4",
     "axios-hooks": "^5.0.2",
     "base64-blob": "^1.4.1",
     "capacitor-voice-recorder": "^5.0.0",
@@ -46,6 +45,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-focus-lock": "^2.12.1",
+    "react-hotkeys-hook": "^4.5.0",
     "react-i18next": "^14.1.0",
     "react-icons": "^5.2.1",
     "typescript": "^5.4.5"

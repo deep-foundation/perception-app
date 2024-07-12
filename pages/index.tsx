@@ -21,8 +21,12 @@ import pckg from '../package.json';
 import { i18nGetStaticProps } from '../src/i18n.tsx';
 import { Provider as ProviderSDK, useDeepPath } from '../src/provider.tsx';
 import { ColorMode } from '@deep-foundation/perception-imports/imports/theme';
+import { Loader } from '@deep-foundation/perception-imports/imports/loader';
 import { SunIcon, MoonIcon } from '@chakra-ui/icons';
 import { useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
+import { Cyto } from '../imports/cyto.tsx';
+import { Tree } from '../imports/tree.tsx';
+import { LinkButton } from '../imports/link.tsx';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -39,16 +43,7 @@ export const Tab = ({
   side?: 'left' | 'right';
 }) => {
   return <Box position='relative' display='inline-flex' h='3em' role="group">
-    <Button
-      h='3em' variant={isActive ? 'active' : 'solid'}
-      zIndex={1}
-      onClick={() => onClick(id)}
-    >
-      {icon} <Box textAlign='left' pl='0.5em'>
-        <Box fontSize="sm">{name || type}</Box>
-        <Box fontSize="xxs">{name ? type : ''} {id}</Box>
-      </Box>
-    </Button>
+    <LinkButton id={id} name={name} type={type} icon={icon} isActive={isActive} onClick={onClick}/>
     <Box
       _groupHover={{ top: '100%' }}
       position='absolute' top='0%' {...({ [side]: '0px' })}
@@ -221,6 +216,7 @@ export function Content() {
       <GridItem area={'nav'} zIndex={1} position="relative" h="100%">
         <LayoutButton isActive={layout === 'c'} id={'c'} name={'c'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'g'} id={'g'} name={'g'} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 't'} id={'t'} name={'t'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'f'} id={'f'} name={'f'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'o'} id={'o'} name={'o'} onClick={id => setLayout(id)}/>
         <Button w='3em' h='3em'>+</Button>
@@ -236,7 +232,13 @@ export function Content() {
       <GridItem area={'main'} overflow="hidden" position="relative">
         {layout === 'c' && <Box w='100%' h='100%'>
         </Box>}
-        {layout === 'g' && <Box w='100%' h='100%' bg='white'></Box>}
+        {layout === 'g' && <Box w='100%' h='100%'>
+          <Loader/>
+          <Cyto/>
+        </Box>}
+        {layout === 't' && <Box w='100%' h='100%'>
+          <Tree/>
+        </Box>}
         {layout === 'f' && <Box w='100%' h='100%' bg='pink'>
         </Box>}
         {layout === 'o' && <Box w='100%' h='100%'>
