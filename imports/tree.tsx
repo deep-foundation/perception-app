@@ -5,7 +5,7 @@ import {
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
-import { DOMElement, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, Dispatch, DOMElement, memo, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
@@ -13,12 +13,15 @@ import { link } from 'fs';
 export const Item = memo(function Level({
   link,
   isActive,
+  address,
 }: {
   link: Link<Id> ;
   isActive?: boolean;
+  address?: [number, number];
 }) {
   const deep = useDeep();
   const ref = useRef<any>();
+  const setActive = useContext(SetActiveContext);
   useEffect(() => {
     if (isActive) ref.current.scrollIntoView({block: "center", inline: "nearest"});
   }, [isActive]);
@@ -31,6 +34,7 @@ export const Item = memo(function Level({
     isActive={isActive}
     icon={symbol}
     w='100%'
+    onClick={id => address && setActive && setActive(address)}
   />
 }, (o, n) => o.isActive == n.isActive && o.link === n.link);
 
@@ -44,18 +48,21 @@ export const Level = memo(function Level({
   link?: Link<Id>;
   links?: Link<Id>[];
   active?: number;
-  setList: (list: Link<Id>[][]) => void;
+  setList: Dispatch<SetStateAction<any[]>>;
   i: number;
 }) {
   const deep = useDeep();
 
-  const mapped = useMemo(() => (links || []).map((l, i) => <Item key={l.id} link={l} isActive={i === active}/>), [links, active]);
-  const onLoaded = useCallback((links) => setList(list => {
+  const mapped = useMemo(() => (links || []).map((l, ii) => <Item
+    key={l.id} link={l} isActive={ii === active}
+    address={[i,ii]}
+  />), [links, active]);
+  const onLoaded = useCallback((links) => setList((list) => {
     const l = links; l.link = link;
-    return [...list.slice(0, i), l];
+    return [...list.slice(0, i), l] as IList;
   }), [i]);
   return <Box
-    w='20em' h='100%'
+    minW='25em' w='25em' h='100%'
     borderRight='1px solid' borderRightColor='deepColor'
     overflowY='scroll'
   >
@@ -67,22 +74,36 @@ export const Level = memo(function Level({
   </Box>
 }, (o, n) => o.active === n.active && o.links === n.links && o.link === n.link);
 
+const SetActiveContext = createContext<Dispatch<SetStateAction<[number, number]>>>(() => {});
+
+interface IListItem extends Array<Link<Id>> {
+  link?: Link<Id>;
+}
+interface IList extends Array<IListItem> {
+}
+
 export const TreeView = memo(function TreeView({
   list,
   setList,
 }: {
-  list: Link<Id>[][];
-  setList: (list: Link<Id>[][]) => void;
+  list: IList;
+  setList: Dispatch<SetStateAction<any[]>>;
 }) {
   const [active, setActive] = useState<[number, number]>([0, 0]);
   const [mem, setMem] = useState<number[]>([]);
   const setMemOne = useCallback((i, v) => {
     setMem([...mem.slice(0, i), v, ...mem.slice(i+1)]);
   }, [mem]);
+  const setActiveOne = useCallback((a: [number, number]) => {
+    setActive(a);
+    const link = list[a[0]][a[1]];
+    const l: IListItem = list[a[0]+1]?.link?.id === link?.id ? list[a[0]+1] : []; l.link = link;
+    if (l.link) setList([...list.slice(0, a[0] + 1), l]);
+  }, [mem]);
   useHotkeys('up', async e => {
     const a = active;
     const n: any = a[1] > 0 ? [a[0], a[1] - 1] : a;
-    const l = []; l.link = list[n[0]][n[1]];
+    const l: IListItem = []; l.link = list[n[0]][n[1]];
     setMemOne(n[0], n[1]);
     if (l.link) setList([...list.slice(0, a[0] + 1), l]);
     setActive(n);
@@ -90,7 +111,7 @@ export const TreeView = memo(function TreeView({
   useHotkeys('down', async e => {
     const a = active;
     const n: any = list[a[0]]?.length - 1 > a[1] ? [a[0], a[1]+1] : a;
-    const l = []; l.link = list[n[0]][n[1]];
+    const l: IListItem = []; l.link = list[n[0]][n[1]];
     setMemOne(n[0], n[1]);
     if (l.link) setList([...list.slice(0, a[0] + 1), l]);
     setActive(n);
@@ -100,32 +121,37 @@ export const TreeView = memo(function TreeView({
     const ma = a[0] + 1;
     const na = list[ma];
     const p = typeof(mem[ma]) === 'number' ? mem[ma] : 0;
-    const n: any = na?.length ? [ma, p] : a;
+    const n: any = na ? [ma, p] : a;
     setMemOne(n[0], n[1]);
     setActive(n);
   }, [active, list, mem]);
   useHotkeys('left', async e => {
     const a = active;
     const ma = a[0] - 1;
-    if (ma < 0) return;
     const na = list[ma];
+    if (ma < 0 || !na) return;
     const p = typeof(mem[ma]) === 'number' ? mem[ma] : na?.[a[1]] ? a[1] : na.length - 1;
     const n: any = na?.length ? [ma, p] : a;
     setMemOne(n[0], n[1]);
     setActive(n);
   }, [active, list, mem]);
   useEffect(() => {
-    setMem(mem.slice(0, list.length - 1));
+    if (mem.length > list.length) {
+      setMem(mem.slice(0, list.length - 1));
+      console.log('list to mem');
+    }
   }, [list, mem]);
   const mapped = useMemo(() => list.map((l, i) => (
     <Level key={l?.link?.id || i} links={l} link={l?.link} active={active[0] === i ? active[1] : undefined} setList={setList} i={i}/>
   )), [list, active]);
-  return <HStack
-    position="absolute" left='0' top='0' right='0' bottom='0'
-    overflowX='scroll' overflowY='hidden'
-  >
-    {mapped}
-  </HStack>;
+  return <SetActiveContext.Provider value={setActiveOne}>
+    <HStack
+      position="absolute" left='0' top='0' right='0' bottom='0'
+      overflowX='scroll' overflowY='hidden'
+    >
+      {mapped}
+    </HStack>
+  </SetActiveContext.Provider>;
 }, (o,n) => o.list === n.list);
 
 export const Loader = memo(function Loader({
