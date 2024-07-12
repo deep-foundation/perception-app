@@ -44,7 +44,7 @@ export const Tab = ({
       zIndex={1}
       onClick={() => onClick(id)}
     >
-      {icon} <Box align='left' pl='0.5em'>
+      {icon} <Box textAlign='left' pl='0.5em'>
         <Box fontSize="sm">{name || type}</Box>
         <Box fontSize="xxs">{name ? type : ''} {id}</Box>
       </Box>
@@ -168,7 +168,7 @@ export function Content() {
 
   const [layout, setLayout] = useQueryStore('layout', 'c');
 
-  const [spaceId, setSpaceId] = useState();
+  const [spaceId, setSpaceId] = useState<any>();
   const [containerId, setContainerId] = useState();
 
   return (
@@ -177,7 +177,7 @@ export function Content() {
                       "nav main"`}
       gridTemplateRows={'3em 1fr'}
       gridTemplateColumns={'3em 1fr'}
-      h='100%' w="100%" position="fixed" l="0%" t="0%"
+      h='100%' w="100%" position="fixed" left="0%" top="0%"
       color='blackAlpha.700'
       fontWeight='bold'
     >
@@ -209,7 +209,7 @@ export function Content() {
               onClick={id => setSpaceId(id)} isActive={spaceId === 5173}
             />
           </Box>
-          <Box flex='1' align="right">
+          <Box flex='1' textAlign="right">
             <Tab
               id={452} name='allowUsersInsertSafe' type='Rule' icon='🔥'
               onClick={id => setSpaceId(id)} isActive={spaceId === 452}

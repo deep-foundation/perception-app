@@ -1,5 +1,5 @@
 import { Box, Button, Card, CardBody, CardHeader, Code, FormControl, FormLabel, HStack, Heading, Input, SimpleGrid } from "@chakra-ui/react";
-import { AutoGuest } from "@deep-foundation/deepcase/imports/auto-guest";
+import { AutoGuest } from "@deep-foundation/perception-imports/imports/auto-guest";
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
