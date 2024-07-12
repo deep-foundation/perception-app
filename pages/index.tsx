@@ -14,7 +14,7 @@ import { useQueryStore } from '@deep-foundation/store/query';
 import { useTranslation } from 'next-i18next';
 import getConfig from 'next/config';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
 import { GrUserAdmin } from "react-icons/gr";
 import pckg from '../package.json';
@@ -97,15 +97,26 @@ export const LayoutButton = ({
 
 export function Status() {
   const deep = useDeep();
-  // const status = deep.client.useApolloNetworkStatus();
-  const status = {}
+  return <>
+    {deep ? <StatusWithDeep/> : <CircularProgress
+      size="1em" isIndeterminate={false} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
+    />}
+  </>;
+}
+
+export const StatusWithDeep = memo(function StatusWithDeep() {
+  const deep = useDeep();
+  const status = deep?.client?.useApolloNetworkStatus();
   console.log('status', status);
   return <>
     <CircularProgress
-      size="1em" isIndeterminate={false} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
+      size="1em" isIndeterminate={!!status.numPendingQueries} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
     />
+    <Text size="xxs" position='absolute' top='0.5em' right='0.5em'>
+      {status.numPendingQueries}
+    </Text>
   </>;
-}
+}, () => true);
 
 export function Auth() {
   const deep = useDeep();
