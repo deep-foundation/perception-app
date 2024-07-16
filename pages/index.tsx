@@ -192,7 +192,7 @@ export function Content() {
   if (typeof(window) === 'object') window.deep = deep;
   console.log('deep', deep);
 
-  const [layout, setLayout] = useQueryStore('layout', 'c');
+  const [layout, setLayout] = useQueryStore('layout', 't');
 
   const [spaceId, setSpaceId] = useState<any>();
   const [containerId, setContainerId] = useState();
@@ -247,7 +247,7 @@ export function Content() {
       <GridItem area={'nav'} zIndex={1} position="relative" h="100%">
         <LayoutButton isActive={layout === 'c'} id={'c'} name={'c'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'g'} id={'g'} name={'g'} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 't'} id={'t'} name={'t'} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 't'} id={'t'} name={'🎄'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'f'} id={'f'} name={'f'} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 'o'} id={'o'} name={'o'} onClick={id => setLayout(id)}/>
         <Button w='3em' h='3em'>+</Button>

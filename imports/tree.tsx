@@ -129,7 +129,6 @@ export const Level = memo(function Level({
   useEffect(() => {
     levelsRefs.current[i] = levelRef;
   }, []);
-  console.log('level active', active, `(${i})`);
   const mapped = useMemo(() => (links || []).map((l, ii) => <Item
     key={l.id} link={l} isActive={ii === active?.[1] && active?.[2] === 'current'}
     address={[i,ii, 'current']}
@@ -157,10 +156,7 @@ export const Level = memo(function Level({
           level = [];
           level.link = rel;
         }
-        setList(l => {
-          console.log('jump', rel, [...l.slice(0, i+1), level])
-          return [...l.slice(0, i+1), level];
-        });
+        setList(l => [...l.slice(0, i+1), level]);
       }
     }
   }, [active, link]);
@@ -170,7 +166,6 @@ export const Level = memo(function Level({
     borderRight='1px solid' borderRightColor='deepColor'
     overflowY='scroll'
   >
-    {typeof(links?.query)}
     {!!link?.id && !links?.query && <Loader linkId={link.id} onLoaded={onLoaded}/>}
     {!!links?.query && <Loader query={links.query} onLoaded={onLoaded}/>}
     {!!link && <Box borderBottom='1px solid' borderBottomColor='deepColor'>
@@ -262,14 +257,9 @@ export const TreeView = memo(function TreeView({
   setList: Dispatch<SetStateAction<any[]>>;
 }) {
   const [active, setActive] = useState<[number, number, NavDirection]>([0, 0, 'current']);
-  console.log('treeview active', active);
   const activeRef = useRef(active); activeRef.current = active;
   const listRef = useRef(list); listRef.current = list;
-  const _setActive = (v) => {
-    console.log('_setActive', v);
-    return setActive(v);
-  };
-  const setActiveRef = useRef(_setActive); setActiveRef.current = _setActive;
+  const setActiveRef = useRef(setActive); setActiveRef.current = setActive;
   activeRef.current = active;
   const [mem, setMem] = useState<number[]>([]);
   const memRef = useRef(mem); memRef.current = mem;
@@ -277,7 +267,7 @@ export const TreeView = memo(function TreeView({
     setMem([...mem.slice(0, i), v, ...mem.slice(i+1)]);
   }, [mem]);
   const setActiveOne = useCallback((a: [number, number, NavDirection]) => {
-    _setActive(a);
+    setActive(a);
     const list = listRef.current;
     const link = list[a[0]][a[1]] || list[a[0]].link 
     if (link) {;
@@ -293,7 +283,6 @@ export const TreeView = memo(function TreeView({
     const nextNav = navs[a[2]].up.name;
     const dir = navs[a[2]].map.down;
     const n: any = a[2] === 'current' && a[1] > 0 ? [a[0], a[1] - 1, 'current'] : [a[0], a[1], nextNav];
-    console.log('up', n, nextNav, dir, 'list', list, 'active', active);
     const l: IListItem = []; l.link = list[n[0]][n[1]];
     setMemOne(n[0], n[1]);
     if (l.link) setList([...list.slice(0, a[0] + 1), l]);
@@ -307,12 +296,10 @@ export const TreeView = memo(function TreeView({
     const nextNav = navs[a[2]].down.name;
     const dir = navs[a[2]].map.down;
     const n: any = navs[a[2]].name !== 'current' && dir === 'current' ? (list[a[0]]?.length ? [a[0], 0, 'current'] : a) : a[2] === 'current' && list[a[0]]?.length - 1 > a[1] ? [a[0], a[1]+1, nextNav] : [a[0], a[1], nextNav];
-    console.log('down', n, nextNav, dir, 'list', list, 'active', active);
     const l: IListItem = []; l.link = list[n[0]][n[1]];
     setMemOne(n[0], n[1]);
     if (l.link) setList([...list.slice(0, a[0] + 1), l]);
     setActive(n);
-    console.log('setActive down', n);
   }, []);
   useHotkeys('right', async e => {
     const list = listRef.current;
@@ -340,7 +327,6 @@ export const TreeView = memo(function TreeView({
     const nextNav = navs[a[2]].left.name;
     const dir = navs[a[2]].map.left;
     const n: any = (a[2] === 'current' || dir === 'prev') && na?.length ? [ma, p, 'current'] : [a[0], a[1], nextNav];
-    console.log('left', n, nextNav, dir, 'list', list, 'active', active);
     setMemOne(n[0], n[1]);
     setActive(n);
   }, []);
@@ -353,10 +339,7 @@ export const TreeView = memo(function TreeView({
     }
   }, []);
   useEffect(() => {
-    if (mem.length > list.length) {
-      setMem(mem.slice(0, list.length - 1));
-      console.log('list to mem');
-    }
+    if (mem.length > list.length) setMem(mem.slice(0, list.length - 1));
   }, [list, mem]);
   const levelsRefs = useRef([]);
   const mapped = useMemo(() => list.map((l, i) => {
@@ -417,11 +400,7 @@ export const Loader = memo(function Loader({
 
 export const Tree = memo(function Tree() {
   const deep = useDeep();
-  const [list, _setList] = useState([]);
-  const setList = (v) => {
-    console.log('setList', v);
-    _setList(v);
-  }
+  const [list, setList] = useState([]);
   const onLoaded = useCallback((links) => setList(list => [links, ...list.slice(1)]), []);
   return <>
     <Loader query={{
