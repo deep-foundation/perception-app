@@ -14,7 +14,7 @@ import { useQueryStore } from '@deep-foundation/store/query';
 import { useTranslation } from 'next-i18next';
 import getConfig from 'next/config';
 import { useRouter } from 'next/router';
-import { memo, useEffect, useState } from 'react';
+import { LegacyRef, memo, useCallback, useEffect, useState } from 'react';
 import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
 import { GrUserAdmin } from "react-icons/gr";
 import pckg from '../package.json';
@@ -27,6 +27,7 @@ import { useTokenController } from '@deep-foundation/deeplinks/imports/react-tok
 import { Cyto } from '../imports/cyto.tsx';
 import { Tree } from '../imports/tree.tsx';
 import { LinkButton } from '../imports/link.tsx';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -108,7 +109,6 @@ export const StatusWithDeep = memo(function StatusWithDeep() {
   const deep = useDeep();
   // @ts-ignore
   const status = deep?.client?.useApolloNetworkStatus();
-  console.log('status', status);
   return <>
     <CircularProgress
       size="1em" isIndeterminate={!!status.numPendingQueries} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
@@ -125,6 +125,16 @@ export function Auth() {
   const [token, setToken] = useTokenController();
   const [_path, _setPath] = useState('');
   const [_token, _setToken] = useState('');
+
+  useEffect(() => {
+    if (path) _setPath(path);
+    if (token) _setToken(token);
+  }, [path, token]);
+
+  const enter = useCallback(() => {
+    setPath(_path);
+    setToken(_token);
+  }, [_path, _token]);
 
   const [canAdmin, setCanAdmin] = useState(false);
 
@@ -149,19 +159,16 @@ export function Auth() {
       bg="deepBg"
     >
       <Button  w="3em" h="3em" onClick={() => {
-        setPath(''); _setPath('');
-        setToken(''); _setToken('');
+        setPath('');
+        setToken('');
       }}>
         <IoExitOutline/>
       </Button>
       <Box p={1} display="inline-flex">
-        <Input ml={'1em'} value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='10em' size='sm'/>
-        <Input ml={'1em'} type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='10em' size='sm'/>
+        <Input ml={'1em'} value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='10em' size='sm' onKeyDown={e => e.key === 'Enter' && enter()}/>
+        <Input ml={'1em'} type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='10em' size='sm' onKeyDown={e => e.key === 'Enter' && enter()}/>
       </Box>
-      <Button variant="active" w="3em" h="3em" onClick={() => {
-        setPath(_path); _setPath('');
-        setToken(_token); _setToken('');
-      }}>
+      <Button variant="active" w="3em" h="3em" onClick={enter}>
         <IoEnterOutline/>
       </Button>
       {canAdmin && <Button w="3em" h="3em" onClick={() => {
@@ -257,11 +264,11 @@ export function Content() {
         {layout === 'c' && <Box w='100%' h='100%'>
         </Box>}
         {layout === 'g' && <Box w='100%' h='100%'>
-          <Loader/>
+          {!!deep && <Loader/>}
           <Cyto/>
         </Box>}
         {layout === 't' && <Box w='100%' h='100%'>
-          <Tree/>
+          {!!deep && <Tree/>}
         </Box>}
         {layout === 'f' && <Box w='100%' h='100%' bg='pink'>
         </Box>}

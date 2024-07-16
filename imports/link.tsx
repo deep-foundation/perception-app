@@ -28,7 +28,7 @@ export const LinkButton = ({
     {...props}
   >
     {icon} <Box textAlign='left' pl='0.5em'>
-      <Box fontSize="sm">{name || type}</Box>
+      {!!((name) || (type)) && <Box fontSize="sm">{name || type}</Box>}
       <Box fontSize="xxs">{name ? type : ''} {id}</Box>
     </Box>
   </Button>;

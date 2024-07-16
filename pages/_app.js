@@ -1,3 +1,4 @@
+import '../imports/style.css';
 import { appWithTranslation } from 'next-i18next';
 import { Provider } from '../src/provider';
 import c from 'crypto';
