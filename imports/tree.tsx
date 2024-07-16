@@ -244,7 +244,7 @@ export const Level = memo(function Level({
           <Text pr={1}>≤</Text> down
         </Button>
       </SimpleGrid>
-      <SimpleGrid columns={1}>
+      {false && <SimpleGrid columns={1}>
         <Button
           ref={active?.[2] === 'current' ? ref : undefined}
           variant={active?.[2] === 'contains' ? 'active' : undefined} justifyContent='center'
@@ -252,7 +252,7 @@ export const Level = memo(function Level({
         >
           <Text pr={1}>🗂️</Text> contains
         </Button>
-      </SimpleGrid>
+      </SimpleGrid>}
     </Box>}
     {mapped}
   </Box>
