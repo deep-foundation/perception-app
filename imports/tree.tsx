@@ -62,10 +62,12 @@ export const Item = memo(function Item({
   link,
   isActive,
   address,
+  onEnter,
 }: {
   link: Link<Id> ;
   isActive?: boolean;
   address?: [number, number, string];
+  onEnter?: onEnterI;
 }) {
   const deep = useDeep();
   const ref = useRef<any>();
@@ -78,6 +80,7 @@ export const Item = memo(function Item({
   const [name, setName] = useState(`${deep.nameLocal(link.id)}`);
   const enter = useCallback(() => {
     if (!isActive) return;
+    if (onEnter) return onEnter(link);
     const contain = link?.inByType[deep.idLocal('@deep-foundation/core', 'Contain')]?.[0];
     if (contain) {
       if (!!rename) {
@@ -114,13 +117,15 @@ export const Level = memo(function Level({
   setList,
   i,
   levelsRefs,
+  onEnter,
 }: {
   link?: Link<Id>;
   links?: IListItem;
   active?: [number, number, string];
   setList: Dispatch<SetStateAction<any[]>>;
   i: number;
-  levelsRefs?: { current: any[] }
+  levelsRefs?: { current: any[] };
+  onEnter?: onEnterI;
 }) {
   const deep = useDeep();
   const setActive = useContext(SetActiveContext);
@@ -130,7 +135,7 @@ export const Level = memo(function Level({
     levelsRefs.current[i] = levelRef;
   }, []);
   const mapped = useMemo(() => (links || []).map((l, ii) => <Item
-    key={l.id} link={l} isActive={ii === active?.[1] && active?.[2] === 'current'}
+    key={l.id} link={l} isActive={ii === active?.[1] && active?.[2] === 'current'} onEnter={onEnter} 
     address={[i,ii, 'current']}
   />), [links, active]);
   const onLoaded = useCallback((results) => setList((list) => {
@@ -165,6 +170,10 @@ export const Level = memo(function Level({
     minW='25em' w='25em' h='100%'
     borderRight='1px solid' borderRightColor='deepColor'
     overflowY='scroll'
+    onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }}
   >
     {!!link?.id && !links?.query && <Loader linkId={link.id} onLoaded={onLoaded}/>}
     {!!links?.query && <Loader query={links.query} onLoaded={onLoaded}/>}
@@ -235,6 +244,15 @@ export const Level = memo(function Level({
           <Text pr={1}>≤</Text> down
         </Button>
       </SimpleGrid>
+      <SimpleGrid columns={1}>
+        <Button
+          ref={active?.[2] === 'current' ? ref : undefined}
+          variant={active?.[2] === 'contains' ? 'active' : undefined} justifyContent='center'
+          onClick={() => jump('contains')}
+        >
+          <Text pr={1}>🗂️</Text> contains
+        </Button>
+      </SimpleGrid>
     </Box>}
     {mapped}
   </Box>
@@ -252,9 +270,15 @@ interface IList extends Array<IListItem> {
 export const TreeView = memo(function TreeView({
   list,
   setList,
+  onEnter,
+  onChange,
+  autoFocus=false,
 }: {
   list: IList;
   setList: Dispatch<SetStateAction<any[]>>;
+  onEnter?: onEnterI;
+  onChange?: onChangeI;
+  autoFocus?: boolean;
 }) {
   const [active, setActive] = useState<[number, number, NavDirection]>([0, 0, 'current']);
   const activeRef = useRef(active); activeRef.current = active;
@@ -275,67 +299,70 @@ export const TreeView = memo(function TreeView({
       if (l.link) setList([...list.slice(0, a[0] + 1), l]);
     }
   }, [mem]);
-  useHotkeys('up', async e => {
-    const list = listRef.current;
-    const mem = memRef.current;
-    const setActive = setActiveOne;
-    const a = activeRef.current;
-    const nextNav = navs[a[2]].up.name;
-    const dir = navs[a[2]].map.down;
-    const n: any = a[2] === 'current' && a[1] > 0 ? [a[0], a[1] - 1, 'current'] : [a[0], a[1], nextNav];
-    const l: IListItem = []; l.link = list[n[0]][n[1]];
-    setMemOne(n[0], n[1]);
-    if (l.link) setList([...list.slice(0, a[0] + 1), l]);
-    setActive(n);
-  }, []);
-  useHotkeys('down', async e => {
-    const list = listRef.current;
-    const mem = memRef.current;
-    const setActive = setActiveOne;
-    const a = activeRef.current;
-    const nextNav = navs[a[2]].down.name;
-    const dir = navs[a[2]].map.down;
-    const n: any = navs[a[2]].name !== 'current' && dir === 'current' ? (list[a[0]]?.length ? [a[0], 0, 'current'] : a) : a[2] === 'current' && list[a[0]]?.length - 1 > a[1] ? [a[0], a[1]+1, nextNav] : [a[0], a[1], nextNav];
-    const l: IListItem = []; l.link = list[n[0]][n[1]];
-    setMemOne(n[0], n[1]);
-    if (l.link) setList([...list.slice(0, a[0] + 1), l]);
-    setActive(n);
-  }, []);
-  useHotkeys('right', async e => {
-    const list = listRef.current;
-    const mem = memRef.current;
-    const setActive = setActiveOne;
-    const a = activeRef.current;
-    const ma = a[0] + 1;
-    const na = list[ma];
-    const p = typeof(mem[ma]) === 'number' ? mem[ma] : 0;
-    const nextNav = navs[a[2]].right.name;
-    const dir = navs[a[2]].map.right;
-    const n: any = (a[2] === 'current' || dir === 'next') && na ? na?.length ? [ma, p, 'current'] : [ma, p, 'type'] : [a[0], a[1], nextNav];
-    setMemOne(n[0], n[1]);
-    setActive(n);
-  }, []);
-  useHotkeys('left', async e => {
-    const list = listRef.current;
-    const mem = memRef.current;
-    const setActive = setActiveOne;
-    const a = activeRef.current;
-    const ma = a[0] - 1;
-    const na = list[ma];
-    if (ma < 0 || !na) return;
-    const p = typeof(mem[ma]) === 'number' ? mem[ma] : na?.[a[1]] ? a[1] : na.length - 1;
-    const nextNav = navs[a[2]].left.name;
-    const dir = navs[a[2]].map.left;
-    const n: any = (a[2] === 'current' || dir === 'prev') && na?.length ? [ma, p, 'current'] : [a[0], a[1], nextNav];
-    setMemOne(n[0], n[1]);
-    setActive(n);
-  }, []);
-  useHotkeys('space', async e => {
-    const a = activeRef.current;
-    const ref = levelsRefs.current[a?.[1]];
-    if (ref) {
-      setActiveOne([a?.[0] + 1, 0, 'type']);
-      levelsRefs?.current?.[a?.[0] + 1]?.scrollIntoView({block: "center", inline: "nearest"});
+  const hotkeyRef = useHotkeys('up,down,right,left,space', async (e, h) => {
+    if (h.keys.length > 1) return;
+    if (h.keys[0] === 'up') {
+      const list = listRef.current;
+      const mem = memRef.current;
+      const setActive = setActiveOne;
+      const a = activeRef.current;
+      const nextNav = navs[a[2]].up.name;
+      const dir = navs[a[2]].map.down;
+      const n: any = a[2] === 'current' && a[1] > 0 ? [a[0], a[1] - 1, 'current'] : [a[0], a[1], nextNav];
+      const l: IListItem = []; l.link = list[n[0]][n[1]];
+      setMemOne(n[0], n[1]);
+      if (l.link) setList([...list.slice(0, a[0] + 1), l]);
+      setActive(n);
+    }
+    if (h.keys[0] === 'down') {
+      const list = listRef.current;
+      const mem = memRef.current;
+      const setActive = setActiveOne;
+      const a = activeRef.current;
+      const nextNav = navs[a[2]].down.name;
+      const dir = navs[a[2]].map.down;
+      const n: any = navs[a[2]].name !== 'current' && dir === 'current' ? (list[a[0]]?.length ? [a[0], 0, 'current'] : a) : a[2] === 'current' && list[a[0]]?.length - 1 > a[1] ? [a[0], a[1]+1, nextNav] : [a[0], a[1], nextNav];
+      const l: IListItem = []; l.link = list[n[0]][n[1]];
+      setMemOne(n[0], n[1]);
+      if (l.link) setList([...list.slice(0, a[0] + 1), l]);
+      setActive(n);
+    }
+    if (h.keys[0] === 'right') {
+      const list = listRef.current;
+      const mem = memRef.current;
+      const setActive = setActiveOne;
+      const a = activeRef.current;
+      const ma = a[0] + 1;
+      const na = list[ma];
+      const p = typeof(mem[ma]) === 'number' ? mem[ma] : 0;
+      const nextNav = navs[a[2]].right.name;
+      const dir = navs[a[2]].map.right;
+      const n: any = (a[2] === 'current' || dir === 'next') && na ? na?.length ? [ma, p, 'current'] : [ma, p, 'type'] : [a[0], a[1], nextNav];
+      setMemOne(n[0], n[1]);
+      setActive(n);
+    }
+    if (h.keys[0] === 'left') {
+      const list = listRef.current;
+      const mem = memRef.current;
+      const setActive = setActiveOne;
+      const a = activeRef.current;
+      const ma = a[0] - 1;
+      const na = list[ma];
+      if (ma < 0 || !na) return;
+      const p = typeof(mem[ma]) === 'number' ? mem[ma] : na?.[a[1]] ? a[1] : na.length - 1;
+      const nextNav = navs[a[2]].left.name;
+      const dir = navs[a[2]].map.left;
+      const n: any = (a[2] === 'current' || dir === 'prev') && na?.length ? [ma, p, 'current'] : [a[0], a[1], nextNav];
+      setMemOne(n[0], n[1]);
+      setActive(n);
+    }
+    if (h.keys[0] === 'space') {
+      const a = activeRef.current;
+      const ref = levelsRefs.current[a?.[1]];
+      if (ref) {
+        setActiveOne([a?.[0] + 1, 0, 'type']);
+        levelsRefs?.current?.[a?.[0] + 1]?.scrollIntoView && levelsRefs?.current?.[a?.[0] + 1]?.scrollIntoView({block: "center", inline: "nearest"});
+      }
     }
   }, []);
   useEffect(() => {
@@ -343,12 +370,18 @@ export const TreeView = memo(function TreeView({
   }, [list, mem]);
   const levelsRefs = useRef([]);
   const mapped = useMemo(() => list.map((l, i) => {
-    return <Level key={`${l?.link?.id}-${JSON.stringify(l?.query)}-${i}`} levelsRefs={levelsRefs} links={l} link={l?.link} active={active[0] === i ? active : undefined} setList={setList} i={i}/>
+    return <Level key={`${l?.link?.id}-${JSON.stringify(l?.query)}-${i}`} levelsRefs={levelsRefs} links={l} link={l?.link} active={active[0] === i ? active : undefined} setList={setList} i={i} onEnter={onEnter}/>
   }), [list, active, JSON.stringify(active)]);
+  useEffect(() => {
+    const list: any = listRef.current; const a = active;
+    if (onChange) onChange(list?.[a[0]]?.[a[1]] as Link<Id>, active);
+  }, [active]);
   return <SetActiveContext.Provider value={setActiveOne}>
     <HStack
+      ref={hotkeyRef as any}
       position="absolute" left='0' top='0' right='0' bottom='0'
       overflowX='scroll' overflowY='hidden'
+      autoFocus={autoFocus}
     >
       {mapped}
     </HStack>
@@ -398,7 +431,18 @@ export const Loader = memo(function Loader({
   return null;
 }, () => true);
 
-export const Tree = memo(function Tree() {
+type onEnterI = (link: Link<Id>) => void;
+type onChangeI = (link: Link<Id>, path: [number, number, string]) => void;
+
+export const Tree = memo(function Tree({
+  onEnter,
+  onChange,
+  autoFocus = false,
+}: {
+  onEnter?: onEnterI;
+  onChange?: onChangeI;
+  autoFocus?: boolean;
+}) {
   const deep = useDeep();
   const [list, setList] = useState([]);
   const onLoaded = useCallback((links) => setList(list => [links, ...list.slice(1)]), []);
@@ -409,6 +453,6 @@ export const Tree = memo(function Tree() {
         { type_id: deep.idLocal('@deep-foundation/core', 'Package'), },
       ],
     }} onLoaded={onLoaded}/>
-    <TreeView list={list} setList={setList}/>
+    <TreeView list={list} setList={setList} onEnter={onEnter} onChange={onChange} autoFocus={autoFocus}/>
   </>;
 }, () => true);

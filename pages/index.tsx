@@ -28,6 +28,7 @@ import { Cyto } from '../imports/cyto.tsx';
 import { Tree } from '../imports/tree.tsx';
 import { LinkButton } from '../imports/link.tsx';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { FinderPopover } from '../imports/finder.tsx';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -226,14 +227,15 @@ export function Content() {
               id={2473} name='Layout' type='TSX' icon='📑'
               onClick={id => setSpaceId(id)} isActive={spaceId === 2473}
             />
-            <Tab
-              id={4273} name='Menu' type='TSX' icon='📑'
-              onClick={id => setSpaceId(id)} isActive={spaceId === 4273}
-            />
-            <Tab
-              id={5173} name='Grid' type='TSX' icon='📑'
-              onClick={id => setSpaceId(id)} isActive={spaceId === 5173}
-            />
+            {!!deep && <FinderPopover
+              onSubmit={async (link) => {
+                console.log(link);
+              }}
+            >
+              <Button
+                w='3em' h='3em'
+              >🪬</Button>
+            </FinderPopover>}
           </Box>
           <Box flex='1' textAlign="right">
             <Tab
