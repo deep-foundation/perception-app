@@ -273,12 +273,14 @@ export const TreeView = memo(function TreeView({
   onEnter,
   onChange,
   autoFocus=false,
+  onescreen=false,
 }: {
   list: IList;
   setList: Dispatch<SetStateAction<any[]>>;
   onEnter?: onEnterI;
   onChange?: onChangeI;
   autoFocus?: boolean;
+  onescreen?: boolean;
 }) {
   const [active, setActive] = useState<[number, number, NavDirection]>([0, 0, 'current']);
   const activeRef = useRef(active); activeRef.current = active;
@@ -376,11 +378,16 @@ export const TreeView = memo(function TreeView({
     const list: any = listRef.current; const a = active;
     if (onChange) onChange(list?.[a[0]]?.[a[1]] as Link<Id>, active);
   }, [active]);
+  useEffect(() => {
+    if (onescreen) {
+      levelsRefs?.current?.[active?.[0]]?.scrollIntoView && levelsRefs?.current?.[active?.[0]]?.scrollIntoView({block: "center", inline: "nearest"});
+    }
+  }, [active, onescreen]);
   return <SetActiveContext.Provider value={setActiveOne}>
     <HStack
       ref={hotkeyRef as any}
       position="absolute" left='0' top='0' right='0' bottom='0'
-      overflowX='scroll' overflowY='hidden'
+      overflowX={onescreen ? 'hidden' : 'scroll'} overflowY='hidden'
       autoFocus={autoFocus}
     >
       {mapped}
@@ -438,10 +445,12 @@ export const Tree = memo(function Tree({
   onEnter,
   onChange,
   autoFocus = false,
+  onescreen = false,
 }: {
   onEnter?: onEnterI;
   onChange?: onChangeI;
   autoFocus?: boolean;
+  onescreen?: boolean;
 }) {
   const deep = useDeep();
   const [list, setList] = useState([]);
@@ -453,6 +462,6 @@ export const Tree = memo(function Tree({
         { type_id: deep.idLocal('@deep-foundation/core', 'Package'), },
       ],
     }} onLoaded={onLoaded}/>
-    <TreeView list={list} setList={setList} onEnter={onEnter} onChange={onChange} autoFocus={autoFocus}/>
+    <TreeView list={list} setList={setList} onEnter={onEnter} onChange={onChange} autoFocus={autoFocus} onescreen={onescreen}/>
   </>;
 }, () => true);

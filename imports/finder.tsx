@@ -48,6 +48,7 @@ export const FinderPopover = React.memo(function FinderPopover({
             onSubmit && onSubmit(l);
           }}
           autoFocus
+          onescreen
         />}
         <SlideFade in={!!selectedLink} offsetX='-0.5rem' style={{position: 'absolute', bottom: 0, right: '-2.8rem'}}>
           <IconButton
