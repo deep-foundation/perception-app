@@ -173,11 +173,11 @@ export const Level = memo(function Level({
       <SimpleGrid columns={3}>
         <Button
           ref={active?.[2] === 'from' ? ref : undefined}
-          variant={!link?.['from_id'] ? 'disabled' : active?.[2] === 'from' ? 'active' : undefined} textAlign='left'
+          variant={!link?.['from_id'] ? 'disabled' : active?.[2] === 'from' ? 'active' : undefined} justifyContent='right'
           onClick={() => jump('from')}
           disabled={!link?.from_id}
         >
-          <Text pr={1}>⊢</Text> from
+          from <Text pl={1}>⊢</Text>
         </Button>
         <Button
           ref={active?.[2] === 'type' ? ref : undefined}
@@ -189,17 +189,17 @@ export const Level = memo(function Level({
         </Button>
         <Button
           ref={active?.[2] === 'to' ? ref : undefined}
-          variant={!link?.['to_id'] ? 'disabled' : active?.[2] === 'to' ? 'active' : undefined} textAlign='right'
+          variant={!link?.['to_id'] ? 'disabled' : active?.[2] === 'to' ? 'active' : undefined} justifyContent='left'
           onClick={() => jump('to')}
           disabled={!link?.to_id}
         >
-          to <Text pl={1}>{'>'}</Text>
+          <Text pr={1}>{'>'}</Text> to
         </Button>
       </SimpleGrid>
       <SimpleGrid columns={3}>
         <Button
           ref={active?.[2] === 'out' ? ref : undefined}
-          variant={active?.[2] === 'out' ? 'active' : undefined} textAlign='left'
+          variant={active?.[2] === 'out' ? 'active' : undefined} justifyContent='left'
           onClick={() => jump('out')}
         >
           <Text rotate='180deg' pr={1}>⊨</Text> out
@@ -213,23 +213,23 @@ export const Level = memo(function Level({
         </Button>
         <Button
           ref={active?.[2] === 'in' ? ref : undefined}
-          variant={active?.[2] === 'in' ? 'active' : undefined} textAlign='right'
+          variant={active?.[2] === 'in' ? 'active' : undefined} justifyContent='right'
           onClick={() => jump('in')}
         >
-          <Text pr={1}>≪</Text> in
+          in <Text pl={1}>≪</Text>
         </Button>
       </SimpleGrid>
       <SimpleGrid columns={2}>
         <Button
           ref={active?.[2] === 'up' ? ref : undefined}
-          variant={active?.[2] === 'up' ? 'active' : undefined} textAlign='left'
+          variant={active?.[2] === 'up' ? 'active' : undefined} justifyContent='center'
           onClick={() => jump('up')}
         >
           <Text pr={1}>≥</Text> up
         </Button>
         <Button
           ref={active?.[2] === 'down' ? ref : undefined}
-          variant={active?.[2] === 'down' ? 'active' : undefined} textAlign='right'
+          variant={active?.[2] === 'down' ? 'active' : undefined} justifyContent='center'
           onClick={() => jump('down')}
         >
           <Text pr={1}>≤</Text> down
