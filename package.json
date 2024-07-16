@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -34,6 +34,7 @@
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/theme-tools": "^2.1.2",
     "@deep-foundation/perception-imports": "^0.0.7",
+    "@monaco-editor/react": "^4.6.0",
     "axios-hooks": "^5.0.2",
     "base64-blob": "^1.4.1",
     "capacitor-voice-recorder": "^5.0.0",
