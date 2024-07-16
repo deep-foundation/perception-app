@@ -5,6 +5,10 @@ import {
   Input,
   SimpleGrid,
   Text,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  EditableTextarea,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
@@ -12,8 +16,10 @@ import { createContext, Dispatch, DOMElement, memo, SetStateAction, useCallback,
 import { useHotkeys } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
+import { MdEdit, MdSaveAlt } from "react-icons/md";
+import { Editor } from './editor';
 
-type NavDirection =  'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'prev' | 'next' | 'current';
+type NavDirection =  'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'prev' | 'next' | 'current' | 'value';
 
 interface NavMap {
   left: NavDirection; up: NavDirection; right: NavDirection; down: NavDirection;
@@ -41,9 +47,10 @@ nav('to', { left: 'type', up: 'to', right: 'next', down: 'in' });
 nav('out', { left: 'prev', up: 'from', right: 'typed', down: 'up' });
 nav('typed', { left: 'out', up: 'type', right: 'in', down: 'up' });
 nav('in', { left: 'typed', up: 'to', right: 'next', down: 'down' });
-nav('up', { left: 'prev', up: 'out', right: 'down', down: 'current' });
-nav('down', { left: 'up', up: 'in', right: 'next', down: 'current' });
-nav('current', { left: 'prev', up: 'up', right: 'next', down: 'current' });
+nav('up', { left: 'prev', up: 'out', right: 'down', down: 'value' });
+nav('down', { left: 'up', up: 'in', right: 'next', down: 'value' });
+nav('value', { left: 'prev', up: 'up', right: 'next', down: 'current' });
+nav('current', { left: 'prev', up: 'value', right: 'next', down: 'current' });
 navs.next = navs.current;
 navs.prev = navs.current;
 
@@ -78,8 +85,8 @@ export const Item = memo(function Item({
   const symbol = useMemo(() => link?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value, []);
   const [rename, setRename] = useState(false);
   const [name, setName] = useState(`${deep.nameLocal(link.id)}`);
-  const enter = useCallback(() => {
-    if (!isActive) return;
+  const enter = useCallback((force?: boolean) => {
+    if (!isActive && !force) return;
     if (onEnter) return onEnter(link);
     const contain = link?.inByType[deep.idLocal('@deep-foundation/core', 'Contain')]?.[0];
     if (contain) {
@@ -90,15 +97,25 @@ export const Item = memo(function Item({
       setRename(!rename);
     }
   }, [isActive, rename, name]);
-  useHotkeys('enter', enter, [isActive, rename, name]);
-  return rename ? <Input
-    ref={ref}
-    value={name}
-    onChange={e => setName(e.target.value)}
-    onKeyDown={e => e.key === 'Enter' && enter()}
-    variant={isActive ? 'active' : undefined}
-    autoFocus
-  /> : <LinkButton
+  useHotkeys('enter', () => enter(false), [isActive, rename, name]);
+  return rename ? <Box position="relative" role='group'>
+    <Input
+      ref={ref}
+      value={name}
+      onChange={e => setName(e.target.value)}
+      onKeyDown={e => e.key === 'Enter' && enter(true)}
+      variant={'unstyled'}
+      autoFocus h='3em'
+    />
+    <Button
+      w='3em' h='3em' position='absolute' right='0' top='0' zIndex={1}
+      opacity={isActive ? 1 : 0} transition='all 1s ease'
+      _groupHover={{ opacity: 1 }}
+      onClick={() => enter(true)}
+    >
+      <MdSaveAlt/>
+    </Button>
+  </Box> : <LinkButton
     buttonRef={ref}
     id={link.id}
     name={name as string}
@@ -106,11 +123,22 @@ export const Item = memo(function Item({
     isActive={isActive}
     icon={symbol}
     w='100%'
+    role='group'
     onClick={id => address && setActive && setActive(address)}
-  />
+  >
+    <Button
+      w='3em' h='3em' position='absolute' right='0' top='0'
+      opacity={isActive ? 1 : 0} transition='all 1s ease'
+      _groupHover={{ opacity: 1 }}
+      onClick={() => enter(true)}
+    >
+      <MdEdit/>
+    </Button>
+  </LinkButton>
 }, (o, n) => o.isActive == n.isActive && o.link === n.link);
 
 export const Level = memo(function Level({
+  value,
   link,
   links,
   active,
@@ -118,7 +146,9 @@ export const Level = memo(function Level({
   i,
   levelsRefs,
   onEnter,
+  onescreen,
 }: {
+  value?: Link<Id>['value'];
   link?: Link<Id>;
   links?: IListItem;
   active?: [number, number, string];
@@ -126,11 +156,16 @@ export const Level = memo(function Level({
   i: number;
   levelsRefs?: { current: any[] };
   onEnter?: onEnterI;
+  onescreen?: boolean;
 }) {
   const deep = useDeep();
   const setActive = useContext(SetActiveContext);
   const activeRef = useRef(active); activeRef.current = active;
   const levelRef = useRef();
+  const fromSymbol = useMemo(() => link?.from?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value, []);
+  const typeSymbol = useMemo(() => link?.type?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value, []);
+  const toSymbol = useMemo(() => link?.to?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value, []);
+  const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, []);
   useEffect(() => {
     levelsRefs.current[i] = levelRef;
   }, []);
@@ -154,7 +189,11 @@ export const Level = memo(function Level({
       const rel = link[name];
       if (rel) {
         let level: any;
-        if (Array.isArray(rel)) {
+        if (name && link) {
+          level = [];
+          level.link = link;
+          level.value = link?.value
+        } else if (Array.isArray(rel)) {
           level = rel;
           level.query = queries[name](link);
         } else {
@@ -177,38 +216,41 @@ export const Level = memo(function Level({
   >
     {!!link?.id && !links?.query && <Loader linkId={link.id} onLoaded={onLoaded}/>}
     {!!links?.query && <Loader query={links.query} onLoaded={onLoaded}/>}
-    {!!link && <Box borderBottom='1px solid' borderBottomColor='deepColor'>
+    {!!link && <Box borderBottom='1px solid' borderBottomColor='deepColor' overflowX={onescreen ? 'hidden' : 'auto'}>
       <Item link={link}/>
       <SimpleGrid columns={3}>
         <Button
           ref={active?.[2] === 'from' ? ref : undefined}
-          variant={!link?.['from_id'] ? 'disabled' : active?.[2] === 'from' ? 'active' : undefined} justifyContent='right'
+          variant={!link?.['from_id'] ? 'disabled' : active?.[2] === 'from' ? 'active' : undefined} justifyContent='right' textAlign='right'
           onClick={() => jump('from')}
           disabled={!link?.from_id}
-        >
-          from <Text pl={1}>⊢</Text>
-        </Button>
+        ><Box>
+          <Box>from <Text pl={1} display='inline'>⊢</Text></Box>
+          <Box><Text fontSize='xs'>{fromSymbol} {!!link?.from && deep.nameLocal(link.from_id)} {link?.from_id}</Text></Box>
+        </Box></Button>
         <Button
           ref={active?.[2] === 'type' ? ref : undefined}
           variant={!link?.['type_id'] ? 'disabled' : active?.[2] === 'type' ? 'active' : undefined}
           onClick={() => jump('type')}
           disabled={!link?.type_id}
-        >
-          <Text>⇡</Text> type
-        </Button>
+        ><Box>
+          <Box>type <Text display='inline'>⇡</Text></Box>
+          <Box><Text fontSize='xs'>{typeSymbol} {!!link?.type && deep.nameLocal(link.type_id)} {link?.type_id}</Text></Box>
+        </Box></Button>
         <Button
           ref={active?.[2] === 'to' ? ref : undefined}
-          variant={!link?.['to_id'] ? 'disabled' : active?.[2] === 'to' ? 'active' : undefined} justifyContent='left'
+          variant={!link?.['to_id'] ? 'disabled' : active?.[2] === 'to' ? 'active' : undefined} justifyContent='left' textAlign='left'
           onClick={() => jump('to')}
           disabled={!link?.to_id}
-        >
-          <Text pr={1}>{'>'}</Text> to
-        </Button>
+        ><Box>
+          <Box>to <Text pr={1} display='inline'>{'>'}</Text></Box>
+          <Box><Text fontSize='xs'>{toSymbol} {!!link?.to && deep.nameLocal(link.to_id)} {link?.to_id}</Text></Box>
+        </Box></Button>
       </SimpleGrid>
       <SimpleGrid columns={3}>
         <Button
           ref={active?.[2] === 'out' ? ref : undefined}
-          variant={active?.[2] === 'out' ? 'active' : undefined} justifyContent='left'
+          variant={active?.[2] === 'out' ? 'active' : undefined} justifyContent='left' textAlign='left'
           onClick={() => jump('out')}
         >
           <Text rotate='180deg' pr={1}>⊨</Text> out
@@ -222,7 +264,7 @@ export const Level = memo(function Level({
         </Button>
         <Button
           ref={active?.[2] === 'in' ? ref : undefined}
-          variant={active?.[2] === 'in' ? 'active' : undefined} justifyContent='right'
+          variant={active?.[2] === 'in' ? 'active' : undefined} justifyContent='right' textAlign='right'
           onClick={() => jump('in')}
         >
           in <Text pl={1}>≪</Text>
@@ -244,6 +286,37 @@ export const Level = memo(function Level({
           <Text pr={1}>≤</Text> down
         </Button>
       </SimpleGrid>
+      <Box borderBottom='1px solid' borderBottomColor='deepColor'>
+        <SimpleGrid columns={1}>
+          {valueType === deep.idLocal('@deep-foundation/core', 'String') && <>
+            <Button
+              ref={active?.[2] === 'value' ? ref : undefined}
+              variant={active?.[2] === 'value' ? 'active' : undefined} justifyContent='center'
+              onClick={() => jump('value')}
+            >
+              <Text pr={1}>""</Text> string
+            </Button>
+          </>}
+          {valueType === deep.idLocal('@deep-foundation/core', 'Number') && <>
+            <Button
+              ref={active?.[2] === 'value' ? ref : undefined}
+              variant={active?.[2] === 'value' ? 'active' : undefined} justifyContent='center'
+              onClick={() => jump('value')}
+            >
+              <Text pr={1}>{+link?.value?.value}</Text> number
+            </Button>
+          </>}
+          {valueType === deep.idLocal('@deep-foundation/core', 'Object') && <>
+            <Button
+              ref={active?.[2] === 'value' ? ref : undefined}
+              variant={active?.[2] === 'value' ? 'active' : undefined} justifyContent='center'
+              onClick={() => jump('value')}
+            >
+              <Text pr={1}>{`{...}`}</Text> object
+            </Button>
+          </>}
+        </SimpleGrid>
+      </Box>
       {false && <SimpleGrid columns={1}>
         <Button
           ref={active?.[2] === 'current' ? ref : undefined}
@@ -258,11 +331,66 @@ export const Level = memo(function Level({
   </Box>
 }, (o, n) => JSON.stringify(o.active) === JSON.stringify(n.active) && o.links === n.links && o.link === n.link);
 
+export const LevelValue = memo(function LevelValue({
+  link,
+  value,
+  links,
+  active,
+  setList,
+  i,
+  levelsRefs,
+  onEnter,
+  onescreen,
+}: {
+  link?: Link<Id>;
+  value?: Link<Id>['value'];
+  links?: IListItem;
+  active?: [number, number, string];
+  setList: Dispatch<SetStateAction<any[]>>;
+  i: number;
+  levelsRefs?: { current: any[] };
+  onEnter?: onEnterI;
+  onescreen?: boolean;
+}) {
+  const deep = useDeep();
+  const levelRef = useRef();
+  const refEditor = useRef();
+  const [_value, _setValue] = useState(value?.value || '')
+  return <Box
+    ref={levelRef}
+    minW={typeof(value?.value) === 'string' ? '40em' : '25em'} maxW='100vw' h='100%'
+    borderRight='1px solid' borderRightColor='deepColor'
+    overflowY='scroll'
+    onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }}
+  >
+    {typeof(value?.value) === 'string' && <>
+      <Editor
+        refEditor={refEditor}
+        value={_value}
+        onChange={_value => _setValue(_value)}
+        onSave={async value => {
+          await deep.update({ link_id: link?.id }, { value }, { table: 'strings' });
+        }}
+      />
+    </>}
+    {typeof(value?.value) === 'number' && <>
+      <Text as='pre'>{+value?.value}</Text>
+    </>}
+    {typeof(value?.value) === 'object' && <>
+      <Text as='pre'>{JSON.stringify(value?.value, null, 2)}</Text>
+    </>}
+  </Box>
+}, (o, n) => JSON.stringify(o.active) === JSON.stringify(n.active) && o.links === n.links && o.link === n.link);
+
 const SetActiveContext = createContext<Dispatch<SetStateAction<[number, number, string]>>>(() => {});
 
 interface IListItem extends Array<Link<Id>> {
   link?: Link<Id>;
   query?: any;
+  value?: Link<Id>['value'];
 }
 interface IList extends Array<IListItem> {
 }
@@ -351,10 +479,10 @@ export const TreeView = memo(function TreeView({
       const ma = a[0] - 1;
       const na = list[ma];
       if (ma < 0 || !na) return;
-      const p = typeof(mem[ma]) === 'number' ? mem[ma] : na?.[a[1]] ? a[1] : na.length - 1;
+      const p = typeof(mem[ma]) === 'number' ? mem[ma] : na?.[a[1]] ? 0 : na.length - 1;
       const nextNav = navs[a[2]].left.name;
       const dir = navs[a[2]].map.left;
-      const n: any = (a[2] === 'current' || dir === 'prev') && na?.length ? [ma, p, 'current'] : [a[0], a[1], nextNav];
+      const n: any = (a[2] === 'current' || dir === 'prev') && na ? [ma, p, 'current'] : [a[0], a[1], nextNav];
       setMemOne(n[0], n[1]);
       setActive(n);
     }
@@ -372,7 +500,8 @@ export const TreeView = memo(function TreeView({
   }, [list, mem]);
   const levelsRefs = useRef([]);
   const mapped = useMemo(() => list.map((l, i) => {
-    return <Level key={`${l?.link?.id}-${JSON.stringify(l?.query)}-${i}`} levelsRefs={levelsRefs} links={l} link={l?.link} active={active[0] === i ? active : undefined} setList={setList} i={i} onEnter={onEnter}/>
+    const Component = !!l?.value ? LevelValue : Level;
+    return <Component key={`${l?.link?.id}-${JSON.stringify(l?.query)}-${i}`} levelsRefs={levelsRefs} links={l} link={l?.link} value={l?.link?.value} active={active[0] === i ? active : undefined} setList={setList} i={i} onEnter={onEnter} onescreen={onescreen}/>
   }), [list, active, JSON.stringify(active)]);
   useEffect(() => {
     const list: any = listRef.current; const a = active;
@@ -403,6 +532,25 @@ export const Loader = memo(function Loader({
   onLoaded: (links) => void;
 }) {
   const deep = useDeep();
+  const typeQuery = useMemo(() => ({
+    type: {
+      relation: 'type',
+      return: {
+        valuetype: {
+          relation: 'out',
+          type_id: deep.idLocal('@deep-foundation/core', 'Value'),
+        },
+        symbol: {
+          relation: 'in',
+          type_id: deep.idLocal('@deep-foundation/core', 'Symbol'),
+        },
+        names: {
+          relation: 'in',
+          type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+        },
+      },
+    },
+  }), []);
   const { data } = deep.useDeepQuery({
     ...(linkId ? {
       in: {
@@ -415,21 +563,9 @@ export const Loader = memo(function Loader({
         relation: 'in',
         type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
       },
-      from: { relation: 'from' },
-      type: {
-        relation: 'type',
-        return: {
-          symbol: {
-            relation: 'in',
-            type_id: deep.idLocal('@deep-foundation/core', 'Symbol'),
-          },
-          names: {
-            relation: 'in',
-            type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
-          },
-        },
-      },
-      to: { relation: 'to' },
+      from: { relation: 'from', return: { ...typeQuery } },
+      ...typeQuery,
+      to: { relation: 'to', return: { ...typeQuery } },
     },
   });
   useEffect(() => {
@@ -455,6 +591,15 @@ export const Tree = memo(function Tree({
   const deep = useDeep();
   const [list, setList] = useState([]);
   const onLoaded = useCallback((links) => setList(list => [links, ...list.slice(1)]), []);
+  useEffect(() => {
+    if (typeof(window) === 'object') {
+      const tree = list.map(l => ({ link: l.link, value: l.value, links: l }));
+      // @ts-ignore
+      if (!window.tree) console.log('tree', tree);
+      // @ts-ignore
+      window.tree = tree;
+    }
+  }, [list]);
   return <>
     <Loader query={{
       _or: [

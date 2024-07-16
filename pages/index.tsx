@@ -1,34 +1,37 @@
+import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
+  Center,
   CircularProgress,
   Flex,
   Grid,
   GridItem,
   Input,
+  Link,
   Text,
 } from '@chakra-ui/react';
-import { DeepNamespaceProvider, DeepProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
+import { DeepNamespaceProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
 import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
+import { useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
+import { ColorMode } from '@deep-foundation/perception-imports/imports/theme';
 import { useQueryStore } from '@deep-foundation/store/query';
 import { useTranslation } from 'next-i18next';
 import getConfig from 'next/config';
 import { useRouter } from 'next/router';
-import { LegacyRef, memo, useCallback, useEffect, useState } from 'react';
-import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
+import { memo, useCallback, useEffect, useState } from 'react';
 import { GrUserAdmin } from "react-icons/gr";
-import pckg from '../package.json';
-import { i18nGetStaticProps } from '../src/i18n.tsx';
-import { Provider as ProviderSDK, useDeepPath } from '../src/provider.tsx';
-import { ColorMode } from '@deep-foundation/perception-imports/imports/theme';
-import { Loader } from '@deep-foundation/perception-imports/imports/loader';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons';
-import { useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
-import { Cyto } from '../imports/cyto.tsx';
-import { Tree } from '../imports/tree.tsx';
-import { LinkButton } from '../imports/link.tsx';
-import { useHotkeys } from 'react-hotkeys-hook';
+import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
+import { IoMdPersonAdd } from "react-icons/io";
+import { GoWorkflow } from "react-icons/go";
+import { PiGraphBold } from "react-icons/pi";
+import { BsLightningChargeFill } from "react-icons/bs";
+import { BsGrid1X2Fill } from "react-icons/bs";
 import { FinderPopover } from '../imports/finder.tsx';
+import { LinkButton } from '../imports/link.tsx';
+import { Tree } from '../imports/tree.tsx';
+import { i18nGetStaticProps } from '../src/i18n.tsx';
+import { useDeepPath } from '../src/provider.tsx';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -71,7 +74,7 @@ export const LayoutButton = ({
   id, name, isActive, onClick
 }: {
   id: string;
-  name: string;
+  name: any;
   isActive: boolean;
   onClick: (id: string) => void;
 }) => {
@@ -155,7 +158,7 @@ export function Auth() {
     <Box
       _groupHover={{ left: '0%' }}
       boxShadow='dark-lg'
-      position='absolute' left='-30em' bottom='0px' w={canAdmin ? '29em' : '26em'}
+      position='absolute' left='-35em' bottom='0px' w={canAdmin ? '32em' : '29em'}
       transition='all 1s ease' overflow="hidden"
       bg="deepBg"
     >
@@ -177,6 +180,11 @@ export function Auth() {
       }}>
         <GrUserAdmin/>
       </Button>}
+      <Button w="3em" h="3em" onClick={() => {
+        deep.guest();
+      }}>
+        <IoMdPersonAdd/>
+      </Button>
     </Box>
   </Box>;
 }
@@ -189,9 +197,12 @@ export function Content() {
   (global as any).deep = deep;
   (global as any).ml = deep?.minilinks;
 
-  // @ts-ignore
-  if (typeof(window) === 'object') window.deep = deep;
-  console.log('deep', deep);
+  if (typeof(window) === 'object') {
+    // @ts-ignore
+    if (!window.deep) console.log('deep', deep);
+    // @ts-ignore
+    window.deep = deep;
+  }
 
   const [layout, setLayout] = useQueryStore('layout', 't');
 
@@ -247,11 +258,11 @@ export function Content() {
         </Flex>
       </GridItem>
       <GridItem area={'nav'} zIndex={1} position="relative" h="100%">
-        <LayoutButton isActive={layout === 'c'} id={'c'} name={'c'} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'g'} id={'g'} name={'g'} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 'c'} id={'c'} name={<PiGraphBold/>} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 'g'} id={'g'} name={<BsGrid1X2Fill/>} onClick={id => setLayout(id)}/>
         <LayoutButton isActive={layout === 't'} id={'t'} name={'🎄'} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'f'} id={'f'} name={'f'} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'o'} id={'o'} name={'o'} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 'f'} id={'f'} name={<GoWorkflow/>} onClick={id => setLayout(id)}/>
+        <LayoutButton isActive={layout === 'o'} id={'o'} name={<BsLightningChargeFill/>} onClick={id => setLayout(id)}/>
         <Button w='3em' h='3em'>+</Button>
         <ColorMode
           w='3em' h='3em' position="absolute" bottom="6em" left="0px"
@@ -263,17 +274,18 @@ export function Content() {
         <Auth/>
       </GridItem>
       <GridItem area={'main'} overflow="hidden" position="relative">
-        {layout === 'c' && <Box w='100%' h='100%'>
-        </Box>}
-        {layout === 'g' && <Box w='100%' h='100%'>
-          {!!deep && <Loader/>}
-          <Cyto/>
-        </Box>}
+        {layout === 'c' && <Center w='100%' h='100%'>
+          soon, optimized <Link href="https://js.cytoscape.org/">js.cytoscape.org</Link> version here
+        </Center>}
+        {layout === 'g' && <Center w='100%' h='100%'>
+          for example some thing like: <Link href="https://react-grid-layout.github.io/react-grid-layout/examples/11-no-vertical-compact.html">react-grid-layout.github.io</Link>
+        </Center>}
         {layout === 't' && <Box w='100%' h='100%'>
           {!!deep && <Tree/>}
         </Box>}
-        {layout === 'f' && <Box w='100%' h='100%' bg='pink'>
-        </Box>}
+        {layout === 'f' && <Center w='100%' h='100%' bg='pink'>
+          for example some thing like: <Link href="https://reactflow.dev/">reactflow.dev</Link>
+        </Center>}
         {layout === 'o' && <Box w='100%' h='100%'>
           <iframe src='https://openchakra.app/' width='100%' height='100%'></iframe>
         </Box>}
