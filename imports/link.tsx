@@ -23,7 +23,11 @@ export const LinkButton = ({
   return <Button
     ref={buttonRef}
     h='3em' variant={isActive ? 'active' : 'solid'}
-    onClick={() => onClick && onClick(id)}
+    onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      onClick && onClick(id);
+    }}
     justifyContent={'left'}
     {...props}
   >
