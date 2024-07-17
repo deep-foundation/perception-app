@@ -19,7 +19,7 @@ import { useQueryStore } from '@deep-foundation/store/query';
 import { useTranslation } from 'next-i18next';
 import getConfig from 'next/config';
 import { useRouter } from 'next/router';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, StrictMode, useCallback, useEffect, useState } from 'react';
 import { GrUserAdmin } from "react-icons/gr";
 import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
 import { IoMdPersonAdd } from "react-icons/io";
@@ -32,6 +32,7 @@ import { LinkButton } from '../imports/link.tsx';
 import { Tree } from '../imports/tree.tsx';
 import { i18nGetStaticProps } from '../src/i18n.tsx';
 import { useDeepPath } from '../src/provider.tsx';
+import { Mounted } from '../imports/mounted.tsx';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -326,7 +327,9 @@ export default function Page({
           {/* <CyberDeepProvider namespace="cyber"/> */}
           {/* <AutoGuest/> */}
         </>}
-        <Content/>
+        <Mounted>
+          <Content/>
+        </Mounted>
       </MinilinksProvider>
     </DeepNamespaceProvider>
   );
