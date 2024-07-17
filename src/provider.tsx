@@ -22,22 +22,28 @@ export function ProviderCore({
   children: JSX.Element;
 }) {
   const [connection, setConnection] = useDeepPath();
+
+  let options;
+  try {
+    options = {
+      client: "@deep-foundation/deepmemo-app",
+      ...(connection && {
+        path:
+          new URL(connection).host +
+          new URL(connection).pathname +
+          new URL(connection).search +
+          new URL(connection).hash,
+        ssl: new URL(connection).protocol === "https:",
+      }),
+      ws: !!process?.browser,
+    };
+  } catch(e) {}
+
   return (
     <>
-      {!!connection ? (
+      {!!connection && !!options ? (
         <ApolloClientTokenizedProvider
-          options={{
-            client: "@deep-foundation/deepmemo-app",
-            ...(connection && {
-              path:
-                new URL(connection).host +
-                new URL(connection).pathname +
-                new URL(connection).search +
-                new URL(connection).hash,
-              ssl: new URL(connection).protocol === "https:",
-            }),
-            ws: !!process?.browser,
-          }}
+          options={options}
         >
           <DeepProvider>
             {children}
