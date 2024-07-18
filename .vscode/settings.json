@@ -1,3 +1,25 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#73b3e7",
+        "titleBar.activeBackground": "#97b8ed",
+        "titleBar.activeForeground": "#001a42",
+        "activityBar.inactiveForeground": "#005eff", //icon inactive
+    }
 }
+
+// {
+//     "typescript.tsdk": "node_modules/typescript/lib",
+//     "workbench.colorCustomizations": {
+//         "activityBar.background": "#2af7dc",
+//         "titleBar.activeBackground": "#8bf125",
+//         "titleBar.activeForeground": "#f953b7",
+//         "activityBar.activeBorder": "#4f3be6", //icon border left active
+//         "activityBar.activeBackground": "#f6a0ef", //icon background active
+//         "activityBar.border": "#9dff00", //border left
+//         "activityBar.foreground": "#4f3be6", //icons active
+//         "activityBar.inactiveForeground": "#0004ff", //icon inactive
+//         "activityBarBadge.background": "#e63bbe", //icon's badge background
+//         "activityBarBadge.foreground": "#2e4a01", //icon's badge color
+//     }
+// }

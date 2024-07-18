@@ -9,6 +9,7 @@ import {
   EditableInput,
   EditablePreview,
   EditableTextarea,
+  IconButton
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
@@ -19,6 +20,14 @@ import { link } from 'fs';
 import { MdEdit, MdSaveAlt } from "react-icons/md";
 import { Editor } from './editor';
 import isEqual from 'lodash/isEqual';
+import { TypedIcon } from './icons/typed';
+import { DownIcon } from './icons/down';
+import { UpIcon } from './icons/up';
+import { TypeIcon } from './icons/type';
+import { InIcon } from './icons/in';
+import { OutIcon } from './icons/out';
+import { FromIcon } from './icons/from';
+import { ToIcon } from './icons/to';
 
 type NavDirection =  'current' | 'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'value' | 'results' | 'auto';
 
@@ -343,8 +352,9 @@ export const PathItem = memo(function PathItem({
             variant={!link?.['from_id'] ? 'disabled' : p === 'from' ? 'active' : undefined} justifyContent='right' textAlign='right'
             onClick={() => go({ itemIndex: i, position: 'from', active: true })}
             disabled={!link?.from_id}
+            rightIcon={<FromIcon />}
           ><Box>
-            <Box>from <Text pl={1} display='inline'>⊢</Text></Box>
+            <Text>from</Text>
             <Box><Text fontSize='xs'>{symbol(link?.from)} {!!link?.from && deep.nameLocal(link.from_id)} {link?.from_id}</Text></Box>
           </Box></Button>
           <Button
@@ -352,8 +362,9 @@ export const PathItem = memo(function PathItem({
             variant={!link?.['type_id'] ? 'disabled' : p === 'type' ? 'active' : undefined}
             onClick={() => go({ itemIndex: i, position: 'type', active: true })}
             disabled={!link?.type_id}
+            leftIcon={<TypeIcon />}
           ><Box>
-            <Box>type <Text display='inline'>⇡</Text></Box>
+            <Text>type</Text>
             <Box><Text fontSize='xs'>{symbol(link?.type)} {!!link?.type && deep.nameLocal(link.type_id)} {link?.type_id}</Text></Box>
           </Box></Button>
           <Button
@@ -361,8 +372,9 @@ export const PathItem = memo(function PathItem({
             variant={!link?.['to_id'] ? 'disabled' : p === 'to' ? 'active' : undefined} justifyContent='left' textAlign='left'
             onClick={() => go({ itemIndex: i, position: 'to', active: true })}
             disabled={!link?.to_id}
+            rightIcon={<ToIcon />}
           ><Box>
-            <Box>to <Text pr={1} display='inline'>{'>'}</Text></Box>
+            <Text>to</Text>
             <Box><Text fontSize='xs'>{symbol(link?.to)} {!!link?.to && deep.nameLocal(link.to_id)} {link?.to_id}</Text></Box>
           </Box></Button>
         </SimpleGrid>
@@ -371,22 +383,26 @@ export const PathItem = memo(function PathItem({
             ref={p === 'out' ? ref : undefined}
             variant={p === 'out' ? 'active' : undefined} justifyContent='left' textAlign='left'
             onClick={() => go({ itemIndex: i, position: 'out', active: true })}
+            leftIcon={<OutIcon />}
           >
-            <Text rotate='180deg' pr={1}>⊨</Text> out
+            <Text>out</Text>
           </Button>
+          {/* <IconButton aria-label='typed' icon={<TypedIcon />} /> */}
           <Button
             ref={p === 'typed' ? ref : undefined}
             variant={p === 'typed' ? 'active' : undefined}
             onClick={() => go({ itemIndex: i, position: 'typed', active: true })}
+            leftIcon={<TypedIcon />}
           >
-            <Text pr={1}>⇣⇣⇣</Text> typed
+            <Text>typed</Text>
           </Button>
           <Button
             ref={p === 'in' ? ref : undefined}
             variant={p === 'in' ? 'active' : undefined} justifyContent='right' textAlign='right'
             onClick={() => go({ itemIndex: i, position: 'in', active: true })}
+            rightIcon={<InIcon />}
           >
-            in <Text pl={1}>≪</Text>
+            <Text>in</Text>
           </Button>
         </SimpleGrid>
         <SimpleGrid columns={4}>
@@ -394,15 +410,17 @@ export const PathItem = memo(function PathItem({
             ref={p === 'up' ? ref : undefined}
             variant={p === 'up' ? 'active' : undefined} justifyContent='center'
             onClick={() => go({ itemIndex: i, position: 'up', active: true })}
+            leftIcon={<UpIcon />}
           >
-            <Text pr={1}>≥</Text> up
+            <Text>up</Text>
           </Button>
           <Button
             ref={p === 'down' ? ref : undefined}
             variant={p === 'down' ? 'active' : undefined} justifyContent='center'
             onClick={() => go({ itemIndex: i, position: 'down', active: true })}
+            leftIcon={<DownIcon />}
           >
-            <Text pr={1}>≤</Text> down
+            <Text>down</Text>
           </Button>
           <Button
             ref={p === 'promises' ? ref : undefined}
