@@ -9,12 +9,20 @@ import {
   EditableInput,
   EditablePreview,
   EditableTextarea,
-  IconButton
+  useDisclosure,
+  useBreakpointValue,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
 import { createContext, Dispatch, DOMElement, memo, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from 'react-hotkeys-hook';
+import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
 import { MdEdit, MdSaveAlt } from "react-icons/md";
@@ -28,8 +36,10 @@ import { InIcon } from './icons/in';
 import { OutIcon } from './icons/out';
 import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
+import { FinderPopover } from './finder';
+import { useResizeDetector } from 'react-resize-detector';
 
-type NavDirection =  'current' | 'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'value' | 'results' | 'auto';
+type NavDirection =  'current' | 'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
 interface NavMap {
   left: NavDirection; up: NavDirection; right: NavDirection; down: NavDirection;
@@ -63,13 +73,14 @@ nav('selected', { left: 'selectors', up: 'in', right: 'rejects', down: 'value' }
 nav('promises', { left: 'down', up: 'in', right: 'rejects', down: 'value' });
 nav('rejects', { left: 'promises', up: 'in', right: 'next', down: 'value' });
 nav('value', { left: 'prev', up: 'rejects', right: 'next', down: 'contains' });
-nav('contains', { left: 'prev', up: 'value', right: 'next', down: 'results' });
+nav('contains', { left: 'prev', up: 'value', right: 'insert', down: 'results' });
+nav('insert', { left: 'contains', up: 'value', right: 'next', down: 'results' });
 nav('results', { left: 'prev', up: 'contains', right: 'next', down: 'results' });
 navs.next = navs.contains;
 navs.prev = navs.contains;
 
 type onEnterI = (link: Link<Id>) => void;
-type onChangeI = (link: Link<Id>, path: [number, number, string]) => void;
+type onChangeI = (link: Link<Id>, path: PathI) => void;
 
 interface PathItemI {
   key?: number;
@@ -98,6 +109,8 @@ interface ConfigContextI {
   onescreen: boolean;
   autoFocus: boolean;
   onEnter?: onEnterI;
+  width: number;
+  height: number;
 
   focus: { current: PathI; };
   path: { current: PathI; };
@@ -106,6 +119,7 @@ interface ConfigContextI {
 const ConfigContext = createContext<ConfigContextI>({
   onescreen: false,
   autoFocus: false,
+  width: 350, height: 300,
 
   focus: { current: [] },
   path: { current: [] },
@@ -294,6 +308,60 @@ export const EditorPathItem = memo(function EditorPathItem({
   </Box>
 }, isEqual);
 
+export const PathItemInsert = memo(function PathItemInsert({
+  link,
+  isActive, buttonRef, containerId,
+}: {
+  link: Link<Id>;
+  isActive: boolean;
+  buttonRef?: any;
+  containerId: Id;
+}) {
+  const insertTypeDisclosure = useDisclosure();
+  const insertDescriptionDisclosure = useDisclosure();
+
+  return <>
+    <Button
+      ref={isActive ? buttonRef : undefined}
+      variant={isActive ? 'active' : undefined} justifyContent='center'
+      onClick={() => {
+        insertTypeDisclosure.onOpen();
+      }}
+    >
+      <Text pr={1}>+</Text> insert
+    </Button>
+    <FinderPopover
+      link={link}
+      mode='modal'
+      disclosure={insertTypeDisclosure}
+      onSubmit={async (link) => {
+        if (link.from_id && link.to_id || link.type_id === 1) {
+          insertDescriptionDisclosure.onOpen();
+        }
+      }}
+    >
+      <div/>
+    </FinderPopover>
+    <Modal isOpen={insertDescriptionDisclosure.isOpen} onClose={insertDescriptionDisclosure.onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Modal Title</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          asd
+        </ModalBody>
+
+        <ModalFooter>
+          <Button colorScheme='blue' mr={3} onClick={insertDescriptionDisclosure.onClose}>
+            Close
+          </Button>
+          <Button variant='ghost'>Secondary Action</Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  </>
+});
+
 export const PathItem = memo(function PathItem({
   item,
   focus,
@@ -324,7 +392,7 @@ export const PathItem = memo(function PathItem({
   const ref = useRef<any>();
   useEffect(() => {
     if (isFocused) {
-      ref?.current?.scrollIntoView({block: "center", inline: "nearest"});
+      ref?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
     }
   }, [isFocused]);
 
@@ -335,7 +403,8 @@ export const PathItem = memo(function PathItem({
   }, [results, focusedResult, item]);
 
   return <Box
-    minW='25em' w='25em' h='100%'
+    {...(config.onescreen ? { minW: config.width, w: config.width } : { minW: '25em', w: '25em' })}
+    h='100%'
     borderRight='1px solid' borderRightColor='deepColor'
     overflowY='scroll'
     onClick={(e) => {
@@ -493,7 +562,7 @@ export const PathItem = memo(function PathItem({
             </>}
           </SimpleGrid>
         </Box>
-        <SimpleGrid columns={1}>
+        <SimpleGrid columns={2}>
           <Button
             ref={p === 'contains' ? ref : undefined}
             variant={p === 'contains' ? 'active' : undefined} justifyContent='center'
@@ -501,6 +570,7 @@ export const PathItem = memo(function PathItem({
           >
             <Text pr={1}>🗂️</Text> contains
           </Button>
+          <PathItemInsert link={link} isActive={p === 'insert'} buttonRef={ref} containerId={link.id}/>
         </SimpleGrid>
       </Box>
     </>}
@@ -517,17 +587,41 @@ const modes = {
 };
 
 export const Tree = memo(function Tree({
+  scope,
   onEnter,
   onChange,
   autoFocus = false,
-  onescreen = false,
+  onescreen: _onescreen,
 }: {
+  scope: string;
   onEnter?: onEnterI;
   onChange?: onChangeI;
   autoFocus?: boolean;
   onescreen?: boolean;
 }) {
   const deep = useDeep();
+
+  const [__onescreen, setOnescreen] = useState(false);
+  const onescreen = typeof(_onescreen) === 'boolean' ? _onescreen : __onescreen;
+
+  const { width, height, ref } = useResizeDetector();
+  const dinamicOnescreen = useBreakpointValue(
+    { base: true, md: false, },
+    { fallback: 'md' },
+  );
+  useEffect(() => setOnescreen(dinamicOnescreen), [dinamicOnescreen]);
+
+  const { enabledScopes, disableScope, enableScope } = useHotkeysContext();
+  useEffect(() => {
+    const treeScopes = enabledScopes.filter(s => s.includes('tree-hotkeys-scope-'));
+    if (!treeScopes.length) enableScope(`tree-hotkeys-scope-${scope}`);
+  }, [enabledScopes]);
+  useEffect(() => {
+    const treeScopes = enabledScopes.filter(s => s.includes('tree-hotkeys-scope-'));
+    for (let i = 0; i < treeScopes.length; i++) disableScope(treeScopes[i]);
+    enableScope(`tree-hotkeys-scope-${scope}`);
+    return () => disableScope(`tree-hotkeys-scope-${scope}`);
+  }, []);
 
   const queries = useMemo(() => ({
     out: (linkId) => ({ from_id: linkId }),
@@ -639,6 +733,11 @@ export const Tree = memo(function Tree({
     if (focus.length > path.length) setFocus(focus.slice(path.length))
   }, [focus, path]);
 
+  const focusedLinkId = path[focus.length - 1]?.linkId;
+  useEffect(() => {
+    onChange && focusedLinkId && onChange(deep.minilinks.byId[focusedLinkId], focus);
+  }, [focusedLinkId]);
+
   const go = useCallback((item) => {
     const r = refResults.current;
     let f = refFocus.current;
@@ -652,10 +751,8 @@ export const Tree = memo(function Tree({
 
     let fi = typeof(item.itemIndex) === 'number' ? item.itemIndex : f?.length - 1;
 
-    console.log({ fi, itemIndex: item.itemIndex });
-
     if (item.position) {
-      if (['current', 'from', 'type', 'to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
+      if (['current', 'from', 'type', 'to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
         if (item.position === 'from' && !deep.minilinks.byId[p[fi]?.linkId]?.[`from_id`]) {
           go({ ...item, position: f[fi].position === 'type' ? 'prev' : 'type' });
         } else if (item.position === 'to' && !deep.minilinks.byId[p[fi]?.linkId]?.[`to_id`]) {
@@ -803,7 +900,6 @@ export const Tree = memo(function Tree({
       } else {
         const link = deep.minilinks.byId[p[fi]?.linkId];
         if (!link) return;
-        console.log({ f, fi, link });
         if (['from', 'type', 'to'].includes(f[fi].position)) {
           go({
             position: 'next', itemIndex: fi,
@@ -831,13 +927,9 @@ export const Tree = memo(function Tree({
           ]);
         }
       }
-          
-          // , 'out', 'typed', 'in', 'up', 'down', 'value', 'contains'].includes(item.position)
-        // 'prev' | 'next' | 'auto'
     }
   }, []);
 
-  const hotkeyRef = null;
   useHotkeys('up,down,right,left,space,enter', async (e, h) => {
     const r = refResults.current;
     const f = refFocus.current;
@@ -888,7 +980,7 @@ export const Tree = memo(function Tree({
     if (h.keys[0] === 'enter') {
       go({ active: true });
     }
-  }, { preventDefault: true }, []);
+  }, { preventDefault: true, scopes: `tree-hotkeys-scope-${scope}` }, []);
 
   const pathItemsView = useMemo(() => {
     return path.map((p, i) => {
@@ -897,8 +989,6 @@ export const Tree = memo(function Tree({
     });
   }, [path, focus]);
 
-  console.log(path, focus);
-
   const config = useMemo(() => {
     return {
       onescreen, autoFocus,
@@ -906,13 +996,14 @@ export const Tree = memo(function Tree({
       focus: refFocus,
       path: refPath,
       results: refResults,
+      width, height,
     };
-  }, [onescreen, autoFocus]);
+  }, [onescreen, autoFocus, width, height]);
 
   return <ConfigContext.Provider value={config}>
     <GoContext.Provider value={go}>
       <HStack
-        ref={hotkeyRef as any}
+        ref={ref as any}
         position="absolute" left='0' top='0' right='0' bottom='0'
         overflowX={onescreen ? 'hidden' : 'scroll'} overflowY='hidden'
         autoFocus={autoFocus}
