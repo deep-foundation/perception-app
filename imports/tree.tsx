@@ -18,8 +18,15 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  SlideFade,
+  InputGroup,
+  InputRightElement,
+  Divider,
+  Textarea,
+  Tag,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
+import { useMinilinksApply } from "@deep-foundation/deeplinks/imports/minilinks";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
 import { createContext, Dispatch, DOMElement, memo, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
@@ -36,8 +43,10 @@ import { InIcon } from './icons/in';
 import { OutIcon } from './icons/out';
 import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
-import { FinderPopover } from './finder';
+import { FinderContext, FinderPopover } from './finder';
 import { useResizeDetector } from 'react-resize-detector';
+import { BsX, BsCheck2 } from 'react-icons/bs';
+import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 
 type NavDirection =  'current' | 'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
@@ -106,7 +115,9 @@ interface GoContextI {
 const GoContext = createContext<GoContextI>((item) => {});
 
 interface ConfigContextI {
+  scope: string;
   onescreen: boolean;
+  insert: boolean;
   autoFocus: boolean;
   onEnter?: onEnterI;
   width: number;
@@ -117,8 +128,10 @@ interface ConfigContextI {
   results: { current: { results: Link<Id>[], originalData: Link<Id>[] }[] };
 }
 const ConfigContext = createContext<ConfigContextI>({
+  scope: '',
   onescreen: false,
   autoFocus: false,
+  insert: true,
   width: 350, height: 300,
 
   focus: { current: [] },
@@ -128,15 +141,15 @@ const ConfigContext = createContext<ConfigContextI>({
 
 export const Result = memo(function Result({
   link,
-  resultIndex,
-  pathItemIndex,
+  resultIndex = -1,
+  pathItemIndex = -1,
   isFocused,
   _tree_position_ids,
 }: {
   link: Link<Id>;
-  resultIndex: number;
-  pathItemIndex: number;
-  isFocused: boolean;
+  resultIndex?: number;
+  pathItemIndex?: number;
+  isFocused?: boolean;
   _tree_position_ids?: string[];
 }) {
   const deep = useDeep();
@@ -208,20 +221,17 @@ export const Result = memo(function Result({
   </LinkButton>
 });
 
-function useSymbol() {
-  const deep = useDeep();
-  return function(link) {
-    return link?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value;
-  }
+export function symbol(link, deep) {
+  return link?.type?.inByType[deep.idLocal('@deep-foundation/core', 'Symbol')]?.[0]?.value?.value;
 }
 
-export function useLoader({
-  query = {},
-}: {
-  query?: any;
-}) {
+export function useSymbol() {
   const deep = useDeep();
-  const typeQuery = useMemo(() => ({
+  return (link) => symbol(link, deep);
+}
+
+const loader = ({ query = {}, deep }: { query?: any, deep }) => {
+  const typeQuery = {
     type: {
       relation: 'type',
       return: {
@@ -239,8 +249,8 @@ export function useLoader({
         },
       },
     },
-  }), []);
-  const results = deep.useDeepQuery({
+  };
+  return {
     ...query,
     return: {
       ...(query?.return || {}),
@@ -252,7 +262,19 @@ export function useLoader({
       ...typeQuery,
       to: { relation: 'to', return: { ...typeQuery } },
     },
-  });
+  };
+};
+
+export function useLoader({
+  query = {},
+}: {
+  query?: any;
+}) {
+  const deep = useDeep();
+  const q = useMemo(() => {
+    return loader({ query, deep });
+  }, []);
+  const results = deep.useDeepQuery(q);
   return results;
 };
 
@@ -317,8 +339,90 @@ export const PathItemInsert = memo(function PathItemInsert({
   buttonRef?: any;
   containerId: Id;
 }) {
+  const deep = useDeep();
+  const config = useContext(ConfigContext);
+  const go = useContext(GoContext);
+
   const insertTypeDisclosure = useDisclosure();
   const insertDescriptionDisclosure = useDisclosure();
+
+  const insertFromDisclosure = useDisclosure();
+  const insertToDisclosure = useDisclosure();
+
+  const ref = useContext(FinderContext);
+
+  const [type, setType] = useState<any>();
+  const [aboutType, setAboutType] = useState<any>();
+  const [fromId, setFromId] = useState<any>();
+  const [toId, setToId] = useState<any>();
+  const [from, setFrom] = useState<any>();
+  const [to, setTo] = useState<any>();
+  const [name, setName] = useState<string>('');
+  const [value, setValue] = useState<string>('');
+
+  const saveFrom = useDebounceCallback(async (from_id) => !!+from_id && setFrom(await loader({ query: { id: +from_id }, deep })), 1000);
+  const saveTo = useDebounceCallback(async (to_id) => !!+to_id && setTo(await loader({ query: { id: +to_id }, deep })), 1000);
+
+  useMinilinksApply(deep.minilinks, `tree-${config.scope}-type`, aboutType || { data: [] });
+  useMinilinksApply(deep.minilinks, `tree-${config.scope}-from`, from || { data: [] });
+  useMinilinksApply(deep.minilinks, `tree-${config.scope}-to`, to || { data: [] });
+
+  const V = deep.idLocal('@deep-foundation/core', 'Value');
+  const S = deep.idLocal('@deep-foundation/core', 'String');
+  const N = deep.idLocal('@deep-foundation/core', 'Number');
+  const O = deep.idLocal('@deep-foundation/core', 'Object');
+  const tV = type?.id ? deep.minilinks.select({ type_id: V, from_id: type.id })[0]?.to_id : undefined;
+
+  const { isValid, validated } = useMemo(() => {
+    let validated: any = value, isValid = false;
+    try {
+      if (tV === S) isValid = true;
+      if (tV === N) {
+        validated = +value;
+        isValid = typeof(validated) === 'number' && !Number.isNaN(validated);
+      }
+      if (tV === O) {
+        validated = JSON.parse(value as string);
+        isValid = true;
+      }
+    } catch(e) {
+      return { validated, isValid };
+    }
+    return { validated, isValid };
+  }, [value]);
+
+  // const { data: [_from] } = useLoader({ query: from ? { id: from } : { limit: 0 } });
+  // const { data: [_to] } = useLoader({ query: to ? { id: to } : { limit: 0 } });
+
+  const buttons = <>
+    <SlideFade in={true} offsetX='-0.5rem' style={{position: 'absolute', top: 0, right: '-4em'}}>
+      <Button
+        w='3em' h='3em'
+        boxShadow='dark-lg'
+        variant={undefined}
+        onClick={async () => {
+          insertDescriptionDisclosure.onClose && insertDescriptionDisclosure.onClose();
+        }}
+      ><BsX /></Button>
+    </SlideFade>
+    <SlideFade in={((!!fromId && !!toId) || type?.id === 1 || (!type?.from_id && !type?.to_id)) && (isValid || value === '')} offsetX='-0.5rem' style={{position: 'absolute', bottom: 0, right: '-4em'}}>
+      <Button
+        w='3em' h='3em'
+        boxShadow='dark-lg'
+        variant={'active'}
+        onClick={async () => {
+          await deep.insert({
+            type_id: type.id,
+            ...(from && to ? { from_id: fromId, to_id: toId } : {}),
+            containerId,
+            ...(name ? { name } : {}),
+            ...(tV == S ? { string: { data: { value: validated } } } : tV == N ? { number: { data: { value: validated } }} : tV == O ? { object: { data: { value: validated } } } : {}),
+          } as any);
+          insertDescriptionDisclosure.onClose && insertDescriptionDisclosure.onClose();
+        }}
+      ><BsCheck2 /></Button>
+    </SlideFade>
+  </>;
 
   return <>
     <Button
@@ -331,32 +435,134 @@ export const PathItemInsert = memo(function PathItemInsert({
       <Text pr={1}>+</Text> insert
     </Button>
     <FinderPopover
+      header='Choose type for insert instance of it:'
       link={link}
       mode='modal'
       disclosure={insertTypeDisclosure}
       onSubmit={async (link) => {
-        if (link.from_id && link.to_id || link.type_id === 1) {
-          insertDescriptionDisclosure.onOpen();
-        }
+        setAboutType(await loader({ query: {
+          type_id: V,
+          return: { item: { relation: 'from', type_id: link.id } }
+        }, deep }));
+        setType(link);
+        insertDescriptionDisclosure.onOpen();
       }}
     >
       <div/>
     </FinderPopover>
-    <Modal isOpen={insertDescriptionDisclosure.isOpen} onClose={insertDescriptionDisclosure.onClose}>
+    <Modal isOpen={insertDescriptionDisclosure.isOpen} onClose={insertDescriptionDisclosure.onClose} portalProps={{ containerRef: ref }}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Modal Title</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          asd
+        <ModalHeader position='absolute' bottom='100%'>Describe your<br/>new Link of type:</ModalHeader>
+        <Box position='absolute' bottom='100%' maxW='50%' right={0}>
+          {!!type && <LinkButton id={type.id} onClick={() => insertTypeDisclosure.onOpen()} maxW='100%'/>}
+        </Box>
+        <ModalBody p='1em'>
+          {(!!type?.from_id && !!type?.to_id) || type?.id === 1 && <>
+            <SimpleGrid columns={2} spacing={'1em'}>
+              <Box>
+                <Button fontSize='sm' float='right' leftIcon={<FromIcon />}>from</Button>
+                <InputGroup size='md'>
+                  <Input
+                    type="number" placeholder='from_id' h='3em'
+                    value={fromId} onChange={e => {
+                      setFromId(+e.target.value);
+                      saveFrom(+e.target.value);
+                    }}
+                  />
+                  <InputRightElement m='0.25em'>
+                    <FinderPopover
+                      header='Choose link.from:'
+                      link={deep.minilinks.byId[fromId] || deep.minilinks.byId[deep.linkId]}
+                      mode='modal'
+                      disclosure={insertFromDisclosure}
+                      onSubmit={async (link) => {
+                        setFromId(link.id);
+                        setFrom(link);
+                      }}
+                    >
+                      <Button h='3em' w='3em' size='sm' onClick={() => insertFromDisclosure.onOpen()}>
+                        🪬
+                      </Button>
+                    </FinderPopover>
+                  </InputRightElement>
+                </InputGroup>
+              </Box>
+              <Box>
+                <Button fontSize='sm' float='left' rightIcon={<ToIcon />}>to</Button>
+                <InputGroup size='md'>
+                  <Input
+                    type="number" placeholder='to_id' h='3em'
+                    value={toId} onChange={e => {
+                      setToId(+e.target.value);
+                      saveTo(+e.target.value);
+                    }}
+                  />
+                  <InputRightElement m='0.25em'>
+                    <FinderPopover
+                      header='Choose link.to:'
+                      link={deep.minilinks.byId[toId] || deep.minilinks.byId[deep.linkId]}
+                      mode='modal'
+                      disclosure={insertToDisclosure}
+                      onSubmit={async (link) => {
+                        setToId(link.id);
+                        setTo(link);
+                      }}
+                    >
+                      <Button h='3em' w='3em' size='sm' onClick={() => insertToDisclosure.onOpen()}>
+                        🪬
+                      </Button>
+                    </FinderPopover>
+                  </InputRightElement>
+                </InputGroup>
+              </Box>
+            </SimpleGrid>
+            <SimpleGrid columns={2} spacing={'1em'}>
+              <Box>
+                {!!from && <LinkButton id={fromId} w='100%'/>}
+              </Box>
+              <Box>
+                {!!to && <LinkButton id={toId} w='100%'/>}
+              </Box>
+            </SimpleGrid>
+            <Divider/>
+          </>}
+          <Button fontSize='sm' float='left' leftIcon={<FromIcon />} rightIcon={<ToIcon />}>name for 🗂️ contain:</Button>
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+          <Divider mt='1em' mb='1em'/>
+          <Box position='relative'>
+            {tV === S && <>
+              <Textarea
+                value={value}
+                placeholder='String value'
+                onChange={e => setValue(e.target.value)}
+              />
+            </>}
+            {tV === N && <>
+              <Input
+                type='string'
+                value={value}
+                placeholder='Number value'
+                onChange={e => setValue(e.target.value)}
+              />
+            </>}
+            {tV === O && <>
+              <Textarea
+                value={value}
+                placeholder='Object value'
+                onChange={e => setValue(e.target.value)}
+              />
+            </>}
+            <Tag
+              size='lg' colorScheme={value === '' ? 'black' : isValid ? 'deepActive' : 'danger'} variant='solid' borderRadius='full'
+              position='absolute' bottom='-0.5em' right='-0.5em'
+            >{value === '' ? 'empty' : isValid ? 'valid' : 'invalid'}</Tag>
+          </Box>
         </ModalBody>
-
-        <ModalFooter>
-          <Button colorScheme='blue' mr={3} onClick={insertDescriptionDisclosure.onClose}>
-            Close
-          </Button>
-          <Button variant='ghost'>Secondary Action</Button>
-        </ModalFooter>
+        {buttons}
       </ModalContent>
     </Modal>
   </>
@@ -562,7 +768,7 @@ export const PathItem = memo(function PathItem({
             </>}
           </SimpleGrid>
         </Box>
-        <SimpleGrid columns={2}>
+        <SimpleGrid columns={config.insert ? 2 : 1}>
           <Button
             ref={p === 'contains' ? ref : undefined}
             variant={p === 'contains' ? 'active' : undefined} justifyContent='center'
@@ -570,7 +776,7 @@ export const PathItem = memo(function PathItem({
           >
             <Text pr={1}>🗂️</Text> contains
           </Button>
-          <PathItemInsert link={link} isActive={p === 'insert'} buttonRef={ref} containerId={link.id}/>
+          {!!config.insert && <PathItemInsert link={link} isActive={p === 'insert'} buttonRef={ref} containerId={link.id}/>}
         </SimpleGrid>
       </Box>
     </>}
@@ -592,12 +798,14 @@ export const Tree = memo(function Tree({
   onChange,
   autoFocus = false,
   onescreen: _onescreen,
+  insert=true,
 }: {
   scope: string;
   onEnter?: onEnterI;
   onChange?: onChangeI;
   autoFocus?: boolean;
   onescreen?: boolean;
+  insert?: boolean;
 }) {
   const deep = useDeep();
 
@@ -733,7 +941,7 @@ export const Tree = memo(function Tree({
     if (focus.length > path.length) setFocus(focus.slice(path.length))
   }, [focus, path]);
 
-  const focusedLinkId = path[focus.length - 1]?.linkId;
+  const focusedLinkId = refResults?.current?.[focus.length - 1]?.results?.[focus[focus.length - 1]?.index]?.id || path[focus.length - 1]?.linkId;
   useEffect(() => {
     onChange && focusedLinkId && onChange(deep.minilinks.byId[focusedLinkId], focus);
   }, [focusedLinkId]);
@@ -991,14 +1199,16 @@ export const Tree = memo(function Tree({
 
   const config = useMemo(() => {
     return {
+      scope,
       onescreen, autoFocus,
       onEnter,
       focus: refFocus,
       path: refPath,
       results: refResults,
       width, height,
+      insert,
     };
-  }, [onescreen, autoFocus, width, height]);
+  }, [onescreen, autoFocus, width, height, insert]);
 
   return <ConfigContext.Provider value={config}>
     <GoContext.Provider value={go}>

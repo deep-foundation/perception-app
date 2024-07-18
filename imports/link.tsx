@@ -6,17 +6,21 @@ import {
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { Id } from '@deep-foundation/deeplinks/imports/minilinks';
+import { symbol, useSymbol } from './tree';
 
 export const LinkButton = ({
-  id, name: _name, type: _type, icon, isActive, onClick,
+  id, name: _name, type: _type,
+  icon: _icon,
+  isActive = false,
+  onClick,
   buttonRef,
   ...props
 }: {
   id: Id;
   name?: string;
   type?: string;
-  icon: string;
-  isActive: boolean;
+  icon?: string;
+  isActive?: boolean;
   onClick?: (id: Id) => void;
 
   buttonRef?: any;
@@ -27,6 +31,9 @@ export const LinkButton = ({
   const link = deep?.minilinks?.byId[id];
   const name = _name || deep.nameLocal(id);
   const type = _type || deep.nameLocal(link?.type_id);
+  const symbol = useSymbol();
+  const icon = _icon || symbol(link);
+
   return <Button
     ref={buttonRef}
     variant={isActive ? 'active' : 'solid'}
