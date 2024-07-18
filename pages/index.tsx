@@ -9,7 +9,9 @@ import {
   GridItem,
   Input,
   Link,
+  Spacer,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { DeepNamespaceProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
 import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
@@ -27,12 +29,13 @@ import { GoWorkflow } from "react-icons/go";
 import { PiGraphBold } from "react-icons/pi";
 import { BsLightningChargeFill } from "react-icons/bs";
 import { BsGrid1X2Fill } from "react-icons/bs";
-import { FinderPopover } from '../imports/finder.tsx';
+import { FinderPopover, FinderProvider } from '../imports/finder.tsx';
 import { LinkButton } from '../imports/link.tsx';
 import { Tree } from '../imports/tree.tsx';
 import { i18nGetStaticProps } from '../src/i18n.tsx';
 import { useDeepPath } from '../src/provider.tsx';
 import { Mounted } from '../imports/mounted.tsx';
+import { HotkeysProvider } from 'react-hotkeys-hook';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -159,33 +162,37 @@ export function Auth() {
     <Box
       _groupHover={{ left: '0%' }}
       boxShadow='dark-lg'
-      position='absolute' left='-35em' bottom='0px' w={canAdmin ? '32em' : '29em'}
+      position='absolute' left='-35em' bottom='0px' w={canAdmin ? '15em' : '15em'}
       transition='all 1s ease' overflow="hidden"
+      p='1em'
       bg="deepBg"
     >
-      <Button  w="3em" h="3em" onClick={() => {
-        setPath('');
-        setToken('');
-      }}>
-        <IoExitOutline/>
-      </Button>
-      <Box p={1} display="inline-flex">
-        <Input ml={'1em'} value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='10em' size='sm' onKeyDown={e => e.key === 'Enter' && enter()}/>
-        <Input ml={'1em'} type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='10em' size='sm' onKeyDown={e => e.key === 'Enter' && enter()}/>
-      </Box>
-      <Button variant="active" w="3em" h="3em" onClick={enter}>
-        <IoEnterOutline/>
-      </Button>
-      {canAdmin && <Button w="3em" h="3em" onClick={() => {
-        deep.id('deep', 'admin').then(admin => deep.login({ linkId: admin }));
-      }}>
-        <GrUserAdmin/>
-      </Button>}
-      <Button w="3em" h="3em" onClick={() => {
-        deep.guest();
-      }}>
-        <IoMdPersonAdd/>
-      </Button>
+      <VStack spacing={'1em'} mb='1em'>
+        <Input value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
+        <Input type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
+      </VStack>
+      <Flex>
+        <Button variant='danger' w="3em" h="3em" onClick={() => {
+          setPath('');
+          setToken('');
+        }}>
+          <IoExitOutline/>
+        </Button>
+        <Spacer/>
+        <Button variant="active" w="3em" h="3em" onClick={enter}>
+          <IoEnterOutline/>
+        </Button>
+        {canAdmin && <Button w="3em" h="3em" onClick={() => {
+          deep.id('deep', 'admin').then(admin => deep.login({ linkId: admin }));
+        }}>
+          <GrUserAdmin/>
+        </Button>}
+        <Button w="3em" h="3em" onClick={() => {
+          deep.guest();
+        }}>
+          <IoMdPersonAdd/>
+        </Button>
+      </Flex>
     </Box>
   </Box>;
 }
@@ -240,6 +247,7 @@ export function Content() {
               onClick={id => setSpaceId(id)} isActive={spaceId === 2473}
             />
             {!!deep && <FinderPopover
+              link={deep.minilinks.byId[deep.linkId]}
               onSubmit={async (link) => {
                 console.log(link);
               }}
@@ -282,7 +290,7 @@ export function Content() {
           for example some thing like: <Link href="https://react-grid-layout.github.io/react-grid-layout/examples/11-no-vertical-compact.html">react-grid-layout.github.io</Link>
         </Center>}
         {layout === 't' && <Box w='100%' h='100%'>
-          {!!deep && <Tree/>}
+          {!!deep && <Tree scope='layout-tree'/>}
         </Box>}
         {layout === 'f' && <Center w='100%' h='100%' bg='pink'>
           for example some thing like: <Link href="https://reactflow.dev/">reactflow.dev</Link>
@@ -321,17 +329,21 @@ export default function Page({
   const [portal, setPortal] = useState(true);
 
   return (
-    <DeepNamespaceProvider>
-      <MinilinksProvider>
-        {!!path && <>
-          {/* <CyberDeepProvider namespace="cyber"/> */}
-          {/* <AutoGuest/> */}
-        </>}
-        <Mounted>
-          <Content/>
-        </Mounted>
-      </MinilinksProvider>
-    </DeepNamespaceProvider>
+    <HotkeysProvider>
+      <FinderProvider>
+        <DeepNamespaceProvider>
+          <MinilinksProvider>
+            {!!path && <>
+              {/* <CyberDeepProvider namespace="cyber"/> */}
+              {/* <AutoGuest/> */}
+            </>}
+            <Mounted>
+              <Content/>
+            </Mounted>
+          </MinilinksProvider>
+        </DeepNamespaceProvider>
+      </FinderProvider>
+    </HotkeysProvider>
   );
 };
 
