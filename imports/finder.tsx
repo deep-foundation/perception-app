@@ -1,8 +1,9 @@
-import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverContent, PopoverTrigger, Portal, SlideFade, useDisclosure, UseDisclosureReturn } from "@chakra-ui/react";
+import { Box, Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverContent, PopoverTrigger, Portal, SlideFade, useDisclosure, UseDisclosureReturn } from "@chakra-ui/react";
 import { Id, Link } from "@deep-foundation/deeplinks/imports/minilinks";
 import { createContext, memo, useContext, useRef, useState } from "react";
 import { BsCheck2, BsX } from "react-icons/bs";
-import { Tree } from "./tree";
+import { Result, Tree } from "./tree";
+import { LinkButton } from "./link";
 
 export const FinderContext = createContext<any>(undefined);
 export const FinderProvider = memo(function FinderProvider({ children }: { children: any; }) {
@@ -26,6 +27,7 @@ export const FinderPopover = memo(function FinderPopover({
     PortalProps = {},
     disclosure: __disclosure,
     mode = 'popover',
+    header = '',
   }: {
     link: Link<Id>;
     onSubmit: (link) => void;
@@ -37,6 +39,7 @@ export const FinderPopover = memo(function FinderPopover({
     PortalProps?: any;
     disclosure?: UseDisclosureReturn;
     mode?: 'popover' | 'modal';
+    header?: string;
   }) {
   const ref = useContext(FinderContext);
   const [selectedLink, setSelectedLink] = useState<Link<Id>>();
@@ -45,6 +48,7 @@ export const FinderPopover = memo(function FinderPopover({
 
   const tree = _isOpen && <Tree
     scope={`finder-tree-${link.id}`}
+    insert={false}
     onChange={(l, p) => {
       onChange && onChange(l);
       setSelectedLink(l);
@@ -57,8 +61,8 @@ export const FinderPopover = memo(function FinderPopover({
     onescreen
   />;
 
-  const submit = <>
-    <SlideFade in={true} offsetX='-0.5rem' style={{position: 'absolute', top: 0, right: '-4em'}}>
+  const buttons = <>
+    {mode === 'modal' && <SlideFade in={true} offsetX='-0.5rem' style={{position: 'absolute', top: 0, right: '-4em'}}>
       <Button
         w='3em' h='3em'
         boxShadow='dark-lg'
@@ -67,12 +71,12 @@ export const FinderPopover = memo(function FinderPopover({
           _onClose && _onClose();
         }}
       ><BsX /></Button>
-    </SlideFade>
+    </SlideFade>}
     <SlideFade in={!!selectedLink} offsetX='-0.5rem' style={{position: 'absolute', bottom: 0, right: '-4em'}}>
       <Button
         w='3em' h='3em'
         boxShadow='dark-lg'
-        variant={selectedLink ? 'active' : undefined}
+        variant={'active'}
         onClick={async () => {
           if (selectedLink) {
             _onClose && _onClose();
@@ -83,20 +87,26 @@ export const FinderPopover = memo(function FinderPopover({
     </SlideFade>
   </>;
   
-  if (mode === 'modal') return <Modal
-    onClose={(...args) => (_onClose(...args),(onClose && onClose()))}
-    isOpen={_isOpen}
-  >
-    <ModalOverlay />
-    <ModalContent w='80vw' h='80vh'>
-      <ModalHeader>Modal Title</ModalHeader>
-      <ModalCloseButton />
-      <ModalBody>
-        {tree}
-      </ModalBody>
-      {submit}
-    </ModalContent>
-  </Modal>
+  if (mode === 'modal') return <>
+    <Modal
+      onClose={(...args) => (_onClose(...args),(onClose && onClose()))}
+      isOpen={_isOpen}
+    >
+      <ModalOverlay />
+      <ModalContent w='80vw' h='80vh' position='relative'>
+        <ModalHeader>{header}</ModalHeader>
+        <Box position='absolute' bottom='-0.5em' right='-0.5em' boxShadow='dark-lg' zIndex={2}>
+          {!!selectedLink && <LinkButton id={selectedLink?.id}/>}
+        </Box>
+        <ModalCloseButton />
+        <ModalBody>
+          {tree}
+        </ModalBody>
+        {buttons}
+      </ModalContent>
+    </Modal>
+    {children}
+  </>
 
   if (mode === 'popover') return <Popover
     isLazy
@@ -110,7 +120,7 @@ export const FinderPopover = memo(function FinderPopover({
     <Portal containerRef={ref} {...PortalProps}>
       <PopoverContent h={'32em'} w={'25em'} boxShadow='dark-lg'>
         {tree}
-        {submit}
+        {buttons}
       </PopoverContent>
     </Portal>
   </Popover>;

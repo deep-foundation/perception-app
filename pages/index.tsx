@@ -7,6 +7,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  Image,
   Input,
   Link,
   Spacer,
@@ -327,8 +328,12 @@ export default function Page({
   const [path, setPath] = useDeepPath(defaultPath);
   const [ssl, setSsl] = useState(defaultSsl);
   const [portal, setPortal] = useState(true);
+  const [logo, setLogo] = useState(true);
+  useEffect(() => {
+    setTimeout(() => setLogo(false), 1000);
+  }, []);
 
-  return (
+  return (<>
     <HotkeysProvider>
       <FinderProvider>
         <DeepNamespaceProvider>
@@ -344,7 +349,13 @@ export default function Page({
         </DeepNamespaceProvider>
       </FinderProvider>
     </HotkeysProvider>
-  );
+    <Center
+      bg='#0D1117' zIndex={777} position='fixed' w='100%' h='100%' left='0' top='0'
+      transition={'all 1s ease'} pointerEvents={logo ? 'all' : 'none'} opacity={logo ? 0.9 : 0}
+    >
+      <Image src='./logo.svg' alt='logo' w='10em' />
+    </Center>
+  </>);
 };
 
 export async function getStaticProps(arg) {
