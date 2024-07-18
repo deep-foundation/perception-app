@@ -405,7 +405,7 @@ export const PathItem = memo(function PathItem({
             <Text>in</Text>
           </Button>
         </SimpleGrid>
-        <SimpleGrid columns={4}>
+        <SimpleGrid columns={2}>
           <Button
             ref={p === 'up' ? ref : undefined}
             variant={p === 'up' ? 'active' : undefined} justifyContent='center'
@@ -422,6 +422,8 @@ export const PathItem = memo(function PathItem({
           >
             <Text>down</Text>
           </Button>
+        </SimpleGrid>
+        <SimpleGrid columns={4}>
           <Button
             ref={p === 'promises' ? ref : undefined}
             variant={p === 'promises' ? 'active' : undefined} justifyContent='center'
@@ -436,8 +438,6 @@ export const PathItem = memo(function PathItem({
           >
             <Text pr={1}>🔴</Text> rejects
           </Button>
-        </SimpleGrid>
-        <SimpleGrid columns={4}>
           <Button
             ref={p === 'selectors' ? ref : undefined}
             variant={p === 'selectors' ? 'active' : undefined} justifyContent='center'
