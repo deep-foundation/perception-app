@@ -94,7 +94,7 @@ export const FinderPopover = memo(function FinderPopover({
   if (mode === 'modal') return <>
     <Modal
       onClose={(...args) => (_onClose(...args),(onClose && onClose()))}
-      isOpen={_isOpen}
+      isOpen={_isOpen} portalProps={{ containerRef: ref }}
     >
       <ModalOverlay />
       <ModalContent w='80vw' h='80vh' position='relative'>

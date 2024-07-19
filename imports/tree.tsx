@@ -30,7 +30,7 @@ import {
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { useMinilinksApply } from "@deep-foundation/deeplinks/imports/minilinks";
 import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
-import { createContext, Dispatch, DOMElement, memo, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, Dispatch, DOMElement, memo, SetStateAction, use, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
@@ -74,7 +74,7 @@ const navs: { [name: string]: Nav } = {};
 nav('current', { left: 'prev', up: 'current', right: 'delete', down: 'type' });
 nav('delete', { left: 'current', up: 'current', right: 'next', down: 'type' });
 nav('edit-from', { left: 'prev', up: 'current', right: 'from', down: 'out' });
-nav('from', { left: 'prev', up: 'current', right: 'type', down: 'out' });
+nav('from', { left: 'edit-from', up: 'current', right: 'type', down: 'out' });
 nav('type', { left: 'from', up: 'current', right: 'to', down: 'typed' });
 nav('to', { left: 'type', up: 'current', right: 'edit-to', down: 'in' });
 nav('edit-to', { left: 'to', up: 'current', right: 'next', down: 'in' });
@@ -279,7 +279,7 @@ export function useLoader({
   const deep = useDeep();
   const q = useMemo(() => {
     return loader({ query, deep });
-  }, []);
+  }, [query, deep]);
   const results = deep.useDeepQuery(q);
   return results;
 };
@@ -294,8 +294,8 @@ export const EditorPathItem = memo(function EditorPathItem({
   i: number;
 }) {
   const deep = useDeep();
-  const levelRef = useRef();
-  const refEditor = useRef();
+  const levelRef = useRef<any>();
+  const config = useContext(ConfigContext);
 
   const valueTables = useMemo(() => ({
     [deep.idLocal('@deep-foundation/core', 'String')]: 'strings',
@@ -306,6 +306,8 @@ export const EditorPathItem = memo(function EditorPathItem({
 
   const link = item.linkId ? deep.minilinks.byId[item.linkId] : undefined;
 
+  const { data: [actual] } = deep.useDeepSubscription(link.id);
+
   const value = link?.value?.value;
   const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, [link]);
 
@@ -314,33 +316,61 @@ export const EditorPathItem = memo(function EditorPathItem({
     valueTables[valueType] === 'numbers' ? `${value}` :
     valueTables[valueType] === 'objects' ? JSON.stringify(value, null, 2) : '',
   );
+  const resultValue = useMemo(() => {
+    return valueTables[valueType] === 'strings' ? _value || '' :
+    valueTables[valueType] === 'numbers' ? +_value :
+    valueTables[valueType] === 'objects' ? JSON.parse(_value) : undefined;
+  }, [_value]);
+
+  const f = focus?.[focus.length-1];
+  const isFocused = focus?.length-1 === i;
+
+  const firstScrolled = useRef<any>(false);
+  useEffect(() => {
+    if (isFocused || !firstScrolled.current) {
+      firstScrolled.current = true;
+      levelRef?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
+    }
+  }, [isFocused]);
+
+  const { width, height } = useResizeDetector({ targetRef: levelRef });
+
+  const update = useCallback(() => deep.value(link.id, resultValue), [link, resultValue]);
+
   return <Box
     ref={levelRef}
     minW={'40em'} maxW='100vw' h='100%'
     borderRight='1px solid' borderRightColor='deepColor'
-    overflowY='scroll'
+    overflowY='scroll' overflowX='hidden' position='relative'
     onClick={(e) => {
       e.stopPropagation();
       e.preventDefault();
     }}
   >
     <Editor
-      refEditor={refEditor}
+      autoFocus
+      height={`${height}px`}
       value={_value}
       onChange={_value => _setValue(_value)}
-      onSave={async value => {
-        // @ts-ignore
-        await deep.update({ link_id: link?.id }, { value }, { table: valueTables[valueType] });
-      }}
+      onSave={update}
     />
+    <Button
+      w='3em' h='3em'
+      transition='all 1s ease'
+      position='absolute' right={!isEqual(resultValue, actual?.value?.value) ? '1em' : '-5em'} top='1em'
+      boxShadow='dark-lg'
+      variant={undefined}
+      onClick={update}
+    ><MdSaveAlt/></Button>
   </Box>
 }, isEqual);
 
 export const PathItemInsert = memo(function PathItemInsert({
-  link,
+  link, item,
   isActive, buttonRef, containerId,
 }: {
   link: Link<Id>;
+  item: PathItemI;
   isActive: boolean;
   buttonRef?: any;
   containerId: Id;
@@ -582,10 +612,11 @@ export const PathItemInsert = memo(function PathItemInsert({
 });
 
 export const PathItemDelete = memo(function PathItemDelete({
-  link,
+  link, item,
   isActive, buttonRef, containerId,
 }: {
   link: Link<Id>;
+  item: PathItemI;
   isActive: boolean;
   buttonRef?: any;
   containerId?: Id;
@@ -718,10 +749,14 @@ export const PathItem = memo(function PathItem({
   const value = link?.value?.value;
   const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, [link]);
 
+  const pathItemRef = useRef<any>();
   const ref = useRef<any>();
+  const firstScrolled = useRef<any>(false);
   useEffect(() => {
-    if (isFocused) {
+    if (isFocused || !firstScrolled.current) {
+      firstScrolled.current = true;
       ref?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
+      pathItemRef?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
     }
   }, [isFocused]);
 
@@ -730,6 +765,9 @@ export const PathItem = memo(function PathItem({
   const resultsView = useMemo(() => {
     return results.map((l, ii) => (l.id === link?.id ? <></> : <Result key={l.id} link={l} resultIndex={ii} pathItemIndex={i} isFocused={focusedResult?.index === ii} _tree_position_ids={item.mode === 'upTree' || item.mode === 'downTree' ? (originalData[ii]?.positionids || []).map(p => p.position_id) : undefined}/>));
   }, [results, focusedResult, item]);
+
+  const fromDisclosure = useDisclosure();
+  const toDisclosure = useDisclosure();
 
   return <Box
     {...(config.onescreen ? { minW: config.width, w: config.width } : { minW: '25em', w: '25em' })}
@@ -742,25 +780,36 @@ export const PathItem = memo(function PathItem({
     }}
   >
     {!!link && <>
-      <Box borderBottom='1px solid' borderBottomColor='deepColor' overflowX='hidden'>
+      <Box borderBottom='1px solid' borderBottomColor='deepColor' overflowX='hidden' ref={pathItemRef}>
         <Flex>
           <LinkButton id={link.id} flex='1' isActive={p === 'current'} onClick={() => go({ itemIndex: -1, position: 'current', active: true })}/>
-          <PathItemDelete link={link} isActive={p === 'delete'} buttonRef={ref} containerId={link.id}/>
+          <PathItemDelete link={link} isActive={p === 'delete'} buttonRef={p === 'delete' ? ref : undefined} containerId={link.id} item={item}/>
         </Flex>
         <SimpleGrid columns={3}>
           <Flex>
-            {!!link?.['from_id'] ? <Button
-              ref={p === 'edit-from' ? ref : undefined}
-              variant={p === 'edit-from' ? 'active' : undefined} justifyContent='right' textAlign='right'
-              onClick={() => go({ itemIndex: i, position: 'edit-from', active: true })}
-              disabled={!link?.from_id}
-            ><Box>
-              <MdEdit/>
-            </Box></Button> : <Box/>}
+            {!!link?.['from_id'] ? <FinderPopover
+              disclosure={fromDisclosure}
+              header='Choose new link.from:'
+              linkId={link.from_id}
+              mode='modal'
+              onSubmit={(l) => deep.update(link.id, { from_id: l.id })}
+            >
+              <Button
+                ref={p === 'edit-from' ? ref : undefined}
+                variant={p === 'edit-from' ? 'active' : undefined} justifyContent='right' textAlign='right' h='3em'
+                onClick={() => {
+                  go({ itemIndex: i, position: 'edit-from', active: true });
+                  fromDisclosure.onOpen();
+                }}
+                disabled={!link?.from_id}
+              ><Box>
+                <MdEdit/>
+              </Box></Button>
+            </FinderPopover> : <Box/>}
             <Button
               ref={p === 'from' ? ref : undefined}
               variant={!link?.['from_id'] ? 'disabled' : p === 'from' ? 'active' : undefined} justifyContent='right' textAlign='right'
-              flex='1'
+              flex='1' h='3em'
               onClick={() => go({ itemIndex: i, position: 'from', active: true })}
               disabled={!link?.from_id}
               rightIcon={<FromIcon />}
@@ -772,7 +821,7 @@ export const PathItem = memo(function PathItem({
           <Button
             ref={p === 'type' ? ref : undefined}
             variant={!link?.['type_id'] ? 'disabled' : p === 'type' ? 'active' : undefined}
-            onClick={() => go({ itemIndex: i, position: 'type', active: true })}
+            onClick={() => go({ itemIndex: i, position: 'type', active: true })} h='3em'
             disabled={!link?.type_id}
             leftIcon={<TypeIcon />}
           ><Box>
@@ -783,7 +832,7 @@ export const PathItem = memo(function PathItem({
             <Button
               ref={p === 'to' ? ref : undefined}
               variant={!link?.['to_id'] ? 'disabled' : p === 'to' ? 'active' : undefined} justifyContent='left' textAlign='left'
-              flex='1'
+              flex='1' h='3em'
               onClick={() => go({ itemIndex: i, position: 'to', active: true })}
               disabled={!link?.to_id}
               rightIcon={<ToIcon />}
@@ -791,14 +840,23 @@ export const PathItem = memo(function PathItem({
               <Text>to</Text>
               <Box><Text fontSize='xs'>{symbol(link?.to)} {!!link?.to && deep.nameLocal(link.to_id)} {link?.to_id}</Text></Box>
             </Box></Button>
-            {!!link?.['to_id'] ? <Button
+            {!!link?.['to_id'] ? <FinderPopover
+              disclosure={toDisclosure}
+              header='Choose new link.to:'
+              linkId={link.id}
+              mode='modal'
+              onSubmit={async (l) => deep.update(link.id, { to_id: l.id })}
+            ><Button
               ref={p === 'edit-to' ? ref : undefined}
-              variant={p === 'edit-to' ? 'active' : undefined} justifyContent='right' textAlign='right'
-              onClick={() => go({ itemIndex: i, position: 'edit-to', active: true })}
+              variant={p === 'edit-to' ? 'active' : undefined} justifyContent='right' textAlign='right' h='3em'
+              onClick={() => {
+                go({ itemIndex: i, position: 'edit-to', active: true });
+                toDisclosure.onOpen();
+              }}
               disabled={!link?.to_id}
             ><Box>
               <MdEdit/>
-            </Box></Button> : <Box/>}
+            </Box></Button></FinderPopover> : <Box/>}
           </Flex>
         </SimpleGrid>
         <SimpleGrid columns={3}>
@@ -924,7 +982,7 @@ export const PathItem = memo(function PathItem({
           >
             <Text pr={1}>🗂️</Text> contains
           </Button>
-          {!!config.insert && <PathItemInsert link={link} isActive={p === 'insert'} buttonRef={ref} containerId={link.id}/>}
+          {!!config.insert && <PathItemInsert link={link} isActive={p === 'insert'} buttonRef={ref} containerId={link.id} item={item}/>}
         </SimpleGrid>
       </Box>
     </>}
@@ -1074,13 +1132,13 @@ export const Tree = memo(function Tree({
       key: itemsCounter++,
       query: query || queries.contains(deep.linkId),
       linkId: query ? linkId || undefined : linkId || deep.linkId,
-      position: 'results',
-      index: 0,
+      position: 'current',
+      index: -1,
     },
   ]);
 
   const [focus, setFocus] = useState<PathI>([
-    { position: 'results', index: 0 }
+    { position: 'current', index: -1, linkId }
   ]);
 
   const refPath = useRef(path);
@@ -1245,7 +1303,7 @@ export const Tree = memo(function Tree({
     f = ff || f;
     fi = typeof(item.itemIndex) === 'number' ? item.itemIndex : f?.length - 1;
 
-    if(item.active) {
+    if(item.active && f[fi]) {
       if (f[fi]?.position === 'value') {
         setPath([
           ...p.slice(0, fi),
@@ -1328,7 +1386,7 @@ export const Tree = memo(function Tree({
     }
     if (h.keys[0] === 'right') {
       const pos = navs[cpos]?.map?.[h.keys[0]];
-      go({ position: pos, });
+      go({ position: pos, active: cpos === 'value' });
     }
     if (h.keys[0] === 'left') {
       const pos = navs[cpos]?.map?.[h.keys[0]];

@@ -7,6 +7,7 @@ import ReactCodeMirror from '@uiw/react-codemirror';
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { useDebounceCallback } from '@react-hook/debounce';
+import { keymap } from "@codemirror/view";
 
 interface IEditor {
   refEditor?: any;
@@ -39,6 +40,18 @@ export const Editor = React.memo(({
   const { colorMode } = useColorMode();
   const [lang, setLang] = useState<any>(langs.tsx());
 
+  const customKeymap = useMemo(() => {
+    const save = (editor) => {
+      console.log(editor)
+      onSave && onSave(v)
+      return true;
+    };
+    return keymap.of([
+      { key: "cmd-s", run: save },
+      { key: "ctrl-s", run: save },
+    ]);
+  }, [v]);
+
   // const calcLang = useDebounceCallback(async () => {
   //   setLang(langs.tsx());
   // }, 1000);
@@ -47,7 +60,12 @@ export const Editor = React.memo(({
   return <ReactCodeMirror
     value={value}
     theme={colorMode === 'light' ? githubLight : githubDark}
-    extensions={[lang]}
+    extensions={[lang, customKeymap]}
+    basicSetup={{
+      tabSize: 2,
+      // @ts-ignore
+      lineWrapping: true,
+    }}
     onChange={(value, viewUpdate) => {
       setV(value);
       onChange && onChange(value);
