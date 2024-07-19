@@ -58,13 +58,15 @@ export const Editor = React.memo(({
   // useEffect(() => calcLang(), [v]);
 
   return <ReactCodeMirror
+    ref={refEditor}
     value={value}
     theme={colorMode === 'light' ? githubLight : githubDark}
-    extensions={[lang, customKeymap]}
+    extensions={[lang, customKeymap, ...(props?.extensions || [])]}
     basicSetup={{
       tabSize: 2,
       // @ts-ignore
       lineWrapping: true,
+      ...(props?.basicSetup || {}),
     }}
     onChange={(value, viewUpdate) => {
       setV(value);
