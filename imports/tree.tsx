@@ -50,6 +50,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import { BsX, BsCheck2, BsXLg } from 'react-icons/bs';
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 import { GrClear } from 'react-icons/gr';
+import VisibilitySensor from 'react-visibility-sensor';
 
 type NavDirection =  'current' | 'delete' | 'edit-from' | 'from' | 'type' | 'to' | 'edit-to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
@@ -82,11 +83,11 @@ nav('out', { left: 'prev', up: 'from', right: 'typed', down: 'up' });
 nav('typed', { left: 'out', up: 'type', right: 'in', down: 'up' });
 nav('in', { left: 'typed', up: 'to', right: 'next', down: 'down' });
 nav('up', { left: 'prev', up: 'out', right: 'down', down: 'selectors' });
-nav('down', { left: 'up', up: 'out', right: 'promises', down: 'selected' });
+nav('down', { left: 'up', up: 'in', right: 'promises', down: 'selected' });
 nav('selectors', { left: 'prev', up: 'up', right: 'selected', down: 'value' });
-nav('selected', { left: 'selectors', up: 'in', right: 'rejects', down: 'value' });
-nav('promises', { left: 'down', up: 'in', right: 'rejects', down: 'value' });
-nav('rejects', { left: 'promises', up: 'in', right: 'next', down: 'value' });
+nav('selected', { left: 'selectors', up: 'in', right: 'promises', down: 'value' });
+nav('promises', { left: 'selected', up: 'in', right: 'rejects', down: 'value' });
+nav('rejects', { left: 'promises', up: 'down', right: 'next', down: 'value' });
 nav('value', { left: 'prev', up: 'rejects', right: 'next', down: 'contains' });
 nav('contains', { left: 'prev', up: 'value', right: 'insert', down: 'results' });
 nav('insert', { left: 'contains', up: 'value', right: 'next', down: 'results' });
@@ -272,26 +273,60 @@ const loader = ({ query = {}, deep }: { query?: any, deep }) => {
 };
 
 export function useLoader({
-  query = {},
+  query = {}, refVisibility, i
 }: {
-  query?: any;
+  query: any;
+  refVisibility: any;
+  i: number;
 }) {
   const deep = useDeep();
   const q = useMemo(() => {
     return loader({ query, deep });
   }, [query, deep]);
-  const results = deep.useDeepQuery(q);
+  const results = deep.useQuery(q);
+  // useEffect(() => {
+  //   const interval = setInterval(async () => {
+  //     if (refVisibility.current[i]) {
+  //       // @ts-ignore
+  //       console.log(await results.refetch());
+  //     }
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, []);
   return results;
 };
+
+export function Loader({ query, timeout = 1000 }: { query: any; timeout?: number; }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), timeout);
+    console.log('Loader mount', query);
+    return () => {
+      console.log('Loader unmount', query);
+      clearTimeout(t);
+    }
+  }, []);
+  return <>{ready ? [<LoaderCore key={JSON.stringify(query)} query={query}/>] : <></>}</>;
+}
+export function LoaderCore({ query }) {
+  const deep = useDeep();
+  const q = useMemo(() => {
+    return loader({ query, deep });
+  }, [query, deep]);
+  deep.useSubscription(q);
+  return <></>
+}
 
 export const EditorPathItem = memo(function EditorPathItem({
   item,
   focus,
   i,
+  refVisibility,
 }: {
   item: PathItemI;
   focus?: PathI;
   i: number;
+  refVisibility: any;
 }) {
   const deep = useDeep();
   const levelRef = useRef<any>();
@@ -306,7 +341,7 @@ export const EditorPathItem = memo(function EditorPathItem({
 
   const link = item.linkId ? deep.minilinks.byId[item.linkId] : undefined;
 
-  const { data: [actual] } = deep.useDeepSubscription(link.id);
+  const { data: [actual] } = deep.useSubscription(link.id);
 
   const value = link?.value?.value;
   const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, [link]);
@@ -631,14 +666,14 @@ export const PathItemDelete = memo(function PathItemDelete({
   const [containment, setContainment] = useState<'contains' | 'container' | 'only'>('contains');
   const [down, setDown] = useState<boolean>(true);
   
-  const { data: countDown }: any = deep.useDeepQuery(deleteDisclosure.isOpen ? {
+  const { data: countDown }: any = deep.useQuery(deleteDisclosure.isOpen ? {
     up: {
       tree_id: deep.idLocal('@deep-foundation/core', 'containTree'),
       parent_id: link.id,
     },
   } : { limit: 0 }, { aggregate: 'count' });
   
-  const { data: countInContains }: any = deep.useDeepQuery({
+  const { data: countInContains }: any = deep.useQuery({
     to_id: link.id,
     type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
   }, { aggregate: 'count' });
@@ -722,14 +757,31 @@ export const PathItemDelete = memo(function PathItemDelete({
   </>
 });
 
+export const PathItemSearch = memo(function PathItemSearch({
+  link, item,
+  isActive, buttonRef, containerId,
+}: {
+  link: Link<Id>;
+  item: PathItemI;
+  isActive: boolean;
+  buttonRef?: any;
+  containerId?: Id;
+}) {
+  return <>
+  
+  </>
+});
+
 export const PathItem = memo(function PathItem({
   item,
   focus,
   i,
+  refVisibility,
 }: {
   item: PathItemI;
   focus?: PathI;
   i: number;
+  refVisibility?: any;
 }) {
   const deep = useDeep();
   const config = useContext(ConfigContext);
@@ -740,9 +792,9 @@ export const PathItem = memo(function PathItem({
   const isFocused = focus?.length-1 === i;
   const p: NavDirection | undefined = isFocused ? f.position as NavDirection || 'auto' : undefined;
 
-  useLoader({ query: item.linkId ? { id: item.linkId } : { limit: 0 } });
+  useLoader({ query: item.linkId ? { id: item.linkId } : { limit: 0 }, refVisibility, i });
   // @ts-ignore
-  const { data: results, originalData } = useLoader({ query: item.query });
+  const { data: results, originalData } = useLoader({ query: item.query, refVisibility, i });
   config.results.current[i] = { results, originalData };
   const link = item.linkId ? deep.minilinks.byId[item.linkId] : undefined;
 
@@ -769,7 +821,10 @@ export const PathItem = memo(function PathItem({
   const fromDisclosure = useDisclosure();
   const toDisclosure = useDisclosure();
 
-  return <Box
+  return <VisibilitySensor partialVisibility onChange={(isVisible) => {
+    refVisibility.current[i] = isVisible;
+    console.log(refVisibility.current);
+  }}><Box
     {...(config.onescreen ? { minW: config.width, w: config.width } : { minW: '25em', w: '25em' })}
     h='100%'
     borderRight='1px solid' borderRightColor='deepColor'
@@ -781,6 +836,7 @@ export const PathItem = memo(function PathItem({
   >
     {!!link && <>
       <Box borderBottom='1px solid' borderBottomColor='deepColor' overflowX='hidden' ref={pathItemRef}>
+        <PathItemSearch link={link} isActive={p === 'delete'} buttonRef={p === 'delete' ? ref : undefined} containerId={link.id} item={item}/>
         <Flex>
           <LinkButton id={link.id} flex='1' isActive={p === 'current'} onClick={() => go({ itemIndex: -1, position: 'current', active: true })}/>
           <PathItemDelete link={link} isActive={p === 'delete'} buttonRef={p === 'delete' ? ref : undefined} containerId={link.id} item={item}/>
@@ -906,20 +962,6 @@ export const PathItem = memo(function PathItem({
         </SimpleGrid>
         <SimpleGrid columns={4}>
           <Button
-            ref={p === 'promises' ? ref : undefined}
-            variant={p === 'promises' ? 'active' : undefined} justifyContent='center'
-            onClick={() => go({ itemIndex: i, position: 'promises', active: true })}
-          >
-            <Text pr={1}>🤞</Text> promises
-          </Button>
-          <Button
-            ref={p === 'rejects' ? ref : undefined}
-            variant={p === 'rejects' ? 'active' : undefined} justifyContent='center'
-            onClick={() => go({ itemIndex: i, position: 'rejects', active: true })}
-          >
-            <Text pr={1}>🔴</Text> rejects
-          </Button>
-          <Button
             ref={p === 'selectors' ? ref : undefined}
             variant={p === 'selectors' ? 'active' : undefined} justifyContent='center'
             onClick={() => go({ itemIndex: i, position: 'selectors', active: true })}
@@ -932,6 +974,20 @@ export const PathItem = memo(function PathItem({
             onClick={() => go({ itemIndex: i, position: 'selected', active: true })}
           >
             <Text pr={1}>🪡</Text> selected
+          </Button>
+          <Button
+            ref={p === 'promises' ? ref : undefined}
+            variant={p === 'promises' ? 'active' : undefined} justifyContent='center'
+            onClick={() => go({ itemIndex: i, position: 'promises', active: true })}
+          >
+            <Text pr={1}>🤞</Text> promises
+          </Button>
+          <Button
+            ref={p === 'rejects' ? ref : undefined}
+            variant={p === 'rejects' ? 'active' : undefined} justifyContent='center'
+            onClick={() => go({ itemIndex: i, position: 'rejects', active: true })}
+          >
+            <Text pr={1}>🔴</Text> rejects
           </Button>
         </SimpleGrid>
         <Box borderBottom='1px solid' borderBottomColor='deepColor'>
@@ -987,7 +1043,7 @@ export const PathItem = memo(function PathItem({
       </Box>
     </>}
     {resultsView}
-  </Box>;
+  </Box></VisibilitySensor>;
 }, isEqual);
 
 let itemsCounter = 0;
@@ -1146,6 +1202,7 @@ export const Tree = memo(function Tree({
   const refFocus = useRef(focus);
   refFocus.current = focus;
   const refResults = useRef([]);
+  const refVisibility = useRef<any>({});
 
   useEffect(() => {
     if (focus.length > path.length) setFocus(focus.slice(path.length))
@@ -1403,7 +1460,7 @@ export const Tree = memo(function Tree({
   const pathItemsView = useMemo(() => {
     return path.map((p, i) => {
       const Component = p.mode === 'editor' ? EditorPathItem : PathItem;
-      return <Component key={p.key} i={i} item={p} focus={focus.length - 1 === i ? focus : undefined}/>;
+      return <Component key={p.key} i={i} item={p} focus={focus.length - 1 === i ? focus : undefined} refVisibility={refVisibility}/>;
     });
   }, [path, focus]);
 
@@ -1419,6 +1476,8 @@ export const Tree = memo(function Tree({
       insert,
     };
   }, [onescreen, autoFocus, width, height, insert]);
+
+  console.log(JSON.stringify(path, null, 2), JSON.stringify(focus, null, 2));
 
   return <ConfigContext.Provider value={config}>
     <GoContext.Provider value={go}>
