@@ -29,10 +29,14 @@ export const LinkButton = ({
 }) => {
   const deep = useDeep();
   const link = deep?.minilinks?.byId[id];
-  const name = _name || deep.nameLocal(id);
-  const type = _type || deep.nameLocal(link?.type_id);
+  const name = _name || link?.name;
+  const type = _type || link?.type?.name;
   const symbol = useSymbol();
   const icon = _icon || symbol(link);
+
+  const parent = link?.inByType?.[deep.idLocal('@deep-foundation/core', 'Contain')]?.[0]?.from;
+  const parentName = parent?.name || '';
+  const parentIcon = symbol(parent);
 
   return <Button
     ref={buttonRef}
@@ -46,8 +50,10 @@ export const LinkButton = ({
     h='auto' pt={2} pb={2}
     {...props}
   >
-    {icon} <Box textAlign='left' pl='0.5em' w='100%' overflow='hidden'>
-      {!!((name) || (type)) && <Box fontSize="sm">{name || type}</Box>}
+    {icon} <Box textAlign='left' pl='0.5em' w='100%' overflow='hidden' position='relative'>
+      {!!((name) || (type)) && <Box fontSize="sm">{name || type}
+        {!!parent && <Box fontSize="xxs" position='absolute' right='0.5em' top='0.2em'>{parentIcon} {parentName}</Box>}
+      </Box>}
       <Box fontSize="xxs">{name ? type : ''} {id}</Box>
       {!!props?.children && props.children}
       {!!link?.value && <>

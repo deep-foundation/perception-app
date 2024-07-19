@@ -26,6 +26,7 @@ import {
   Tag,
   Flex,
   Checkbox,
+  Center,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { useMinilinksApply } from "@deep-foundation/deeplinks/imports/minilinks";
@@ -35,6 +36,7 @@ import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
 import { MdEdit, MdSaveAlt } from "react-icons/md";
+import { AiOutlineStop } from "react-icons/ai";
 import { Editor } from './editor';
 import isEqual from 'lodash/isEqual';
 import { TypedIcon } from './icons/typed';
@@ -47,10 +49,11 @@ import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
 import { FinderContext, FinderPopover } from './finder';
 import { useResizeDetector } from 'react-resize-detector';
-import { BsX, BsCheck2, BsXLg } from 'react-icons/bs';
+import { BsX, BsCheck2, BsXLg, BsDatabase } from 'react-icons/bs';
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 import { GrClear } from 'react-icons/gr';
 import VisibilitySensor from 'react-visibility-sensor';
+import {matchSorter} from 'match-sorter';
 
 type NavDirection =  'current' | 'delete' | 'edit-from' | 'from' | 'type' | 'to' | 'edit-to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
@@ -100,7 +103,11 @@ type onChangeI = (link: Link<Id>, path: PathI) => void;
 
 interface PathItemI {
   key?: number;
+
   query?: any;
+  search?: string;
+  local?: boolean;
+
   linkId?: Id;
   position?: NavDirection;
   index?: number;
@@ -166,7 +173,7 @@ export const Result = memo(function Result({
   const symbol = useSymbol();
 
   useEffect(() => {
-    if (isFocused) ref.current.scrollIntoView({block: "center", inline: "nearest"});
+    if (isFocused) ref.current.scrollIntoView({ block: "center", inline: "nearest", behavior: 'smooth' });
   }, [isFocused]);
 
   const [rename, setRename] = useState(false);
@@ -264,6 +271,9 @@ const loader = ({ query = {}, deep }: { query?: any, deep }) => {
       names: {
         relation: 'in',
         type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+        return: {
+          parent: { relation: 'from' },
+        },
       },
       from: { relation: 'from', return: { ...typeQuery } },
       ...typeQuery,
@@ -284,38 +294,19 @@ export function useLoader({
     return loader({ query, deep });
   }, [query, deep]);
   const results = deep.useQuery(q);
-  // useEffect(() => {
-  //   const interval = setInterval(async () => {
-  //     if (refVisibility.current[i]) {
-  //       // @ts-ignore
-  //       console.log(await results.refetch());
-  //     }
-  //   }, 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  const refResults = useRef(results);
+  refResults.current = results;
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (refVisibility.current[i]) {
+        // @ts-ignore
+        await refResults.current.refetch();
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
   return results;
 };
-
-export function Loader({ query, timeout = 1000 }: { query: any; timeout?: number; }) {
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setReady(true), timeout);
-    console.log('Loader mount', query);
-    return () => {
-      console.log('Loader unmount', query);
-      clearTimeout(t);
-    }
-  }, []);
-  return <>{ready ? [<LoaderCore key={JSON.stringify(query)} query={query}/>] : <></>}</>;
-}
-export function LoaderCore({ query }) {
-  const deep = useDeep();
-  const q = useMemo(() => {
-    return loader({ query, deep });
-  }, [query, deep]);
-  deep.useSubscription(q);
-  return <></>
-}
 
 export const EditorPathItem = memo(function EditorPathItem({
   item,
@@ -364,7 +355,7 @@ export const EditorPathItem = memo(function EditorPathItem({
   useEffect(() => {
     if (isFocused || !firstScrolled.current) {
       firstScrolled.current = true;
-      levelRef?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
+      levelRef?.current?.scrollIntoView({ block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest", behavior: 'smooth' });
     }
   }, [isFocused]);
 
@@ -767,8 +758,61 @@ export const PathItemSearch = memo(function PathItemSearch({
   buttonRef?: any;
   containerId?: Id;
 }) {
+  const deep = useDeep();
+  const go = useContext(GoContext);
+  const ref = useRef();
+  const [value, setValue] = useState('');
+  const [db, setDb] = useState(true);
+  const [contains, setContains] = useState(false);
+  const [values, setValues] = useState(false);
+  const search = useDebounceCallback((value) => {
+    const num = parseFloat(value);
+    const q: any = { _or: [] };
+    const _or = q._or;
+    if (!Number.isNaN(num)) {
+      _or.push({ id: num }, { number: { value: num } });
+    }
+    if (values) _or.push(
+      { string: { value: value } },
+      { string: { value: { _ilike: `%${value}%` } } },
+      { string: { value: { _similar: value } } },
+    );
+    _or.push(
+      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: value } } },
+      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _ilike: `%${value}%` } } } },
+      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _similar: value } } } },
+    );
+    if (!contains) q._not = { type_id: deep.idLocal('@deep-foundation/core', 'Contain') };
+
+    go({ position: 'results', query: { _or }, search: value, local: !db });
+  }, 300);
   return <>
-  
+    <Flex>
+      <Button h='3em' w='3em' position='relative' onClick={() => setDb(!db)}>
+        <BsDatabase/>
+        {!db && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
+      </Button>
+      <Box flex={1}><Editor
+        refEditor={ref}
+        value={value}
+        height='3em'
+        onChange={value => {
+          setValue(value);
+          search(value);
+        }}
+        basicSetup={{
+          lineNumbers: false
+        }}
+      /></Box>
+      <Button h='3em' w='3em' position='relative' onClick={() => setValues(!values)}>
+        "v"
+        {!values && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
+      </Button>
+      <Button h='3em' w='3em' position='relative' onClick={() => setContains(!contains)}>
+        🗂️
+        {!contains && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
+      </Button>
+    </Flex>
   </>
 });
 
@@ -794,9 +838,12 @@ export const PathItem = memo(function PathItem({
 
   useLoader({ query: item.linkId ? { id: item.linkId } : { limit: 0 }, refVisibility, i });
   // @ts-ignore
-  const { data: results, originalData } = useLoader({ query: item.query, refVisibility, i });
+  const { data: _results, originalData } = useLoader({ query: item.local ? { limit: 0 } : item.query, refVisibility, i });
+  const local = deep.useMinilinksSubscription(item.local ? item.query : { limit: 0 });
+  const results = item.local ? local : _results;
   config.results.current[i] = { results, originalData };
   const link = item.linkId ? deep.minilinks.byId[item.linkId] : undefined;
+
 
   const value = link?.value?.value;
   const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, [link]);
@@ -807,15 +854,18 @@ export const PathItem = memo(function PathItem({
   useEffect(() => {
     if (isFocused || !firstScrolled.current) {
       firstScrolled.current = true;
-      ref?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
-      pathItemRef?.current?.scrollIntoView({block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest"});
+      ref?.current?.scrollIntoView({ block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest", behavior: 'smooth' });
+      pathItemRef?.current?.scrollIntoView({ block: config.onescreen ? 'start' : "center", inline: config.onescreen ? 'start' : "nearest", behavior: 'smooth' });
     }
   }, [isFocused]);
 
   const focusedResult = isFocused && f.position === 'results' ? focus?.[focus?.length - 1] : undefined;
 
   const resultsView = useMemo(() => {
-    return results.map((l, ii) => (l.id === link?.id ? <></> : <Result key={l.id} link={l} resultIndex={ii} pathItemIndex={i} isFocused={focusedResult?.index === ii} _tree_position_ids={item.mode === 'upTree' || item.mode === 'downTree' ? (originalData[ii]?.positionids || []).map(p => p.position_id) : undefined}/>));
+    return (item.search ? matchSorter(results.map(l => ({ id: l.id, name: l.name, value: l.value })), item.search, {keys: ['id','name','value']}) : results).map((ll, ii) => {
+      const l = deep.minilinks.byId[ll.id];
+      return (l.id === link?.id ? <></> : <Result key={l.id} link={l} resultIndex={ii} pathItemIndex={i} isFocused={focusedResult?.index === ii} _tree_position_ids={item.mode === 'upTree' || item.mode === 'downTree' ? (originalData[ii]?.positionids || []).map(p => p.position_id) : undefined}/>);
+    });
   }, [results, focusedResult, item]);
 
   const fromDisclosure = useDisclosure();
@@ -823,7 +873,6 @@ export const PathItem = memo(function PathItem({
 
   return <VisibilitySensor partialVisibility onChange={(isVisible) => {
     refVisibility.current[i] = isVisible;
-    console.log(refVisibility.current);
   }}><Box
     {...(config.onescreen ? { minW: config.width, w: config.width } : { minW: '25em', w: '25em' })}
     h='100%'
@@ -1244,10 +1293,12 @@ export const Tree = memo(function Tree({
           ]);
         }
       } else if(item.position === 'results') {
+        const search = item.search;
+        const local = item.local;
         if (typeof(item.index) === 'number') {
           setPath(pp = [
             ...p.slice(0, fi),
-            { ...p[fi], position: item.position, index: item.index },
+            { ...p[fi], position: item.position, index: item.index, search, local },
             ...p.slice(f.length),
           ]);
           setFocus(ff = [
@@ -1258,7 +1309,7 @@ export const Tree = memo(function Tree({
         } else if(item.query) {
           setPath(pp = [
             ...p.slice(0, fi),
-            { ...p[fi], query: item.query, position: item.position, index: 0 },
+            { ...p[fi], query: item.query, position: item.position, index: 0, search, local },
             ...p.slice(f.length),
           ]);
           setFocus(ff = [
@@ -1365,7 +1416,7 @@ export const Tree = memo(function Tree({
         setPath([
           ...p.slice(0, fi),
           { ...p[fi], position: f[fi].position },
-          { key: itemsCounter++, ...p[fi], mode: 'editor' },
+          { linkId: p[fi].linkId, position: 'value', key: itemsCounter++, mode: 'editor' },
         ]);
         setFocus([
           ...f.slice(0, fi),
@@ -1476,8 +1527,6 @@ export const Tree = memo(function Tree({
       insert,
     };
   }, [onescreen, autoFocus, width, height, insert]);
-
-  console.log(JSON.stringify(path, null, 2), JSON.stringify(focus, null, 2));
 
   return <ConfigContext.Provider value={config}>
     <GoContext.Provider value={go}>
