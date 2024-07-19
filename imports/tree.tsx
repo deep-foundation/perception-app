@@ -24,6 +24,8 @@ import {
   Divider,
   Textarea,
   Tag,
+  Flex,
+  Checkbox,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { useMinilinksApply } from "@deep-foundation/deeplinks/imports/minilinks";
@@ -45,10 +47,11 @@ import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
 import { FinderContext, FinderPopover } from './finder';
 import { useResizeDetector } from 'react-resize-detector';
-import { BsX, BsCheck2 } from 'react-icons/bs';
+import { BsX, BsCheck2, BsXLg } from 'react-icons/bs';
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
+import { GrClear } from 'react-icons/gr';
 
-type NavDirection =  'current' | 'from' | 'type' | 'to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
+type NavDirection =  'current' | 'delete' | 'edit-from' | 'from' | 'type' | 'to' | 'edit-to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
 interface NavMap {
   left: NavDirection; up: NavDirection; right: NavDirection; down: NavDirection;
@@ -68,10 +71,13 @@ class Nav {
 }
 const nav = (name: string, map: NavMap) => navs[name] = new Nav(name, map);
 const navs: { [name: string]: Nav } = {};
-nav('current', { left: 'prev', up: 'current', right: 'next', down: 'type' });
+nav('current', { left: 'prev', up: 'current', right: 'delete', down: 'type' });
+nav('delete', { left: 'current', up: 'current', right: 'next', down: 'type' });
+nav('edit-from', { left: 'prev', up: 'current', right: 'from', down: 'out' });
 nav('from', { left: 'prev', up: 'current', right: 'type', down: 'out' });
 nav('type', { left: 'from', up: 'current', right: 'to', down: 'typed' });
-nav('to', { left: 'type', up: 'current', right: 'next', down: 'in' });
+nav('to', { left: 'type', up: 'current', right: 'edit-to', down: 'in' });
+nav('edit-to', { left: 'to', up: 'current', right: 'next', down: 'in' });
 nav('out', { left: 'prev', up: 'from', right: 'typed', down: 'up' });
 nav('typed', { left: 'out', up: 'type', right: 'in', down: 'up' });
 nav('in', { left: 'typed', up: 'to', right: 'next', down: 'down' });
@@ -394,6 +400,14 @@ export const PathItemInsert = memo(function PathItemInsert({
   // const { data: [_from] } = useLoader({ query: from ? { id: from } : { limit: 0 } });
   // const { data: [_to] } = useLoader({ query: to ? { id: to } : { limit: 0 } });
 
+  const insertQuery = type ? {
+    type_id: type.id,
+    ...(from && to ? { from_id: fromId, to_id: toId } : {}),
+    containerId,
+    ...(name ? { name } : {}),
+    ...(tV == S ? { string: { data: { value: validated } } } : tV == N ? { number: { data: { value: validated } }} : tV == O ? { object: { data: { value: validated } } } : {}),
+  } : {};
+
   const buttons = <>
     <SlideFade in={true} offsetX='-0.5rem' style={{position: 'absolute', top: 0, right: '-4em'}}>
       <Button
@@ -401,7 +415,7 @@ export const PathItemInsert = memo(function PathItemInsert({
         boxShadow='dark-lg'
         variant={undefined}
         onClick={async () => {
-          insertDescriptionDisclosure.onClose && insertDescriptionDisclosure.onClose();
+          insertDescriptionDisclosure.onClose();
         }}
       ><BsX /></Button>
     </SlideFade>
@@ -411,14 +425,8 @@ export const PathItemInsert = memo(function PathItemInsert({
         boxShadow='dark-lg'
         variant={'active'}
         onClick={async () => {
-          await deep.insert({
-            type_id: type.id,
-            ...(from && to ? { from_id: fromId, to_id: toId } : {}),
-            containerId,
-            ...(name ? { name } : {}),
-            ...(tV == S ? { string: { data: { value: validated } } } : tV == N ? { number: { data: { value: validated } }} : tV == O ? { object: { data: { value: validated } } } : {}),
-          } as any);
-          insertDescriptionDisclosure.onClose && insertDescriptionDisclosure.onClose();
+          await deep.insert(insertQuery as any);
+          insertDescriptionDisclosure.onClose();
         }}
       ><BsCheck2 /></Button>
     </SlideFade>
@@ -436,7 +444,7 @@ export const PathItemInsert = memo(function PathItemInsert({
     </Button>
     <FinderPopover
       header='Choose type for insert instance of it:'
-      link={link}
+      linkId={link.id}
       mode='modal'
       disclosure={insertTypeDisclosure}
       onSubmit={async (link) => {
@@ -458,7 +466,7 @@ export const PathItemInsert = memo(function PathItemInsert({
           {!!type && <LinkButton id={type.id} onClick={() => insertTypeDisclosure.onOpen()} maxW='100%'/>}
         </Box>
         <ModalBody p='1em'>
-          {(!!type?.from_id && !!type?.to_id) || type?.id === 1 && <>
+          {((!!type?.from_id && !!type?.to_id) || type?.id === 1) && <>
             <SimpleGrid columns={2} spacing={'1em'}>
               <Box>
                 <Button fontSize='sm' float='right' leftIcon={<FromIcon />}>from</Button>
@@ -473,7 +481,7 @@ export const PathItemInsert = memo(function PathItemInsert({
                   <InputRightElement m='0.25em'>
                     <FinderPopover
                       header='Choose link.from:'
-                      link={deep.minilinks.byId[fromId] || deep.minilinks.byId[deep.linkId]}
+                      linkId={fromId || deep.linkId}
                       mode='modal'
                       disclosure={insertFromDisclosure}
                       onSubmit={async (link) => {
@@ -501,7 +509,7 @@ export const PathItemInsert = memo(function PathItemInsert({
                   <InputRightElement m='0.25em'>
                     <FinderPopover
                       header='Choose link.to:'
-                      link={deep.minilinks.byId[toId] || deep.minilinks.byId[deep.linkId]}
+                      linkId={toId || deep.linkId}
                       mode='modal'
                       disclosure={insertToDisclosure}
                       onSubmit={async (link) => {
@@ -535,10 +543,10 @@ export const PathItemInsert = memo(function PathItemInsert({
           <Divider mt='1em' mb='1em'/>
           <Box position='relative'>
             {tV === S && <>
-              <Textarea
+              <Editor
                 value={value}
                 placeholder='String value'
-                onChange={e => setValue(e.target.value)}
+                onChange={setValue}
               />
             </>}
             {tV === N && <>
@@ -550,19 +558,134 @@ export const PathItemInsert = memo(function PathItemInsert({
               />
             </>}
             {tV === O && <>
-              <Textarea
+              <Editor
                 value={value}
                 placeholder='Object value'
-                onChange={e => setValue(e.target.value)}
+                onChange={setValue}
               />
             </>}
-            <Tag
+            {(tV === S || tV === N || tV === O) && <Tag
               size='lg' colorScheme={value === '' ? 'black' : isValid ? 'deepActive' : 'danger'} variant='solid' borderRadius='full'
               position='absolute' bottom='-0.5em' right='-0.5em'
-            >{value === '' ? 'empty' : isValid ? 'valid' : 'invalid'}</Tag>
+            >{value === '' ? 'empty' : isValid ? 'valid' : 'invalid'}</Tag>}
           </Box>
+          <Divider mt='1em' mb='1em'/>
+          <Editor
+            value={JSON.stringify(insertQuery, null, 2)}
+            editable={false} readOnly
+          />
         </ModalBody>
         {buttons}
+      </ModalContent>
+    </Modal>
+  </>
+});
+
+export const PathItemDelete = memo(function PathItemDelete({
+  link,
+  isActive, buttonRef, containerId,
+}: {
+  link: Link<Id>;
+  isActive: boolean;
+  buttonRef?: any;
+  containerId?: Id;
+}) {
+  const deep = useDeep();
+  const config = useContext(ConfigContext);
+  const go = useContext(GoContext);
+
+  const deleteDisclosure = useDisclosure();
+  const ref = useContext(FinderContext);
+
+  const [containment, setContainment] = useState<'contains' | 'container' | 'only'>('contains');
+  const [down, setDown] = useState<boolean>(true);
+  
+  const { data: countDown }: any = deep.useDeepQuery(deleteDisclosure.isOpen ? {
+    up: {
+      tree_id: deep.idLocal('@deep-foundation/core', 'containTree'),
+      parent_id: link.id,
+    },
+  } : { limit: 0 }, { aggregate: 'count' });
+  
+  const { data: countInContains }: any = deep.useDeepQuery({
+    to_id: link.id,
+    type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+  }, { aggregate: 'count' });
+
+  const deleteQuery = {
+    _or: [
+      (down ? {
+        up: {
+          tree_id: deep.idLocal('@deep-foundation/core', 'containTree'),
+          parent_id: link.id,
+        },
+      } : {
+        id: link.id,
+      }),
+      ...(containment === 'contains' ? [{
+        type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+        to_id: link.id,
+      }] : containment === 'container' ? [{
+        type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
+        from_id: containerId, to_id: link.id,
+      }] : []),
+    ],
+  };
+
+  return <>
+    <Button
+      ref={isActive ? ref : undefined}
+      variant={isActive ? 'active' : 'danger'} justifyContent='left' textAlign='left'
+      h='3em' w='3em'
+      onClick={() => deleteDisclosure.onOpen()}
+      disabled={!link?.to_id}
+    ><BsXLg/></Button>
+    <Modal isOpen={deleteDisclosure.isOpen} onClose={deleteDisclosure.onClose} portalProps={{ containerRef: ref }}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader position='absolute' bottom='100%'>Delete this link?:</ModalHeader>
+        <Box position='absolute' bottom='100%' maxW='50%' right={0}>
+          <LinkButton id={link.id} maxW='100%'/>
+        </Box>
+        <ModalBody>
+          <Box>
+            <Checkbox size='lg' checked={down} onChange={() => setDown(!down)}>
+              Delete all contained in links? Total: ({countDown})
+            </Checkbox>
+          </Box>
+          <Box>
+            <Button fontSize='sm' rightIcon={<ToIcon />}>Need to delete contains to this link?</Button>
+          </Box>
+          <Box>
+            <SimpleGrid columns={3}>
+              <Button variant={containment === 'contains' ? 'active' : undefined} onClick={() => setContainment('contains')}><Box>
+                <Box>all in</Box>
+                <Box fontSize='xs'>contains: ({countInContains})</Box>
+              </Box></Button>
+              {!!containerId && <Button variant={containment === 'container' ? 'active' : undefined} onClick={() => setContainment('container')}><Box>
+                <Box>only one</Box>
+                <Box fontSize='xs'>from {containerId}</Box>
+              </Box></Button>}
+              <Button variant={containment === 'only' ? 'active' : undefined} onClick={() => setContainment('only')}><Box>
+                <Box>not need</Box>
+                <Box fontSize='xs'>to delete contains</Box>
+              </Box></Button>
+            </SimpleGrid>
+          </Box>
+          <Editor
+            value={JSON.stringify(deleteQuery, null, 2)}
+            editable={false} readOnly
+          />
+        </ModalBody>
+        <ModalFooter>
+          <SimpleGrid columns={2} w='100%'>
+            <Button variant='active' onClick={() => deleteDisclosure.onClose()}>cancel</Button>
+            <Button variant={'danger'} autoFocus onClick={async () => {
+              await deep.delete(deleteQuery);
+              deleteDisclosure.onClose();
+            }}>delete</Button>
+          </SimpleGrid>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   </>
@@ -620,18 +743,32 @@ export const PathItem = memo(function PathItem({
   >
     {!!link && <>
       <Box borderBottom='1px solid' borderBottomColor='deepColor' overflowX='hidden'>
-        <Result link={link} resultIndex={-1} pathItemIndex={i} isFocused={p === 'current'}/>
+        <Flex>
+          <LinkButton id={link.id} flex='1' isActive={p === 'current'} onClick={() => go({ itemIndex: -1, position: 'current', active: true })}/>
+          <PathItemDelete link={link} isActive={p === 'delete'} buttonRef={ref} containerId={link.id}/>
+        </Flex>
         <SimpleGrid columns={3}>
-          <Button
-            ref={p === 'from' ? ref : undefined}
-            variant={!link?.['from_id'] ? 'disabled' : p === 'from' ? 'active' : undefined} justifyContent='right' textAlign='right'
-            onClick={() => go({ itemIndex: i, position: 'from', active: true })}
-            disabled={!link?.from_id}
-            rightIcon={<FromIcon />}
-          ><Box>
-            <Text>from</Text>
-            <Box><Text fontSize='xs'>{symbol(link?.from)} {!!link?.from && deep.nameLocal(link.from_id)} {link?.from_id}</Text></Box>
-          </Box></Button>
+          <Flex>
+            {!!link?.['from_id'] ? <Button
+              ref={p === 'edit-from' ? ref : undefined}
+              variant={p === 'edit-from' ? 'active' : undefined} justifyContent='right' textAlign='right'
+              onClick={() => go({ itemIndex: i, position: 'edit-from', active: true })}
+              disabled={!link?.from_id}
+            ><Box>
+              <MdEdit/>
+            </Box></Button> : <Box/>}
+            <Button
+              ref={p === 'from' ? ref : undefined}
+              variant={!link?.['from_id'] ? 'disabled' : p === 'from' ? 'active' : undefined} justifyContent='right' textAlign='right'
+              flex='1'
+              onClick={() => go({ itemIndex: i, position: 'from', active: true })}
+              disabled={!link?.from_id}
+              rightIcon={<FromIcon />}
+            ><Box>
+              <Text>from</Text>
+              <Box><Text fontSize='xs'>{symbol(link?.from)} {!!link?.from && deep.nameLocal(link.from_id)} {link?.from_id}</Text></Box>
+            </Box></Button>
+          </Flex>
           <Button
             ref={p === 'type' ? ref : undefined}
             variant={!link?.['type_id'] ? 'disabled' : p === 'type' ? 'active' : undefined}
@@ -642,16 +779,27 @@ export const PathItem = memo(function PathItem({
             <Text>type</Text>
             <Box><Text fontSize='xs'>{symbol(link?.type)} {!!link?.type && deep.nameLocal(link.type_id)} {link?.type_id}</Text></Box>
           </Box></Button>
-          <Button
-            ref={p === 'to' ? ref : undefined}
-            variant={!link?.['to_id'] ? 'disabled' : p === 'to' ? 'active' : undefined} justifyContent='left' textAlign='left'
-            onClick={() => go({ itemIndex: i, position: 'to', active: true })}
-            disabled={!link?.to_id}
-            rightIcon={<ToIcon />}
-          ><Box>
-            <Text>to</Text>
-            <Box><Text fontSize='xs'>{symbol(link?.to)} {!!link?.to && deep.nameLocal(link.to_id)} {link?.to_id}</Text></Box>
-          </Box></Button>
+          <Flex>
+            <Button
+              ref={p === 'to' ? ref : undefined}
+              variant={!link?.['to_id'] ? 'disabled' : p === 'to' ? 'active' : undefined} justifyContent='left' textAlign='left'
+              flex='1'
+              onClick={() => go({ itemIndex: i, position: 'to', active: true })}
+              disabled={!link?.to_id}
+              rightIcon={<ToIcon />}
+            ><Box>
+              <Text>to</Text>
+              <Box><Text fontSize='xs'>{symbol(link?.to)} {!!link?.to && deep.nameLocal(link.to_id)} {link?.to_id}</Text></Box>
+            </Box></Button>
+            {!!link?.['to_id'] ? <Button
+              ref={p === 'edit-to' ? ref : undefined}
+              variant={p === 'edit-to' ? 'active' : undefined} justifyContent='right' textAlign='right'
+              onClick={() => go({ itemIndex: i, position: 'edit-to', active: true })}
+              disabled={!link?.to_id}
+            ><Box>
+              <MdEdit/>
+            </Box></Button> : <Box/>}
+          </Flex>
         </SimpleGrid>
         <SimpleGrid columns={3}>
           <Button
@@ -793,6 +941,8 @@ const modes = {
 };
 
 export const Tree = memo(function Tree({
+  query,
+  linkId,
   scope,
   onEnter,
   onChange,
@@ -800,6 +950,8 @@ export const Tree = memo(function Tree({
   onescreen: _onescreen,
   insert=true,
 }: {
+  query?: any;
+  linkId?: Id;
   scope: string;
   onEnter?: onEnterI;
   onChange?: onChangeI;
@@ -920,8 +1072,8 @@ export const Tree = memo(function Tree({
   const [path, setPath] = useState<PathI>([
     {
       key: itemsCounter++,
-      query: queries.contains(deep.linkId),
-      linkId: deep.linkId,
+      query: query || queries.contains(deep.linkId),
+      linkId: query ? linkId || undefined : linkId || deep.linkId,
       position: 'results',
       index: 0,
     },
@@ -960,7 +1112,7 @@ export const Tree = memo(function Tree({
     let fi = typeof(item.itemIndex) === 'number' ? item.itemIndex : f?.length - 1;
 
     if (item.position) {
-      if (['current', 'from', 'type', 'to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
+      if (['current', 'delete', 'edit-from', 'from', 'type', 'to', 'edit-to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
         if (item.position === 'from' && !deep.minilinks.byId[p[fi]?.linkId]?.[`from_id`]) {
           go({ ...item, position: f[fi].position === 'type' ? 'prev' : 'type' });
         } else if (item.position === 'to' && !deep.minilinks.byId[p[fi]?.linkId]?.[`to_id`]) {

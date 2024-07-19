@@ -248,7 +248,7 @@ export function Content() {
               onClick={id => setSpaceId(id)} isActive={spaceId === 2473}
             />
             {!!deep && <FinderPopover
-              link={deep.minilinks.byId[deep.linkId]}
+              linkId={deep.linkId}
               onSubmit={async (link) => {
                 console.log(link);
               }}
