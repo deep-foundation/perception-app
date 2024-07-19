@@ -1215,7 +1215,7 @@ export const Tree = memo(function Tree({
       <HStack
         ref={ref as any}
         position="absolute" left='0' top='0' right='0' bottom='0'
-        overflowX={onescreen ? 'hidden' : 'scroll'} overflowY='hidden'
+        overflowX={'scroll'} overflowY='hidden'
         autoFocus={autoFocus}
       >
         {pathItemsView}
