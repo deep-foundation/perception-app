@@ -17,7 +17,8 @@ export const FinderProvider = memo(function FinderProvider({ children }: { child
 }, () => true);
 
 export const FinderPopover = memo(function FinderPopover({
-    link,
+    linkId,
+    query,
     onSubmit,
     onChange,
     onOpen,
@@ -29,7 +30,8 @@ export const FinderPopover = memo(function FinderPopover({
     mode = 'popover',
     header = '',
   }: {
-    link: Link<Id>;
+    linkId: Id;
+    query?: any;
     onSubmit: (link) => void;
     onChange?: (link) => void;
     onOpen?: () => void;
@@ -47,7 +49,9 @@ export const FinderPopover = memo(function FinderPopover({
   const { onOpen: _onOpen, onClose: _onClose, isOpen: _isOpen } = __disclosure || _disclosure;
 
   const tree = _isOpen && <Tree
-    scope={`finder-tree-${link.id}`}
+    linkId={linkId}
+    query={query}
+    scope={`finder-tree-${linkId}`}
     insert={false}
     onChange={(l, p) => {
       onChange && onChange(l);
@@ -96,7 +100,7 @@ export const FinderPopover = memo(function FinderPopover({
       <ModalContent w='80vw' h='80vh' position='relative'>
         <ModalHeader>{header}</ModalHeader>
         <Box position='absolute' bottom='-0.5em' right='-0.5em' boxShadow='dark-lg' zIndex={2}>
-          {!!selectedLink && <LinkButton id={selectedLink?.id}/>}
+          {!!selectedLink && <LinkButton id={selectedLink?.id} maxW='100%'/>}
         </Box>
         <ModalCloseButton />
         <ModalBody>
