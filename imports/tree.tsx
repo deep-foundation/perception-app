@@ -49,7 +49,7 @@ import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
 import { FinderContext, FinderPopover } from './finder';
 import { useResizeDetector } from 'react-resize-detector';
-import { BsX, BsCheck2, BsXLg, BsDatabase } from 'react-icons/bs';
+import { BsX, BsCheck2, BsXLg, BsDatabase, BsRegex } from 'react-icons/bs';
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 import { GrClear } from 'react-icons/gr';
 import VisibilitySensor from 'react-visibility-sensor';
@@ -764,6 +764,7 @@ export const PathItemSearch = memo(function PathItemSearch({
   const [value, setValue] = useState('');
   const [db, setDb] = useState(true);
   const [contains, setContains] = useState(false);
+  const [regexp, setRegexp] = useState(true);
   const [values, setValues] = useState(false);
   const search = useDebounceCallback((value) => {
     const num = parseFloat(value);
@@ -772,16 +773,11 @@ export const PathItemSearch = memo(function PathItemSearch({
     if (!Number.isNaN(num)) {
       _or.push({ id: num }, { number: { value: num } });
     }
-    if (values) _or.push(
-      { string: { value: value } },
-      { string: { value: { _ilike: `%${value}%` } } },
-      { string: { value: { _similar: value } } },
-    );
-    _or.push(
-      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: value } } },
-      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _ilike: `%${value}%` } } } },
-      { in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _similar: value } } } },
-    );
+    if (values) {
+      if (regexp) _or.push({ string: { value: { _similar: value } } });
+      else _or.push({ string: { value: { _ilike: `%${value}%` } } });
+    };
+    _or.push({ in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _similar: value } } } });
     if (!contains) q._not = { type_id: deep.idLocal('@deep-foundation/core', 'Contain') };
 
     go({ position: 'results', query: { _or }, search: value, local: !db });
@@ -791,6 +787,10 @@ export const PathItemSearch = memo(function PathItemSearch({
       <Button h='3em' w='3em' position='relative' onClick={() => setDb(!db)}>
         <BsDatabase/>
         {!db && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
+      </Button>
+      <Button h='3em' w='3em' position='relative' onClick={() => setRegexp(!regexp)}>
+        <BsRegex/>
+        {!regexp && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
       </Button>
       <Box flex={1}><Editor
         refEditor={ref}
@@ -1275,6 +1275,9 @@ export const Tree = memo(function Tree({
 
     let fi = typeof(item.itemIndex) === 'number' ? item.itemIndex : f?.length - 1;
 
+    const search = item.search;
+    const local = item.local;
+
     if (item.position) {
       if (['current', 'delete', 'edit-from', 'from', 'type', 'to', 'edit-to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
         if (item.position === 'from' && !deep.minilinks.byId[p[fi]?.linkId]?.[`from_id`]) {
@@ -1284,7 +1287,7 @@ export const Tree = memo(function Tree({
         } else {
           setPath(pp = [
             ...p.slice(0, fi),
-            { ...p[fi], position: item.position, index: -1 },
+            { ...p[fi], position: item.position, index: -1, search, local },
             ...p.slice(f.length),
           ]);
           setFocus(ff = [
@@ -1293,8 +1296,6 @@ export const Tree = memo(function Tree({
           ]);
         }
       } else if(item.position === 'results') {
-        const search = item.search;
-        const local = item.local;
         if (typeof(item.index) === 'number') {
           setPath(pp = [
             ...p.slice(0, fi),
