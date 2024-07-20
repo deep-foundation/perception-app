@@ -277,7 +277,7 @@ export function Content() {
           <LayoutButton isActive={layout === 'o'} id={'o'} name={<BsLightningChargeFill/>} onClick={id => setLayout(id)}/>
           <Button w='3em' h='3em'>+</Button>
           <Spacer/>
-          <Packages/>
+          {!!deep && <Packages/>}
           <ColorMode w='3em' h='3em' dark={{ children: <SunIcon/> }} light={{ children: <MoonIcon/> }}/>
           <Button w='3em' h='3em'><Status/></Button>
           <Auth/>
