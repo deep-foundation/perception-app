@@ -27,6 +27,7 @@ import {
   Flex,
   Checkbox,
   Center,
+  Progress,
 } from '@chakra-ui/react';
 import { useDeep } from "@deep-foundation/deeplinks/imports/client";
 import { useMinilinksApply } from "@deep-foundation/deeplinks/imports/minilinks";
@@ -107,6 +108,8 @@ interface PathItemI {
   query?: any;
   search?: string;
   local?: boolean;
+  loading?: boolean;
+  error?: any;
 
   linkId?: Id;
   position?: NavDirection;
@@ -217,6 +220,8 @@ export const Result = memo(function Result({
     icon={symbol(link)}
     w='100%'
     role='group'
+    borderBottom='solid 1px'
+    borderBottomColor='deepBgHover'
     onClick={id => {
       go({
         itemIndex: pathItemIndex, index: resultIndex,
@@ -245,25 +250,6 @@ export function useSymbol() {
 }
 
 const loader = ({ query = {}, deep }: { query?: any, deep }) => {
-  const typeQuery = {
-    type: {
-      relation: 'type',
-      return: {
-        valuetype: {
-          relation: 'out',
-          type_id: deep.idLocal('@deep-foundation/core', 'Value'),
-        },
-        symbol: {
-          relation: 'in',
-          type_id: deep.idLocal('@deep-foundation/core', 'Symbol'),
-        },
-        names: {
-          relation: 'in',
-          type_id: deep.idLocal('@deep-foundation/core', 'Contain'),
-        },
-      },
-    },
-  };
   return {
     ...query,
     return: {
@@ -275,9 +261,8 @@ const loader = ({ query = {}, deep }: { query?: any, deep }) => {
           parent: { relation: 'from' },
         },
       },
-      from: { relation: 'from', return: { ...typeQuery } },
-      ...typeQuery,
-      to: { relation: 'to', return: { ...typeQuery } },
+      from: { relation: 'from' },
+      to: { relation: 'to' },
     },
   };
 };
@@ -762,26 +747,48 @@ export const PathItemSearch = memo(function PathItemSearch({
   const go = useContext(GoContext);
   const ref = useRef();
   const [value, setValue] = useState('');
-  const [db, setDb] = useState(true);
+  const [db, setDb] = useState(false);
   const [contains, setContains] = useState(false);
-  const [regexp, setRegexp] = useState(true);
+  const [regexp, setRegexp] = useState(false);
   const [values, setValues] = useState(false);
-  const search = useDebounceCallback((value) => {
-    const num = parseFloat(value);
-    const q: any = { _or: [] };
-    const _or = q._or;
-    if (!Number.isNaN(num)) {
-      _or.push({ id: num }, { number: { value: num } });
-    }
-    if (values) {
-      if (regexp) _or.push({ string: { value: { _similar: value } } });
-      else _or.push({ string: { value: { _ilike: `%${value}%` } } });
-    };
-    _or.push({ in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: { _similar: value } } } });
-    if (!contains) q._not = { type_id: deep.idLocal('@deep-foundation/core', 'Contain') };
+  const [query, setQuery] = useState(false);
+  
+  const num = parseFloat(value);
+  const q: any = { _or: [] };
+  const _or = q._or;
+  if (!Number.isNaN(num)) {
+    _or.push({ id: num }, { number: { value: num } });
+  }
+  if (values) {
+    if (regexp) _or.push({ string: { value: { _iregex: value } } });
+    else _or.push({ string: { value: { _ilike: `%${value}%` } } });
+  };
+  _or.push({ in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: regexp ? { _iregex: value } : { _ilike: `%${value}%` } } } });
+  if (!contains) q._not = { type_id: deep.idLocal('@deep-foundation/core', 'Contain') };
 
-    go({ position: 'results', query: { _or }, search: value, local: !db });
-  }, 300);
+  useEffect(() => {
+    if (value) {
+      search(value);
+    }
+  }, [value, db, contains, regexp, values]);
+
+  const queryRef = useRef(query);
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    if (queryRef.current !== query) {
+      if (!!query) setValue(JSON.stringify(q, null, 2));
+      else setValue(valueRef.current);
+      queryRef.current = query;
+      valueRef.current = value;
+    }
+  }, [query]);
+
+  const search = useDebounceCallback((value) => {
+    let cq;
+    try { cq = JSON.parse(value); } catch(error) { go({ error }) }
+    go({ position: 'results', query: query ? cq : q, search: query ? valueRef.current : value, local: !db });
+  }, 1000);
   return <>
     <Flex>
       <Button h='3em' w='3em' position='relative' onClick={() => setDb(!db)}>
@@ -792,13 +799,16 @@ export const PathItemSearch = memo(function PathItemSearch({
         <BsRegex/>
         {!regexp && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
       </Button>
+      <Button h='3em' w='3em' position='relative' onClick={() => setQuery(!query)}>
+        {`{q}`}
+        {!query && <Center position='absolute' top='0' left='0' right='0' bottom='0' fontSize='2em'><AiOutlineStop/></Center>}
+      </Button>
       <Box flex={1}><Editor
         refEditor={ref}
         value={value}
         height='3em'
         onChange={value => {
           setValue(value);
-          search(value);
         }}
         basicSetup={{
           lineNumbers: false
@@ -838,12 +848,15 @@ export const PathItem = memo(function PathItem({
 
   useLoader({ query: item.linkId ? { id: item.linkId } : { limit: 0 }, refVisibility, i });
   // @ts-ignore
-  const { data: _results, originalData } = useLoader({ query: item.local ? { limit: 0 } : item.query, refVisibility, i });
+  const { data: _results, originalData, loading, error } = useLoader({ query: item.local ? { limit: 0 } : item.query, refVisibility, i });
   const local = deep.useMinilinksSubscription(item.local ? item.query : { limit: 0 });
   const results = item.local ? local : _results;
   config.results.current[i] = { results, originalData };
   const link = item.linkId ? deep.minilinks.byId[item.linkId] : undefined;
 
+  useEffect(() => {
+    go({ loading, error });
+  }, [loading, error]);
 
   const value = link?.value?.value;
   const valueType = useMemo(() => link?.type?.outByType[deep.idLocal('@deep-foundation/core', 'Value')]?.[0]?.to_id, [link]);
@@ -862,9 +875,10 @@ export const PathItem = memo(function PathItem({
   const focusedResult = isFocused && f.position === 'results' ? focus?.[focus?.length - 1] : undefined;
 
   const resultsView = useMemo(() => {
-    return (item.search ? matchSorter(results.map(l => ({ id: l.id, name: l.name, value: l.value })), item.search, {keys: ['id','name','value']}) : results).map((ll, ii) => {
+    const sorted = item.search ? matchSorter(results.map(l => ({ id: l.id, name: l.name, value: l?.value?.value })), item.search, {keys: ['id','name','value']}) : undefined;
+    return (sorted || results).map((ll, ii) => {
       const l = deep.minilinks.byId[ll.id];
-      return (l.id === link?.id ? <></> : <Result key={l.id} link={l} resultIndex={ii} pathItemIndex={i} isFocused={focusedResult?.index === ii} _tree_position_ids={item.mode === 'upTree' || item.mode === 'downTree' ? (originalData[ii]?.positionids || []).map(p => p.position_id) : undefined}/>);
+      return (!l || l?.id === link?.id ? <></> : <Result key={l.id} link={l} resultIndex={ii} pathItemIndex={i} isFocused={focusedResult?.index === ii} _tree_position_ids={item.mode === 'upTree' || item.mode === 'downTree' ? (originalData[ii]?.positionids || []).map(p => p.position_id) : undefined}/>);
     });
   }, [results, focusedResult, item]);
 
@@ -1091,6 +1105,12 @@ export const PathItem = memo(function PathItem({
         </SimpleGrid>
       </Box>
     </>}
+    <Progress size='xs' isIndeterminate={item.loading} value={100} />
+    {!item.loading && !item.error && !results?.length && <Text color='deepColorDisabled' p='2m' align='center'>No results</Text>}
+    {!!item.error && <Editor
+      value={item.error}
+      editable={false} readonly
+    />}
     {resultsView}
   </Box></VisibilitySensor>;
 }, isEqual);
@@ -1237,13 +1257,13 @@ export const Tree = memo(function Tree({
       key: itemsCounter++,
       query: query || queries.contains(deep.linkId),
       linkId: query ? linkId || undefined : linkId || deep.linkId,
-      position: 'current',
+      position: 'contains',
       index: -1,
     },
   ]);
 
   const [focus, setFocus] = useState<PathI>([
-    { position: 'current', index: -1, linkId }
+    { position: 'contains', index: -1, linkId }
   ]);
 
   const refPath = useRef(path);
@@ -1278,6 +1298,14 @@ export const Tree = memo(function Tree({
     const search = item.search;
     const local = item.local;
 
+    if (typeof(item.loading) === 'boolean' || item.error)  {
+      setPath(pp = [
+        ...p.slice(0, fi),
+        { ...p[fi], loading: item.loading, error: item.error },
+        ...p.slice(fi+1),
+      ]);
+    }
+
     if (item.position) {
       if (['current', 'delete', 'edit-from', 'from', 'type', 'to', 'edit-to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
         if (item.position === 'from' && !deep.minilinks.byId[p[fi]?.linkId]?.[`from_id`]) {
@@ -1288,7 +1316,7 @@ export const Tree = memo(function Tree({
           setPath(pp = [
             ...p.slice(0, fi),
             { ...p[fi], position: item.position, index: -1, search, local },
-            ...p.slice(f.length),
+            ...p.slice(fi+1),
           ]);
           setFocus(ff = [
             ...f.slice(0, fi),
@@ -1300,7 +1328,7 @@ export const Tree = memo(function Tree({
           setPath(pp = [
             ...p.slice(0, fi),
             { ...p[fi], position: item.position, index: item.index, search, local },
-            ...p.slice(f.length),
+            ...p.slice(fi+1),
           ]);
           setFocus(ff = [
             ...f.slice(0, fi),
@@ -1311,7 +1339,7 @@ export const Tree = memo(function Tree({
           setPath(pp = [
             ...p.slice(0, fi),
             { ...p[fi], query: item.query, position: item.position, index: 0, search, local },
-            ...p.slice(f.length),
+            ...p.slice(fi+1),
           ]);
           setFocus(ff = [
             ...f.slice(0, fi),

@@ -37,6 +37,7 @@ import { i18nGetStaticProps } from '../src/i18n.tsx';
 import { useDeepPath } from '../src/provider.tsx';
 import { Mounted } from '../imports/mounted.tsx';
 import { HotkeysProvider } from 'react-hotkeys-hook';
+import { Packages } from '../imports/packages.tsx';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -156,7 +157,7 @@ export function Auth() {
     }
   }, [deep, deep?.linkId]);
 
-  return <Box display='inline-flex' h='3em' role="group" position="absolute" bottom="0px" left="0px">
+  return <Box display='inline-flex' h='3em' role="group">
     <Button
       w='3em' h='3em'
     >{deep ? <IoExitOutline /> : <IoEnterOutline/>}</Button>
@@ -268,20 +269,19 @@ export function Content() {
         </Flex>
       </GridItem>
       <GridItem area={'nav'} zIndex={1} position="relative" h="100%">
-        <LayoutButton isActive={layout === 'c'} id={'c'} name={<PiGraphBold/>} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'g'} id={'g'} name={<BsGrid1X2Fill/>} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 't'} id={'t'} name={'🎄'} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'f'} id={'f'} name={<GoWorkflow/>} onClick={id => setLayout(id)}/>
-        <LayoutButton isActive={layout === 'o'} id={'o'} name={<BsLightningChargeFill/>} onClick={id => setLayout(id)}/>
-        <Button w='3em' h='3em'>+</Button>
-        <ColorMode
-          w='3em' h='3em' position="absolute" bottom="6em" left="0px"
-          dark={{ children: <SunIcon/> }} light={{ children: <MoonIcon/> }}
-        />
-        <Button w='3em' h='3em' position="absolute" bottom="3em" left="0px">
-          <Status/>
-        </Button>
-        <Auth/>
+        <Flex direction='column' h='100%'>
+          <LayoutButton isActive={layout === 'c'} id={'c'} name={<PiGraphBold/>} onClick={id => setLayout(id)}/>
+          <LayoutButton isActive={layout === 'g'} id={'g'} name={<BsGrid1X2Fill/>} onClick={id => setLayout(id)}/>
+          <LayoutButton isActive={layout === 't'} id={'t'} name={'🎄'} onClick={id => setLayout(id)}/>
+          <LayoutButton isActive={layout === 'f'} id={'f'} name={<GoWorkflow/>} onClick={id => setLayout(id)}/>
+          <LayoutButton isActive={layout === 'o'} id={'o'} name={<BsLightningChargeFill/>} onClick={id => setLayout(id)}/>
+          <Button w='3em' h='3em'>+</Button>
+          <Spacer/>
+          <Packages/>
+          <ColorMode w='3em' h='3em' dark={{ children: <SunIcon/> }} light={{ children: <MoonIcon/> }}/>
+          <Button w='3em' h='3em'><Status/></Button>
+          <Auth/>
+        </Flex>
       </GridItem>
       <GridItem area={'main'} overflow="hidden" position="relative">
         {layout === 'c' && <Center w='100%' h='100%'>

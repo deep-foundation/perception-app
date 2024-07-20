@@ -51,8 +51,8 @@ export const LinkButton = ({
     {...props}
   >
     {icon} <Box textAlign='left' pl='0.5em' w='100%' overflow='hidden' position='relative'>
+      {!!parent && <Box fontSize="0.6em" textAlign='right'>{parentName} {parentIcon}</Box>}
       {!!((name) || (type)) && <Box fontSize="sm">{name || type}
-        {!!parent && <Box fontSize="xxs" position='absolute' right='0.5em' top='0.2em'>{parentIcon} {parentName}</Box>}
       </Box>}
       <Box fontSize="xxs">{name ? type : ''} {id}</Box>
       {!!props?.children && props.children}
