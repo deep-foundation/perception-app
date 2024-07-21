@@ -38,6 +38,7 @@ import { useDeepPath } from '../src/provider.tsx';
 import { Mounted } from '../imports/mounted.tsx';
 import { HotkeysProvider } from 'react-hotkeys-hook';
 import { Packages } from '../imports/packages.tsx';
+import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -291,7 +292,7 @@ export function Content() {
           for example some thing like: <Link href="https://react-grid-layout.github.io/react-grid-layout/examples/11-no-vertical-compact.html">react-grid-layout.github.io</Link>
         </Center>}
         {layout === 't' && <Box w='100%' h='100%'>
-          {!!deep && <Tree scope='layout-tree'/>}
+          {!!deep && <>{[<Tree key={deep?.linkId || ''} scope='layout-tree'/>]}</>}
         </Box>}
         {layout === 'f' && <Center w='100%' h='100%' bg='pink'>
           for example some thing like: <Link href="https://reactflow.dev/">reactflow.dev</Link>
@@ -345,6 +346,7 @@ export default function Page({
             <Mounted>
               <Content/>
             </Mounted>
+            <AutoGuest/>
           </MinilinksProvider>
         </DeepNamespaceProvider>
       </FinderProvider>

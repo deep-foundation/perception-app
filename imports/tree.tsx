@@ -56,7 +56,7 @@ import { GrClear } from 'react-icons/gr';
 import VisibilitySensor from 'react-visibility-sensor';
 import {matchSorter} from 'match-sorter';
 
-type NavDirection =  'current' | 'delete' | 'edit-from' | 'from' | 'type' | 'to' | 'edit-to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
+type NavDirection =  'current' | 'delete' | 'edit-from' | 'from' | 'type' | 'to' | 'edit-to' | 'out' | 'typed' | 'in' | 'up' | 'down' | 'promises' | 'rejects' | 'selectors' | 'selected' | 'prev' | 'next' | 'parents' | 'contains' | 'insert' | 'value' | 'results' | 'auto';
 
 interface NavMap {
   left: NavDirection; up: NavDirection; right: NavDirection; down: NavDirection;
@@ -93,7 +93,8 @@ nav('selected', { left: 'selectors', up: 'in', right: 'promises', down: 'value' 
 nav('promises', { left: 'selected', up: 'in', right: 'rejects', down: 'value' });
 nav('rejects', { left: 'promises', up: 'down', right: 'next', down: 'value' });
 nav('value', { left: 'prev', up: 'rejects', right: 'next', down: 'contains' });
-nav('contains', { left: 'prev', up: 'value', right: 'insert', down: 'results' });
+nav('parents', { left: 'prev', up: 'value', right: 'contains', down: 'results' });
+nav('contains', { left: 'parents', up: 'value', right: 'insert', down: 'results' });
 nav('insert', { left: 'contains', up: 'value', right: 'next', down: 'results' });
 nav('results', { left: 'prev', up: 'contains', right: 'next', down: 'results' });
 navs.next = navs.contains;
@@ -485,7 +486,7 @@ export const PathItemInsert = memo(function PathItemInsert({
     </Button>
     <FinderPopover
       header='Choose type for insert instance of it:'
-      linkId={link.id}
+      search='Type'
       mode='modal'
       disclosure={insertTypeDisclosure}
       onSubmit={async (link) => {
@@ -1093,7 +1094,14 @@ export const PathItem = memo(function PathItem({
             </>}
           </SimpleGrid>
         </Box>
-        <SimpleGrid columns={config.insert ? 2 : 1}>
+        <SimpleGrid columns={config.insert ? 3 : 2}>
+          <Button
+            ref={p === 'parents' ? ref : undefined}
+            variant={p === 'parents' ? 'active' : undefined} justifyContent='center'
+            onClick={() => go({ itemIndex: i, position: 'parents', active: true })}
+          >
+            <Text pr={1}>🗂️</Text> parents
+          </Button>
           <Button
             ref={p === 'contains' ? ref : undefined}
             variant={p === 'contains' ? 'active' : undefined} justifyContent='center'
@@ -1125,6 +1133,7 @@ const modes = {
 
 export const Tree = memo(function Tree({
   query,
+  search,
   linkId,
   scope,
   onEnter,
@@ -1134,6 +1143,7 @@ export const Tree = memo(function Tree({
   insert=true,
 }: {
   query?: any;
+  search?: string;
   linkId?: Id;
   scope: string;
   onEnter?: onEnterI;
@@ -1256,6 +1266,8 @@ export const Tree = memo(function Tree({
     {
       key: itemsCounter++,
       query: query || queries.contains(deep.linkId),
+      search: search || undefined,
+      local: search ? true : undefined,
       linkId: query ? linkId || undefined : linkId || deep.linkId,
       position: 'contains',
       index: -1,
@@ -1307,7 +1319,7 @@ export const Tree = memo(function Tree({
     }
 
     if (item.position) {
-      if (['current', 'delete', 'edit-from', 'from', 'type', 'to', 'edit-to', 'out', 'typed', 'in', 'up', 'down', 'value', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
+      if (['current', 'delete', 'edit-from', 'from', 'type', 'to', 'edit-to', 'out', 'typed', 'in', 'up', 'down', 'value', 'parents', 'contains', 'insert', 'promises', 'rejects', 'selectors', 'selected'].includes(item.position)) {
         if (item.position === 'from' && !deep.minilinks.byId[p[fi]?.linkId]?.[`from_id`]) {
           go({ ...item, position: f[fi].position === 'type' ? 'prev' : 'type' });
         } else if (item.position === 'to' && !deep.minilinks.byId[p[fi]?.linkId]?.[`to_id`]) {

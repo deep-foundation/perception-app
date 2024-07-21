@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -43,6 +43,7 @@
     "axios-hooks": "^5.0.2",
     "base64-blob": "^1.4.1",
     "capacitor-voice-recorder": "^5.0.0",
+    "chance": "^1.1.12",
     "dotenv-load": "^2.0.1",
     "match-sorter": "^6.3.4",
     "next": "^14.2.2",
