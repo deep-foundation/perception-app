@@ -179,6 +179,7 @@ export function Auth() {
       p='1em'
       bg="deepBg"
     >
+      {!!deep?.linkId && [<LinkButton key={deep.linkId || ''} id={deep?.linkId} needParent={false} w='100%'/>]}
       <VStack spacing={'1em'} mb='1em'>
         <Input value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
         <Input type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
@@ -230,9 +231,13 @@ export function Content() {
 
   const [spaceId, setSpaceId] = useState<any>();
   const [containerId, setContainerId] = useState();
+  const [logo, setLogo] = useState(true);
+  useEffect(() => {
+    setTimeout(() => setLogo(false), 1000);
+  }, []);
 
-  return (
-    <Orientation scope='deep' linkId={deep.linkId}>
+  return (<>
+    {[<Orientation key={deep.linkId} scope='deep' linkId={deep.linkId}>
       <Grid
         templateAreas={`"tabs tabs"
                         "nav main"`}
@@ -246,7 +251,7 @@ export function Content() {
           <Flex w="100%" h="100%">
             <Box/>
             <Spacer/>
-            <PathItemSearch oneline finder where={{ position: 'results', mode: 'search' }} value='380'/>
+            {!!deep && [<PathItemSearch key={deep?.linkId} oneline finder where={{ position: 'results', mode: 'search' }} value={''}/>]}
           </Flex>
         </GridItem>
         <GridItem area={'nav'} zIndex={1} position="relative" h="100%">
@@ -266,7 +271,7 @@ export function Content() {
             <Auth/>
           </Flex>
         </GridItem>
-        <GridItem area={'main'} overflow="hidden" position="relative">
+        {[<GridItem key={deep.linkId} area={'main'} overflow="hidden" position="relative">
           {layout === 'd' && <Center w='100%' h='100%'>
             {!!deep && <Dash/>}
           </Center>}
@@ -277,7 +282,7 @@ export function Content() {
             for example some thing like: <Link href="https://react-grid-layout.github.io/react-grid-layout/examples/11-no-vertical-compact.html">react-grid-layout.github.io</Link>
           </Center>}
           {layout === 't' && <Box w='100%' h='100%'>
-            {!!deep && <>{[<Tree key={deep?.linkId || ''}/>]}</>}
+            {!!deep && !!deep?.linkId && <>{[<Tree/>]}</>}
           </Box>}
           {layout === 'f' && <Center w='100%' h='100%' bg='pink'>
             for example some thing like: <Link href="https://reactflow.dev/">reactflow.dev</Link>
@@ -288,10 +293,16 @@ export function Content() {
           {layout === 'a' && <Box w='100%' h='100%'>
             
           </Box>}
-        </GridItem>
+        </GridItem>]}
       </Grid>
-    </Orientation>
-  );
+      <Center
+        bg='#0D1117' zIndex={777} position='fixed' w='100%' h='100%' left='0' top='0'
+        transition={'all 1s ease'} pointerEvents={logo ? 'all' : 'none'} opacity={logo ? 0.9 : 0}
+      >
+        <Image src='./logo.svg' alt='logo' w='10em' />
+      </Center>
+    </Orientation>]}
+  </>);
   // return (<Flex w="100%" h="100%" position="fixed" l="0%" t="0%">
   //   <Box w='2em' bg='gray.500' overflowX="hidden" overflowY="scroll">
   //   </Box>
@@ -318,10 +329,6 @@ export default function Page({
   const [path, setPath] = useDeepPath(defaultPath);
   const [ssl, setSsl] = useState(defaultSsl);
   const [portal, setPortal] = useState(true);
-  const [logo, setLogo] = useState(true);
-  useEffect(() => {
-    setTimeout(() => setLogo(false), 1000);
-  }, []);
 
   return (<>
     <HotkeysProvider>
@@ -329,23 +336,15 @@ export default function Page({
         <DeepNamespaceProvider>
           <MinilinksProvider>
             {!!path && <>
-              {/* <CyberDeepProvider namespace="cyber"/> */}
-              {/* <AutoGuest/> */}
             </>}
+            {<AutoGuest/>}
             <Mounted>
               <Content/>
             </Mounted>
-            <AutoGuest/>
           </MinilinksProvider>
         </DeepNamespaceProvider>
       </FinderProvider>
     </HotkeysProvider>
-    <Center
-      bg='#0D1117' zIndex={777} position='fixed' w='100%' h='100%' left='0' top='0'
-      transition={'all 1s ease'} pointerEvents={logo ? 'all' : 'none'} opacity={logo ? 0.9 : 0}
-    >
-      <Image src='./logo.svg' alt='logo' w='10em' />
-    </Center>
   </>);
 };
 
