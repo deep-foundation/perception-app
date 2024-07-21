@@ -177,6 +177,7 @@ export const Orientation = memo(function Orientation({
     out: (linkId) => ({ from_id: linkId }),
     typed: (linkId) => ({ type_id: linkId }),
     in: (linkId) => ({ to_id: linkId }),
+    parents: (linkId) => ({ out: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), to_id: linkId } }),
     contains: (linkId) => ({ in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), from_id: linkId } }),
     promises: (linkId) => ({
       type_id: deep.idLocal('@deep-foundation/core', 'Promise'),
