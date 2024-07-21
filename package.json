@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -36,7 +36,6 @@
     "@deep-foundation/perception-imports": "^0.0.23",
     "@monaco-editor/react": "^4.6.0",
     "@react-hook/debounce": "^4.0.0",
-    "@testboxlab/react-bubble-chart-d3": "^2.2.1",
     "@uiw/codemirror-extensions-color": "^4.23.0",
     "@uiw/codemirror-extensions-langs": "^4.23.0",
     "@uiw/codemirror-theme-github": "^4.23.0",
