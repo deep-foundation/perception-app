@@ -313,7 +313,7 @@ export const Orientation = memo(function Orientation({
     if (typeof(item.loading) === 'boolean' || item.error)  {
       setPath(pp = [
         ...p.slice(0, fi),
-        { ...p[fi], loading: item.loading, error: item.error },
+        { ...p[fi], loading: item.loading, error: item.error, mode: item.mode || p[fi].mode },
         ...p.slice(fi+1),
       ]);
     }
@@ -331,7 +331,7 @@ export const Orientation = memo(function Orientation({
         } else {
           setPath(pp = [
             ...p.slice(0, fi),
-            { linkId: item.linkId, ...p[fi], position: item.position, index: -1, search, local },
+            { linkId: item.linkId, ...p[fi], position: item.position, index: -1, search, local, mode: item.mode || p[fi].mode },
             ...p.slice(fi+1),
           ]);
           setFocus(ff = [
@@ -343,7 +343,7 @@ export const Orientation = memo(function Orientation({
         if (typeof(item.index) === 'number') {
           setPath(pp = [
             ...p.slice(0, fi),
-            { ...p[fi], position: item.position, index: item.index, search, local },
+            { ...p[fi], position: item.position, index: item.index, search, local, mode: item.mode || p[fi].mode },
             ...p.slice(fi+1),
           ]);
           setFocus(ff = [
@@ -428,11 +428,11 @@ export const Orientation = memo(function Orientation({
           setPath(pp = [
             ...p.slice(0, fi),
             { ...p[fi], position: 'results', index: item.index },
-            { key: itemsCounter++, position: p[fi+1]?.position || 'contains', index: typeof(p[fi+1]?.index) === 'number' ? p[fi+1]?.index : 0, linkId: item.linkId, query: queries.contains(item.linkId) },
+            { key: itemsCounter++, position: p[fi+1]?.position || 'contains', index: typeof(p[fi+1]?.index) === 'number' ? p[fi+1]?.index : 0, linkId: item.linkId, query: queries.contains(item.linkId), mode: item.mode || p[fi].mode },
           ] as PathI);
           setFocus(ff = [
             ...f.slice(0, fi),
-            { ...f[fi], position: 'results', index: item.index }
+            { ...f[fi], position: 'results', index: item.index, mode: item.mode || p[fi].mode }
           ] as PathI);
         } else {
           item.linkId = r?.[fi]?.results?.[f[fi]?.index]?.id;
@@ -441,7 +441,7 @@ export const Orientation = memo(function Orientation({
               setPath(pp = [
                 ...p.slice(0, fi),
                 { ...p[fi], position: f[fi].position, index: f[fi].index },
-                { key: itemsCounter++, position: p[fi+1]?.position || 'contains', index: 0, linkId: item.linkId, query: queries.contains(item.linkId) },
+                { key: itemsCounter++, position: p[fi+1]?.position || 'contains', index: 0, linkId: item.linkId, query: queries.contains(item.linkId), mode: item.mode || p[fi].mode },
               ]);
             }
             setFocus(ff = [

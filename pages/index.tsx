@@ -222,6 +222,8 @@ export function Content() {
     if (!window.deep) console.log('deep', deep);
     // @ts-ignore
     window.deep = deep;
+    // @ts-ignore
+    window.require = require;
   }
 
   const [layout, setLayout] = useQueryStore('layout', 't');
