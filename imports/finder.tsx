@@ -4,6 +4,8 @@ import { createContext, memo, useContext, useRef, useState } from "react";
 import { BsCheck2, BsX } from "react-icons/bs";
 import { Result, Tree } from "./tree";
 import { LinkButton } from "./link";
+import Chance from 'chance';
+var chance = new Chance();
 
 export const FinderContext = createContext<any>(undefined);
 export const FinderProvider = memo(function FinderProvider({ children }: { children: any; }) {
@@ -19,6 +21,7 @@ export const FinderProvider = memo(function FinderProvider({ children }: { child
 export const FinderPopover = memo(function FinderPopover({
     linkId,
     query,
+    search,
     onSubmit,
     onChange,
     onOpen,
@@ -30,8 +33,9 @@ export const FinderPopover = memo(function FinderPopover({
     mode = 'popover',
     header = '',
   }: {
-    linkId: Id;
+    linkId?: Id;
     query?: any;
+    search?: string;
     onSubmit: (link) => void;
     onChange?: (link) => void;
     onOpen?: () => void;
@@ -47,10 +51,12 @@ export const FinderPopover = memo(function FinderPopover({
   const [selectedLink, setSelectedLink] = useState<Link<Id>>();
   const _disclosure = useDisclosure();
   const { onOpen: _onOpen, onClose: _onClose, isOpen: _isOpen } = __disclosure || _disclosure;
+  const [unique] = useState(linkId || chance.string());
 
   const tree = _isOpen && <Tree
     linkId={linkId}
     query={query}
+    search={search}
     scope={`finder-tree-${linkId}`}
     insert={false}
     onChange={(l, p) => {
