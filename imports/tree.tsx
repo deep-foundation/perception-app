@@ -153,6 +153,7 @@ export function useSymbol() {
 
 const loader = ({ query = {}, deep }: { query?: any, deep }) => {
   return {
+    order_by: { id: 'desc' },
     ...query,
     return: {
       ...(query?.return || {}),
