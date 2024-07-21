@@ -684,10 +684,12 @@ export const PathItemSearch = memo(function PathItemSearch({
   _or.push({ in: { type_id: deep.idLocal('@deep-foundation/core', 'Contain'), string: { value: regexp ? { _iregex: value } : { _ilike: `%${value}%` } } } });
   if (!contains) q._not = { type_id: deep.idLocal('@deep-foundation/core', 'Contain') };
 
+  const firstRef = useRef(false);
   useEffect(() => {
-    if (value) {
+    if (value && !firstRef.current) {
       search(value);
     }
+    firstRef.current = true;
   }, [value, db, contains, regexp, values]);
 
   const queryRef = useRef(query);
