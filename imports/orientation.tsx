@@ -496,7 +496,7 @@ export const Orientation = memo(function Orientation({
             position: 'next', itemIndex: fi,
             linkId: link[`${f[fi].position}_id`],
           });
-        } else if (['out', 'typed', 'in', 'contains', 'promises', 'rejects', 'selectors', 'selected'].includes(f[fi].position)) {
+        } else if (['out', 'typed', 'in', 'parents', 'contains', 'promises', 'rejects', 'selectors', 'selected'].includes(f[fi].position)) {
           setPath([
             ...p.slice(0, fi),
             { ...p[fi], position: f[fi].position, query: queries[f[fi].position](link.id), mode: f[fi].position },
