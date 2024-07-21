@@ -37,7 +37,7 @@ import { createContext, Dispatch, DOMElement, memo, SetStateAction, use, useCall
 import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
 import { LinkButton } from './link';
 import { link } from 'fs';
-import { MdEdit, MdSaveAlt } from "react-icons/md";
+import { MdEdit, MdPreview, MdSaveAlt } from "react-icons/md";
 import { AiOutlineStop } from "react-icons/ai";
 import { Editor } from './editor';
 import isEqual from 'lodash/isEqual';
@@ -57,6 +57,7 @@ import { GrClear } from 'react-icons/gr';
 import VisibilitySensor from 'react-visibility-sensor';
 import {matchSorter} from 'match-sorter';
 import { GoContext, PathContext, FocusContext, ConfigContext, PathI, PathItemI, onEnterI, onChangeI, NavDirection } from './orientation';
+import { ClientHandler } from './client-handler';
 
 export const Result = memo(function Result({
   link,
@@ -210,6 +211,7 @@ export const EditorPathItem = memo(function EditorPathItem({
   const deep = useDeep();
   const levelRef = useRef<any>();
   const config = useContext(ConfigContext);
+  const go = useContext(GoContext);
 
   const valueTables = useMemo(() => ({
     [deep.idLocal('@deep-foundation/core', 'String')]: 'strings',
@@ -251,6 +253,11 @@ export const EditorPathItem = memo(function EditorPathItem({
 
   const update = useCallback(() => deep.value(link.id, resultValue), [link, resultValue]);
 
+  const handlers = deep.useMinilinksSubscription({ type_id: deep.idLocal('@deep-foundation/core', 'Handler'), to_id: link.id });
+  const preview = useCallback(async (id: Id) => {
+    go({ itemIndex: i, position: 'next', mode: 'client-handler', active: true, linkId: id });
+  }, []);
+
   return <Box
     ref={levelRef}
     minW={'40em'} maxW='100vw' h='100%'
@@ -268,15 +275,59 @@ export const EditorPathItem = memo(function EditorPathItem({
       onChange={_value => _setValue(_value)}
       onSave={update}
     />
-    <Button
-      w='3em' h='3em'
-      transition='all 1s ease'
-      position='absolute' right={!isEqual(resultValue, actual?.value?.value) ? '1em' : '-5em'} top='1em'
-      boxShadow='dark-lg'
-      variant={undefined}
-      onClick={update}
-    ><MdSaveAlt/></Button>
+    <VStack direction='column' position='absolute' right='1em' top='1em' spacing='1em'>
+      {handlers.map(h => <Box position='relative'>
+        <Box
+          p='0.4em' pt='0.2em' pb='0.2em' bg='deepBgDark' color='deepColor'
+          position='absolute' top='0' right='0'
+        >{h.name}</Box>
+        <Button
+          w='3em' h='3em' mt='1.7em'
+          transition='all 1s ease'
+          boxShadow='dark-lg'
+          variant={undefined}
+          onClick={() => preview(h.id)}
+        ><MdPreview/></Button>
+      </Box>)}
+      <Button
+        w='3em' h='3em'
+        transition='all 1s ease'
+        position='relative' left={!isEqual(resultValue, actual?.value?.value) ? '0em' : '5em'}
+        boxShadow='dark-lg'
+        variant={undefined}
+        onClick={update}
+      ><MdSaveAlt/></Button>
+    </VStack>
   </Box>
+}, isEqual);
+
+const ErrorComponent = ({ error, restore }) => {
+  return <Box>
+    <Editor
+      value={JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}
+      editable={false} readonly
+    />
+  </Box>;
+};
+
+export const ClientHandlerPathItem = memo(function ClientHandlerPathItem({
+  item,
+  focus,
+  i,
+  refVisibility,
+}: {
+  item: PathItemI;
+  focus?: PathI;
+  i: number;
+  refVisibility: any;
+}) {
+  return <Box>
+    <ClientHandler
+      linkId={item.linkId}
+      handlerId={item.linkId}
+      ErrorComponent={ErrorComponent}
+    />
+  </Box>;
 }, isEqual);
 
 export const PathItemInsert = memo(function PathItemInsert({
@@ -1119,7 +1170,7 @@ export const Tree = memo(function Tree({
   const onescreen = typeof(_onescreen) === 'boolean' ? _onescreen : __onescreen;
   const pathItemsView = useMemo(() => {
     return path.map((p, i) => {
-      const Component = p.mode === 'editor' ? EditorPathItem : PathItem;
+      const Component = p.mode === 'editor' ? EditorPathItem : p.mode === 'client-handler' ? ClientHandlerPathItem : PathItem;
       return <Component key={p.key} i={i} item={p} focus={focus.length - 1 === i ? focus : undefined} refVisibility={refVisibility}/>;
     });
   }, [path, focus]);
