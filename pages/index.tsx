@@ -185,12 +185,6 @@ export function Auth() {
         <Input type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
       </VStack>
       <Flex>
-        <Button variant='danger' w="3em" h="3em" onClick={() => {
-          setPath('');
-          setToken('');
-        }}>
-          <IoExitOutline/>
-        </Button>
         <Spacer/>
         <Button variant="active" w="3em" h="3em" onClick={enter}>
           <IoEnterOutline/>
@@ -205,15 +199,25 @@ export function Auth() {
         }}>
           <IoMdPersonAdd/>
         </Button>
+        <Button variant='danger' w="3em" h="3em" onClick={() => {
+          setPath('');
+          setToken('');
+        }}>
+          <IoExitOutline/>
+        </Button>
       </Flex>
     </Box>
   </Box>;
 }
 
-export function Content() {
+export function usePathState(defaultValue) {
+  // return useQueryStore('orientation', defaultValue);
+  return useState(defaultValue);
+}
+
+export const Content = memo(function Content() {
   const deep = useDeep();
   const { t } = useTranslation();
-  const router = useRouter();
 
   (global as any).deep = deep;
   (global as any).ml = deep?.minilinks;
@@ -237,7 +241,7 @@ export function Content() {
   }, []);
 
   return (<>
-    {[<Orientation key={deep.linkId} scope='deep' linkId={deep.linkId}>
+    {[<Orientation key={deep?.linkId} scope='deep' linkId={deep?.linkId} usePathState={usePathState as any}>
       <Grid
         templateAreas={`"tabs tabs"
                         "nav main"`}
@@ -309,7 +313,7 @@ export function Content() {
   //   <Box flex='1' bg='tomato' overflow="hidden">
   //   </Box>
   // </Flex>);
-};
+}, () => true);
 
 export default function Page({
   defaultPath,
@@ -335,9 +339,7 @@ export default function Page({
       <FinderProvider>
         <DeepNamespaceProvider>
           <MinilinksProvider>
-            {!!path && <>
-            </>}
-            {<AutoGuest/>}
+            <AutoGuest/>
             <Mounted>
               <Content/>
             </Mounted>

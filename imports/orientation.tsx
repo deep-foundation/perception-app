@@ -134,6 +134,7 @@ export const Orientation = memo(function Orientation({
   onescreen: _onescreen,
   insert=true,
   delete: _delete=true,
+  usePathState = useState,
   children,
 }: {
   query?: any;
@@ -147,6 +148,7 @@ export const Orientation = memo(function Orientation({
   onescreen?: boolean;
   insert?: boolean;
   delete?: boolean;
+  usePathState?: typeof useState;
   children?: any;
 }) {
   const deep = useDeep();
@@ -260,7 +262,7 @@ export const Orientation = memo(function Orientation({
     }),
   }), []);
 
-  const [path, setPath] = useState<PathI>([
+  const [path, setPath] = usePathState<PathI>([
     {
       key: itemsCounter++,
       query: query || queries.contains(deep.linkId),
