@@ -686,7 +686,7 @@ export const PathItemSearch = memo(function PathItemSearch({
 
   const firstRef = useRef(false);
   useEffect(() => {
-    if (value && !firstRef.current) {
+    if (value && firstRef.current) {
       search(value);
     }
     firstRef.current = true;
