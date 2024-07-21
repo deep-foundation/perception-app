@@ -5,6 +5,7 @@ import { BsCheck2, BsX } from "react-icons/bs";
 import { Result, Tree } from "./tree";
 import { LinkButton } from "./link";
 import Chance from 'chance';
+import { Orientation } from "./orientation";
 var chance = new Chance();
 
 export const FinderContext = createContext<any>(undefined);
@@ -19,6 +20,7 @@ export const FinderProvider = memo(function FinderProvider({ children }: { child
 }, () => true);
 
 export const FinderPopover = memo(function FinderPopover({
+    scope,
     linkId,
     query,
     search,
@@ -32,7 +34,9 @@ export const FinderPopover = memo(function FinderPopover({
     disclosure: __disclosure,
     mode = 'popover',
     header = '',
+    where,
   }: {
+    scope: string;
     linkId?: Id;
     query?: any;
     search?: string;
@@ -46,6 +50,7 @@ export const FinderPopover = memo(function FinderPopover({
     disclosure?: UseDisclosureReturn;
     mode?: 'popover' | 'modal';
     header?: string;
+    where?: any;
   }) {
   const ref = useContext(FinderContext);
   const [selectedLink, setSelectedLink] = useState<Link<Id>>();
@@ -53,11 +58,11 @@ export const FinderPopover = memo(function FinderPopover({
   const { onOpen: _onOpen, onClose: _onClose, isOpen: _isOpen } = __disclosure || _disclosure;
   const [unique] = useState(linkId || chance.string());
 
-  const tree = _isOpen && <Tree
+  const tree = _isOpen && <Orientation
     linkId={linkId}
     query={query}
     search={search}
-    scope={`finder-tree-${linkId}`}
+    scope={`finder-tree-${scope}`}
     insert={false}
     onChange={(l, p) => {
       onChange && onChange(l);
@@ -69,7 +74,9 @@ export const FinderPopover = memo(function FinderPopover({
     }}
     autoFocus
     onescreen
-  />;
+  >
+    <Tree onescreen autoFocus/>
+  </Orientation>;
 
   const buttons = <>
     {mode === 'modal' && <SlideFade in={true} offsetX='-0.5rem' style={{position: 'absolute', top: 0, right: '-4em'}}>
@@ -128,7 +135,10 @@ export const FinderPopover = memo(function FinderPopover({
       {children}
     </PopoverTrigger>
     <Portal containerRef={ref} {...PortalProps}>
-      <PopoverContent h={'32em'} w={'25em'} boxShadow='dark-lg'>
+      <PopoverContent h={'32em'} w={'25em'} boxShadow='dark-lg' position='relative'>
+        <Box position='absolute' bottom='-0.5em' right='-0.5em' boxShadow='dark-lg' zIndex={2}>
+          {!!selectedLink && <LinkButton id={selectedLink?.id} maxW='100%'/>}
+        </Box>
         {tree}
         {buttons}
       </PopoverContent>

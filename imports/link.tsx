@@ -12,6 +12,7 @@ export const LinkButton = ({
   id, name: _name, type: _type,
   icon: _icon,
   isActive = false,
+  needParent = true,
   onClick,
   buttonRef,
   ...props
@@ -21,6 +22,7 @@ export const LinkButton = ({
   type?: string;
   icon?: string;
   isActive?: boolean;
+  needParent?: boolean;
   onClick?: (id: Id) => void;
 
   buttonRef?: any;
@@ -51,7 +53,7 @@ export const LinkButton = ({
     {...props}
   >
     {icon} <Box textAlign='left' pl='0.5em' w='100%' overflow='hidden' position='relative'>
-      {!!parent && <Box fontSize="0.6em" textAlign='right'>{parentName} {parentIcon}</Box>}
+      {!!parent && !!needParent && <Box fontSize="0.6em" textAlign='right'>{parentName} {parentIcon}</Box>}
       {!!((name) || (type)) && <Box fontSize="sm">{name || type}
       </Box>}
       <Box fontSize="xxs">{name ? type : ''} {id}</Box>
