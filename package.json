@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -28,8 +28,12 @@
     "dev": "(cd ./perception-imports; npm run package:app:sync); NEXT_PUBLIC_GRAPHQL_URL=https://deeplinks.deep.foundation/gql next dev",
     "run-ios": "npx cap run ios",
     "open-ios": "npx cap open ios",
-    "build-ios": "npm version prerelease --no-git-tag-version --no-commit-hook && rimraf app && NEXT_PUBLIC_BUILD=\"ios\" npm run export && npx cap sync ios"
+    "build-ios": "npm version prerelease --no-git-tag-version --no-commit-hook && rimraf app && NEXT_PUBLIC_BUILD=\"ios\" npm run export && npx cap sync ios",
+    "sync-versions": "node ./sync-version.js"
   },
+  "pre-commit": [
+    "sync-versions"
+  ],
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/theme-tools": "^2.1.2",
@@ -52,6 +56,7 @@
     "next-env": "^1.1.1",
     "next-i18next": "^15.2.0",
     "next-pwa": "^5.6.0",
+    "pre-commit": "^1.2.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-focus-lock": "^2.12.1",
