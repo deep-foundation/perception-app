@@ -4,6 +4,11 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
+ports:
+  - port: 3000
+    onOpen: open-browser
+    visibility: public
+
 tasks:
   - init: npm install && npm run build && git clone https://github.com/deep-foundation/perception-imports.git && (cd ./perception-imports && npm ci)
     command: npm run dev

@@ -33,7 +33,10 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "paths": {
+      "~*": ["./node_modules/open-chakra/src/*"]
+    }
   },
   "types": [
     "chrome"
@@ -43,7 +46,8 @@
     "**/*.ts",
     "**/*.tsx",
     "app/types/**/*.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "node_modules/open-chakra/src"
   ],
   "exclude": [
     "node_modules",
