@@ -1,4 +1,7 @@
-perception-imports
+./perception-imports
+./deepcase
+./deeplinks
+./deepcase-app
 
 # Logs
 *.log

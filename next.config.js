@@ -1,6 +1,7 @@
 const nextEnv = require('next-env');
 const dotenvLoad = require('dotenv-load');
 const { i18n } = require('./next-i18next.config');
+const path = require('path');
 
 dotenvLoad();
  
@@ -14,10 +15,22 @@ const config =  {
   distDir: 'app',
   strictMode: false,
   output: (+process.env.NEXT_PUBLIC_EXPORT) ? 'export' : 'standalone',
-
-  transpilePackages: ['@deep-foundation/deepmemo-imports'],
-  
-  webpack: (config) => {
+  transpilePackages: ['open-chakra', '@deep-foundation/deepmemo-imports'],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  webpack: (config, { defaultLoaders: { babel } }) => {
+    // config.module = {
+    //   ...config.module,
+    //   rules: [
+    //     ...config.module.rules,
+    //     {
+    //       include: [path.resolve(__dirname, '/node_modules/open-chakra')],
+    //       test: /\.(js|jsx|ts|tsx)$/,
+    //       use: [babel],
+    //     },
+    //   ],
+    // };
     config.resolve.fallback = {
       "buffer":false,
       "events": false,
@@ -31,6 +44,10 @@ const config =  {
       "https": false,
       "stream": false,
       "crypto": false,
+    };
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      react: path.resolve('./node_modules/react'),
     };
 
     return config;

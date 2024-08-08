@@ -8,6 +8,7 @@ import { LocalStoreProvider, useLocalStore } from '@deep-foundation/store/local'
 import { QueryStoreProvider } from '@deep-foundation/store/query';
 import { CustomI18nProvider } from './i18n';
 import theme from '@deep-foundation/perception-imports/imports/theme';
+import { useEffect } from 'react';
 
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
   return useLocalStore('dc-dg-path', defaultValue);
