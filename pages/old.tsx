@@ -1,3 +1,4 @@
+import { i18nGetStaticProps } from '../src/i18n.tsx';
 // import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 // import {
 //   Box,
@@ -36,7 +37,6 @@
 // import { FinderPopover, FinderProvider } from '../imports/finder.tsx';
 // import { LinkButton } from '../imports/link.tsx';
 // import { PathItemSearch, Tree } from '../imports/tree.tsx';
-// import { i18nGetStaticProps } from '../src/i18n.tsx';
 // import { useDeepPath } from '../src/provider.tsx';
 // import { Mounted } from '../imports/mounted.tsx';
 // import { HotkeysProvider } from 'react-hotkeys-hook';
@@ -366,3 +366,13 @@
 //   result.props = result?.props || {};
 //   return result;
 // }
+
+export default function Page() {
+  return <></>;
+}
+
+export async function getStaticProps(arg) {
+  const result: any = await i18nGetStaticProps(arg);
+  result.props = result?.props || {};
+  return result;
+}

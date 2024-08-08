@@ -1,3 +1,4 @@
+import { i18nGetStaticProps } from '../src/i18n';
 // import { DeepNamespaceProvider } from '@deep-foundation/deeplinks/imports/client';
 // import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
 // import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
@@ -7,7 +8,6 @@
 // import { HotkeysProvider } from 'react-hotkeys-hook';
 // import { FinderProvider } from '../imports/finder';
 // import { Mounted } from '../imports/mounted';
-// import { i18nGetStaticProps } from '../src/i18n';
 // import { useDeepPath } from '../src/provider';
 
 // // import { DndProvider } from 'react-dnd'
@@ -100,8 +100,12 @@
 //   </>);
 // };
 
-// export async function getStaticProps(arg) {
-//   const result: any = await i18nGetStaticProps(arg);
-//   result.props = result?.props || {};
-//   return result;
-// }
+export default function Page() {
+  return <></>;
+}
+
+export async function getStaticProps(arg) {
+  const result: any = await i18nGetStaticProps(arg);
+  result.props = result?.props || {};
+  return result;
+}
