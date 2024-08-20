@@ -56,11 +56,11 @@ var init = async () => {
   const preloaded = deep.minilinks.links.map(l => l.toPlain());
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  fs.writeFileSync(__dirname+'/imports/preloaded.json', JSON.stringify({
+  fs.writeFileSync(__dirname+'/imports/preloaded.js', `export default ${JSON.stringify({
     packages: preloaded,
     handlers,
-  }, null, 2));
-  console.log('preloader success', __dirname+'/imports/preloaded.json');
+  }, null, 2)}`);
+  console.log('preloader success', __dirname+'/imports/preloaded.js');
 }
 
 if (secret || token) {

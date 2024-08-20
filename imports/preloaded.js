@@ -1,4 +1,4 @@
-{
+export default {
   "packages": [
     {
       "id": 573,

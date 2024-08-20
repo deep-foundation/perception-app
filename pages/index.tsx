@@ -30,9 +30,7 @@ import { requires } from '../imports/requires';
 import { i18nGetStaticProps } from '../src/i18n';
 import { useDeepPath } from '../src/provider';
 
-import preloaded from '../imports/preloaded.json';
-
-console.log('preloaded', preloaded);
+import preloaded from '../imports/preloaded.js';
 console.log('preloaded packages', preloaded?.packages?.length);
 console.log('preloaded handlers', preloaded?.handlers?.length);
 
