@@ -2,6 +2,7 @@
 ./deepcase
 ./deeplinks
 ./deepcase-app
+./store
 
 # Logs
 *.log

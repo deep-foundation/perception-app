@@ -3,6 +3,7 @@ import { appWithTranslation } from 'next-i18next';
 import { Provider } from '../src/provider';
 import c from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from 'react';
 
 if (typeof(crypto) === 'object') {
   crypto.__proto__randomUUID = uuidv4;

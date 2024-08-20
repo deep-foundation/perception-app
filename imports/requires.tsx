@@ -25,6 +25,10 @@ import * as md from 'react-icons/md';
 import * as fa from 'react-icons/fa';
 import * as ai from 'react-icons/ai';
 import * as si from 'react-icons/si';
+import * as lu from 'react-icons/lu';
+import * as gi from 'react-icons/gi';
+import * as io5 from 'react-icons/io5';
+import * as vsc from 'react-icons/vsc';
 import { IconContext } from 'react-icons';
 import $ from 'jquery';
 import * as editor from 'slate';
@@ -72,6 +76,7 @@ import * as ApolloSandbox from '@apollo/sandbox/react';
 import * as InfiniteScroll from 'react-infinite-scroller';
 import * as matchSorter from 'match-sorter';
 import * as useAsyncMemo from "use-async-memo";
+import * as planet from "react-planet";
 
 // @ts-ignore
 const GraphQL = dynamic(() => import('./graphql').then(m => m.GraphQL), { ssr: false })
@@ -146,6 +151,10 @@ export const requires: any = {
   'react-icons/fa': fa,
   'react-icons/ai': ai,
   'react-icons/si': si,
+  'react-icons/lu': lu,
+  'react-icons/gi': gi,
+  'react-icons/io5': io5,
+  'react-icons/vsc': vsc,
   'react-icons' : IconContext,
   'react-linkify': Linkify,
   '@rjsf/core': rjsfCore,
@@ -175,5 +184,6 @@ export const requires: any = {
   'react-infinite-scroller': InfiniteScroll,
   'match-sorter': matchSorter,
   'use-async-memo': useAsyncMemo,
+  'react-planet': planet,
 };
 

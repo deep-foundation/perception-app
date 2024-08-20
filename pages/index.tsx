@@ -23,11 +23,18 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { GrUserAdmin } from "react-icons/gr";
 import { IoMdPersonAdd } from "react-icons/io";
 import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
+import { useAsyncMemo } from 'use-async-memo';
 import { Graph, GraphEdge, GraphNode, GraphStyle, useGraph } from '../imports/graph';
 import { Mounted } from '../imports/mounted';
 import { requires } from '../imports/requires';
 import { i18nGetStaticProps } from '../src/i18n';
 import { useDeepPath } from '../src/provider';
+
+import preloaded from '../imports/preloaded.json';
+
+console.log('preloaded', preloaded);
+console.log('preloaded packages', preloaded?.packages?.length);
+console.log('preloaded handlers', preloaded?.handlers?.length);
 
 const dpl = '@deep-foundation/perception-links';
 const dc = '@deep-foundation/core';
@@ -43,7 +50,7 @@ export const StatusWithDeep = memo(function StatusWithDeep() {
   const status = deep?.client?.useApolloNetworkStatus();
   return <>
     <CircularProgress
-      size="1em" isIndeterminate={!!status.numPendingQueries} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
+      size="1em" isIndeterminate={!!status.numPendingQueries} value={100} color={(deep && deep?.linkId) ? 'deepColorActive' : 'red'}
     />
     <Text size="xxs" position='absolute' top='0.5em' right='0.5em'>
       {status.numPendingQueries}
@@ -55,7 +62,7 @@ export function Status() {
   const deep = useDeep();
   return <>
     {deep ? <StatusWithDeep/> : <CircularProgress
-      size="1em" isIndeterminate={false} value={100} color={(deep && deep?.linkId) ? 'cyan' : 'red'}
+      size="1em" isIndeterminate={false} value={100} color={(deep && deep?.linkId) ? 'deepColorActive' : 'red'}
     />}
   </>;
 }
@@ -88,6 +95,8 @@ export function Auth() {
     }
   }, [deep, deep?.linkId]);
 
+  const user = deep.useLink(deep.linkId);
+
   return <Box display='inline-flex' h='3em' role="group">
     <Button
       w='3em' h='3em'
@@ -101,7 +110,7 @@ export function Auth() {
       p='1em'
       bg="deepBg"
     >
-      {!!deep?.linkId && <Box>{''+deep.get(deep.linkId)}</Box>}
+      {!!deep?.linkId && !!user?.name && <Box color='deepColorActive' textAlign='center' p='0.5em'>{''+user?.name}</Box>}
       <VStack spacing={'1em'} mb='1em'>
         <Input value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
         <Input type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
@@ -131,37 +140,6 @@ export function Auth() {
     </Box>
   </Box>;
 }
-
-// export const Layout = memo(function Layout() {
-//   const deep = useDeep();
-//   const go = useGo();
-//   return <go.ReactHandler
-//     linkId={deep?.linkId}
-//     handlerId={deep.idLocal(dpl, 'LayoutView')}
-//   />
-// }, isEqual);
-
-// export const History = memo(function History() {
-//   const deep = useDeep();
-//   const memory = useMemory();
-//   const go = useGoCore();
-//   const focus = useFocus();
-//   return <>{memory.map((m, i) => <go.ReactHandler key={m.key}
-//     handlerId={deep.idLocal(dpl, 'TreeLinkButtonView')}
-//     linkId={m.linkId}
-//     index={i} m={m}
-//     focus={focus?.[0] === m.historyId}
-//   />)}</>;
-// }, isEqual);
-
-// export const Menu = memo(function Menu() {
-//   const deep = useDeep();
-//   const go = useGo();
-//   return <>{<go.ReactHandler
-//     handlerId={deep.idLocal(dpl, 'MenuView')}
-//     linkId={deep.linkId}
-//   />}</>;
-// }, isEqual);
   
 export const GoLayout = memo(function GoLayout() {
   const deep = useDeep();
@@ -198,26 +176,17 @@ export const Content = memo(function Content() {
     }
   }
 
-  const [spaceId, setSpaceId] = useState<any>();
-  const [containerId, setContainerId] = useState();
-  const [logo, setLogo] = useState(true);
-  useEffect(() => {
-    setTimeout(() => setLogo(false), 1000);
-  }, []);
+  const user = useAsyncMemo(async () => {
+    if (deep) return (await deep.select({ id: deep.linkId }, { apply: 'user' })).data?.[0];
+  }, [deep]);
 
   return (<>
     {/* {!!deep && <Packages/>} */}
-    {!!isPreloaded && [<GoProvider key={deep.linkId} linkId={deep.idLocal(dpl, 'Layout')} hotkeys>
+    {!!isPreloaded && user && [<GoProvider key={deep.linkId} linkId={deep.idLocal(dpl, 'Layout')} hotkeys>
       <GoLayout/>
     </GoProvider>]}
   </>);
 }, () => true);
-
-let preloaded;
-try { preloaded = require('../imports/preloaded.json'); } catch(e) {}
-console.log('preloaded', preloaded);
-console.log('preloaded packages', preloaded?.packages?.length);
-console.log('preloaded handlers', preloaded?.handlers?.length);
 
 export default function Page({
   defaultPath,
@@ -242,20 +211,20 @@ export default function Page({
 
   return (<>
     <HotkeysProvider>
-        <DeepNamespaceProvider>
-          <MinilinksProvider>
-            <AutoGuest/>
-            <Mounted>
-              <PreloadProvider preloaded={preloaded}>
-                <ReactHandlersProvider requires={requires}>
-                  <GoCustomProvider value={customGo}>
-                    <Content/>
-                  </GoCustomProvider>
-                </ReactHandlersProvider>
-              </PreloadProvider>
-            </Mounted>
-          </MinilinksProvider>
-        </DeepNamespaceProvider>
+      <DeepNamespaceProvider>
+        <MinilinksProvider>
+          <AutoGuest/>
+          <Mounted>
+            <PreloadProvider preloaded={preloaded}>
+              <ReactHandlersProvider requires={requires} sync={true}>
+                <GoCustomProvider value={customGo}>
+                  <Content/>
+                </GoCustomProvider>
+              </ReactHandlersProvider>
+            </PreloadProvider>
+          </Mounted>
+        </MinilinksProvider>
+      </DeepNamespaceProvider>
     </HotkeysProvider>
   </>);
 };
