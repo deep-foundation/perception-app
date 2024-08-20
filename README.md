@@ -8,6 +8,6 @@
 ## ENVS
 
 ```
-export NEXT_PUBLIC_GQL_PATH=localhost:3006/gql;
-export NEXT_PUBLIC_GQL_SSL=0;
+export NEXT_PUBLIC_GRAPHQL_URL=https://deeplinks.deep.foundation/gql;
+export NEXT_PUBLIC_GQL_SSL=1;
 ```
