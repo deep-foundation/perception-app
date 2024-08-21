@@ -13,7 +13,7 @@ import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks'
 import { useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
 import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
 import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports/imports/go';
-import { PreloadProvider, usePreload } from '@deep-foundation/perception-imports/imports/hooks';
+import { Packages, PreloadProvider, usePreload } from '@deep-foundation/perception-imports/imports/hooks';
 import { ReactHandlersProvider } from '@deep-foundation/perception-imports/imports/react-handler';
 import { ColorMode } from '@deep-foundation/perception-imports/imports/theme';
 import isEqual from 'lodash/isEqual';
@@ -111,7 +111,7 @@ export function Auth() {
       {!!deep?.linkId && !!user?.name && <Box color='deepColorActive' textAlign='center' p='0.5em'>{''+user?.name}</Box>}
       <VStack spacing={'1em'} mb='1em'>
         <Input value={_path} onChange={e => _setPath(e.target.value)} placeholder="path" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
-        <Input type="password" value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
+        <Input value={_token} onChange={e => _setToken(e.target.value)} placeholder="token" w='100%' size='md' onKeyDown={e => e.key === 'Enter' && enter()}/>
       </VStack>
       <Flex>
         <Spacer/>
