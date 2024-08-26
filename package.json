@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.33",
+  "version": "0.0.35",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -40,7 +40,7 @@
     "@apollo/sandbox": "^2.6.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/perception-imports": "^0.0.50",
+    "@deep-foundation/perception-imports": "^0.0.51",
     "@pbe/react-yandex-maps": "^1.2.5",
     "@react-hook/debounce": "^4.0.0",
     "@rjsf/chakra-ui": "^5.19.3",
