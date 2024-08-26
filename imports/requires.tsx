@@ -77,6 +77,7 @@ import * as InfiniteScroll from 'react-infinite-scroller';
 import * as matchSorter from 'match-sorter';
 import * as useAsyncMemo from "use-async-memo";
 import * as planet from "react-planet";
+import * as ni from "next/image";
 
 // @ts-ignore
 const GraphQL = dynamic(() => import('./graphql').then(m => m.GraphQL), { ssr: false })
@@ -185,5 +186,6 @@ export const requires: any = {
   'match-sorter': matchSorter,
   'use-async-memo': useAsyncMemo,
   'react-planet': planet,
+  'next/image': ni,
 };
 
