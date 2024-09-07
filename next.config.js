@@ -19,6 +19,9 @@ const config =  {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    unoptimized: true,
+  },
   webpack: (config, { defaultLoaders: { babel } }) => {
     // config.module = {
     //   ...config.module,
