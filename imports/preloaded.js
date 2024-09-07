@@ -11631,12 +11631,6 @@ export default {
       "to_id": 26419
     },
     {
-      "id": 26421,
-      "type_id": 156,
-      "from_id": 1,
-      "to_id": 26420
-    },
-    {
       "id": 26432,
       "type_id": 3,
       "from_id": 26423,
@@ -11656,6 +11650,79 @@ export default {
         "id": 2035,
         "value": "outputReadme",
         "link_id": 26433
+      }
+    },
+    {
+      "id": 31339,
+      "type_id": 717,
+      "from_id": 0,
+      "to_id": 0,
+      "value": {
+        "id": 2634,
+        "value": "({ deep, data, require, Go }) => {\n  const React = require('react');\n  \n  const dc = '@deep-foundation/core';\n  const dnpm = '@deep-foundation/npm-packager';\n  const dpl = '@deep-foundation/perception-links';\n  const c = require('@chakra-ui/react');\n\n  const Stack = deep.idLocal(dpl, 'Stack');\n  const promiseTree = deep.idLocal(dc, 'promiseTree');\n  const Then = deep.idLocal(dc, 'Then');\n  const PackageVersion = deep.idLocal(dc, 'PackageVersion');\n  const Publish = deep.idLocal(dnpm, 'Publish');\n\n  return ({\n    go,\n    goHandler,\n\n    handlerId,\n    Component,\n\n    linkId,\n    link,\n\n    children,\n\n    isActive,\n\n    ...props\n  }, ref) => {\n    const { data: [version] } = deep.useSubscription({\n      type_id: PackageVersion,\n      to_id: linkId,\n    });\n    const { data: publishs } = deep.useSubscription({\n      type_id: Publish,\n      from_id: linkId,\n    });\n    // const p = deep.useSubscription({\n    //   limit: 1,\n    //   from_id: linkId,\n    //   type_id: Then,\n    //   return: {\n    //     _down: {\n    //       relation: 'down',\n    //       tree_id: promiseTree,\n    //       return: {\n    //         _link: {\n    //           relation: 'link',\n    //         },\n    //       },\n    //     }\n    //   },\n    // });\n    return <go.On\n      do={{\n      }}\n    >\n      <c.Button isDisabled w='100%'>{version ? `${version.symbol} ${version.value}` : 'no version'}</c.Button>\n      <c.Button w='100%'>publish</c.Button>\n      <>Handler of 📦 26423 @deep-foundation/readme</>\n      <go.Provider linkId={Stack}>\n        <go.Handler handlerId={Stack} links={publishs}/>\n      </go.Provider>\n    </go.On>;\n  };\n}",
+        "link_id": 31339
+      }
+    },
+    {
+      "id": 31340,
+      "type_id": 3,
+      "from_id": 2586,
+      "to_id": 31339,
+      "value": {
+        "id": 2633,
+        "value": "packageViewComponent",
+        "link_id": 31340
+      }
+    },
+    {
+      "id": 31343,
+      "type_id": 35,
+      "from_id": 145,
+      "to_id": 31339
+    },
+    {
+      "id": 31344,
+      "type_id": 3,
+      "from_id": 2586,
+      "to_id": 31343,
+      "value": {
+        "id": 2635,
+        "value": "packageView",
+        "link_id": 31344
+      }
+    },
+    {
+      "id": 31345,
+      "type_id": 5258,
+      "from_id": 31343,
+      "to_id": 26423
+    },
+    {
+      "id": 31346,
+      "type_id": 3,
+      "from_id": 2586,
+      "to_id": 31345,
+      "value": {
+        "id": 2636,
+        "value": "packageViewCompatable@deep-foundation/readme",
+        "link_id": 31346
+      }
+    },
+    {
+      "id": 31347,
+      "type_id": 5258,
+      "from_id": 31343,
+      "to_id": 2759
+    },
+    {
+      "id": 31348,
+      "type_id": 3,
+      "from_id": 2586,
+      "to_id": 31347,
+      "value": {
+        "id": 2637,
+        "value": "packageViewCompatableTreeLink",
+        "link_id": 31348
       }
     },
     {
@@ -11679,6 +11746,40 @@ export default {
         "value": "inputSymbol",
         "link_id": 26438
       }
+    },
+    {
+      "id": 31349,
+      "type_id": 30,
+      "from_id": 0,
+      "to_id": 0,
+      "value": {
+        "id": 2639,
+        "value": "({ deep, data, require, Go }) => {\n    const React = require('react');\n    const dc = '@deep-foundation/core';\n    const dnpm = '@deep-foundation/npm-packager';\n    const dpl = '@deep-foundation/perception-links';\n    const c = require('@chakra-ui/react');\n    const Stack = deep.idLocal(dpl, 'Stack');\n    const promiseTree = deep.idLocal(dc, 'promiseTree');\n    const Then = deep.idLocal(dc, 'Then');\n    const PackageVersion = deep.idLocal(dc, 'PackageVersion');\n    const Publish = deep.idLocal(dnpm, 'Publish');\n    return ({ go, goHandler, handlerId, Component, linkId, link, children, isActive, ...props }, ref) => {\n        const { data: [version] } = deep.useSubscription({\n            type_id: PackageVersion,\n            to_id: linkId,\n        });\n        const { data: publishs } = deep.useSubscription({\n            type_id: Publish,\n            from_id: linkId,\n        });\n        return React.createElement(go.On, { do: {} },\n            React.createElement(c.Button, { isDisabled: true, w: '100%' }, version ? `${version.symbol} ${version.value}` : 'no version'),\n            React.createElement(c.Button, { w: '100%' }, \"publish\"),\n            React.createElement(React.Fragment, null, \"Handler of \\uD83D\\uDCE6 26423 @deep-foundation/readme\"),\n            React.createElement(go.Provider, { linkId: Stack },\n                React.createElement(go.Handler, { handlerId: Stack, links: publishs })));\n    };\n};\n//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibW9kdWxlLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsibW9kdWxlLnRzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEVBQUUsSUFBSSxFQUFFLElBQUksRUFBRSxPQUFPLEVBQUUsRUFBRSxFQUFFLEVBQUUsRUFBRTtJQUM5QixNQUFNLEtBQUssR0FBRyxPQUFPLENBQUMsT0FBTyxDQUFDLENBQUM7SUFFL0IsTUFBTSxFQUFFLEdBQUcsdUJBQXVCLENBQUM7SUFDbkMsTUFBTSxJQUFJLEdBQUcsK0JBQStCLENBQUM7SUFDN0MsTUFBTSxHQUFHLEdBQUcsbUNBQW1DLENBQUM7SUFDaEQsTUFBTSxDQUFDLEdBQUcsT0FBTyxDQUFDLGtCQUFrQixDQUFDLENBQUM7SUFFdEMsTUFBTSxLQUFLLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxHQUFHLEVBQUUsT0FBTyxDQUFDLENBQUM7SUFDekMsTUFBTSxXQUFXLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsYUFBYSxDQUFDLENBQUM7SUFDcEQsTUFBTSxJQUFJLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsTUFBTSxDQUFDLENBQUM7SUFDdEMsTUFBTSxjQUFjLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsZ0JBQWdCLENBQUMsQ0FBQztJQUMxRCxNQUFNLE9BQU8sR0FBRyxJQUFJLENBQUMsT0FBTyxDQUFDLElBQUksRUFBRSxTQUFTLENBQUMsQ0FBQztJQUU5QyxPQUFPLENBQUMsRUFDTixFQUFFLEVBQ0YsU0FBUyxFQUVULFNBQVMsRUFDVCxTQUFTLEVBRVQsTUFBTSxFQUNOLElBQUksRUFFSixRQUFRLEVBRVIsUUFBUSxFQUVSLEdBQUcsS0FBSyxFQUNULEVBQUUsR0FBRyxFQUFFLEVBQUU7UUFDUixNQUFNLEVBQUUsSUFBSSxFQUFFLENBQUMsT0FBTyxDQUFDLEVBQUUsR0FBRyxJQUFJLENBQUMsZUFBZSxDQUFDO1lBQy9DLE9BQU8sRUFBRSxjQUFjO1lBQ3ZCLEtBQUssRUFBRSxNQUFNO1NBQ2QsQ0FBQyxDQUFDO1FBQ0gsTUFBTSxFQUFFLElBQUksRUFBRSxRQUFRLEVBQUUsR0FBRyxJQUFJLENBQUMsZUFBZSxDQUFDO1lBQzlDLE9BQU8sRUFBRSxPQUFPO1lBQ2hCLE9BQU8sRUFBRSxNQUFNO1NBQ2hCLENBQUMsQ0FBQztRQWlCSCxPQUFPLG9CQUFDLEVBQUUsQ0FBQyxFQUFFLElBQ1gsRUFBRSxFQUFFLEVBQ0g7WUFFRCxvQkFBQyxDQUFDLENBQUMsTUFBTSxJQUFDLFVBQVUsUUFBQyxDQUFDLEVBQUMsTUFBTSxJQUFFLE9BQU8sQ0FBQyxDQUFDLENBQUMsR0FBRyxPQUFPLENBQUMsTUFBTSxJQUFJLE9BQU8sQ0FBQyxLQUFLLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxDQUFZO1lBQ3hHLG9CQUFDLENBQUMsQ0FBQyxNQUFNLElBQUMsQ0FBQyxFQUFDLE1BQU0sY0FBbUI7WUFDckMsa0dBQWdEO1lBQ2hELG9CQUFDLEVBQUUsQ0FBQyxRQUFRLElBQUMsTUFBTSxFQUFFLEtBQUs7Z0JBQ3hCLG9CQUFDLEVBQUUsQ0FBQyxPQUFPLElBQUMsU0FBUyxFQUFFLEtBQUssRUFBRSxLQUFLLEVBQUUsUUFBUSxHQUFHLENBQ3BDLENBQ1IsQ0FBQztJQUNYLENBQUMsQ0FBQztBQUNKLENBQUMsQ0FBQSIsInNvdXJjZXNDb250ZW50IjpbIih7IGRlZXAsIGRhdGEsIHJlcXVpcmUsIEdvIH0pID0+IHtcbiAgY29uc3QgUmVhY3QgPSByZXF1aXJlKCdyZWFjdCcpO1xuICBcbiAgY29uc3QgZGMgPSAnQGRlZXAtZm91bmRhdGlvbi9jb3JlJztcbiAgY29uc3QgZG5wbSA9ICdAZGVlcC1mb3VuZGF0aW9uL25wbS1wYWNrYWdlcic7XG4gIGNvbnN0IGRwbCA9ICdAZGVlcC1mb3VuZGF0aW9uL3BlcmNlcHRpb24tbGlua3MnO1xuICBjb25zdCBjID0gcmVxdWlyZSgnQGNoYWtyYS11aS9yZWFjdCcpO1xuXG4gIGNvbnN0IFN0YWNrID0gZGVlcC5pZExvY2FsKGRwbCwgJ1N0YWNrJyk7XG4gIGNvbnN0IHByb21pc2VUcmVlID0gZGVlcC5pZExvY2FsKGRjLCAncHJvbWlzZVRyZWUnKTtcbiAgY29uc3QgVGhlbiA9IGRlZXAuaWRMb2NhbChkYywgJ1RoZW4nKTtcbiAgY29uc3QgUGFja2FnZVZlcnNpb24gPSBkZWVwLmlkTG9jYWwoZGMsICdQYWNrYWdlVmVyc2lvbicpO1xuICBjb25zdCBQdWJsaXNoID0gZGVlcC5pZExvY2FsKGRucG0sICdQdWJsaXNoJyk7XG5cbiAgcmV0dXJuICh7XG4gICAgZ28sXG4gICAgZ29IYW5kbGVyLFxuXG4gICAgaGFuZGxlcklkLFxuICAgIENvbXBvbmVudCxcblxuICAgIGxpbmtJZCxcbiAgICBsaW5rLFxuXG4gICAgY2hpbGRyZW4sXG5cbiAgICBpc0FjdGl2ZSxcblxuICAgIC4uLnByb3BzXG4gIH0sIHJlZikgPT4ge1xuICAgIGNvbnN0IHsgZGF0YTogW3ZlcnNpb25dIH0gPSBkZWVwLnVzZVN1YnNjcmlwdGlvbih7XG4gICAgICB0eXBlX2lkOiBQYWNrYWdlVmVyc2lvbixcbiAgICAgIHRvX2lkOiBsaW5rSWQsXG4gICAgfSk7XG4gICAgY29uc3QgeyBkYXRhOiBwdWJsaXNocyB9ID0gZGVlcC51c2VTdWJzY3JpcHRpb24oe1xuICAgICAgdHlwZV9pZDogUHVibGlzaCxcbiAgICAgIGZyb21faWQ6IGxpbmtJZCxcbiAgICB9KTtcbiAgICAvLyBjb25zdCBwID0gZGVlcC51c2VTdWJzY3JpcHRpb24oe1xuICAgIC8vICAgbGltaXQ6IDEsXG4gICAgLy8gICBmcm9tX2lkOiBsaW5rSWQsXG4gICAgLy8gICB0eXBlX2lkOiBUaGVuLFxuICAgIC8vICAgcmV0dXJuOiB7XG4gICAgLy8gICAgIF9kb3duOiB7XG4gICAgLy8gICAgICAgcmVsYXRpb246ICdkb3duJyxcbiAgICAvLyAgICAgICB0cmVlX2lkOiBwcm9taXNlVHJlZSxcbiAgICAvLyAgICAgICByZXR1cm46IHtcbiAgICAvLyAgICAgICAgIF9saW5rOiB7XG4gICAgLy8gICAgICAgICAgIHJlbGF0aW9uOiAnbGluaycsXG4gICAgLy8gICAgICAgICB9LFxuICAgIC8vICAgICAgIH0sXG4gICAgLy8gICAgIH1cbiAgICAvLyAgIH0sXG4gICAgLy8gfSk7XG4gICAgcmV0dXJuIDxnby5PblxuICAgICAgZG89e3tcbiAgICAgIH19XG4gICAgPlxuICAgICAgPGMuQnV0dG9uIGlzRGlzYWJsZWQgdz0nMTAwJSc+e3ZlcnNpb24gPyBgJHt2ZXJzaW9uLnN5bWJvbH0gJHt2ZXJzaW9uLnZhbHVlfWAgOiAnbm8gdmVyc2lvbid9PC9jLkJ1dHRvbj5cbiAgICAgIDxjLkJ1dHRvbiB3PScxMDAlJz5wdWJsaXNoPC9jLkJ1dHRvbj5cbiAgICAgIDw+SGFuZGxlciBvZiDwn5OmIDI2NDIzIEBkZWVwLWZvdW5kYXRpb24vcmVhZG1lPC8+XG4gICAgICA8Z28uUHJvdmlkZXIgbGlua0lkPXtTdGFja30+XG4gICAgICAgIDxnby5IYW5kbGVyIGhhbmRsZXJJZD17U3RhY2t9IGxpbmtzPXtwdWJsaXNoc30vPlxuICAgICAgPC9nby5Qcm92aWRlcj5cbiAgICA8L2dvLk9uPjtcbiAgfTtcbn0iXX0=",
+        "link_id": 31349
+      }
+    },
+    {
+      "id": 31350,
+      "type_id": 3,
+      "from_id": 31339,
+      "to_id": 31349,
+      "value": {
+        "id": 2638,
+        "value": "generated",
+        "link_id": 31350
+      }
+    },
+    {
+      "id": 31351,
+      "type_id": 143,
+      "from_id": 31349,
+      "to_id": 31339
+    },
+    {
+      "id": 31352,
+      "type_id": 3,
+      "from_id": 31339,
+      "to_id": 31351
     },
     {
       "id": 26423,
@@ -11739,17 +11840,6 @@ export default {
         "id": 2255,
         "value": "PaymentInput",
         "link_id": 29120
-      }
-    },
-    {
-      "id": 26429,
-      "type_id": 3,
-      "from_id": 26423,
-      "to_id": 26421,
-      "value": {
-        "id": 2031,
-        "value": "ReadmeHandleClient",
-        "link_id": 26429
       }
     },
     {
@@ -16076,12 +16166,6 @@ export default {
       "to_id": 28546
     },
     {
-      "id": 28549,
-      "type_id": 156,
-      "from_id": 28548,
-      "to_id": 28545
-    },
-    {
       "id": 29631,
       "type_id": 25351,
       "from_id": 0,
@@ -16191,17 +16275,6 @@ export default {
         "id": 2205,
         "value": "onChangeHandler",
         "link_id": 28573
-      }
-    },
-    {
-      "id": 28563,
-      "type_id": 3,
-      "from_id": 28556,
-      "to_id": 28549,
-      "value": {
-        "id": 2184,
-        "value": "ProperyHandleClient",
-        "link_id": 28563
       }
     },
     {
@@ -17043,7 +17116,12 @@ export default {
       "id": 24420,
       "type_id": 3,
       "from_id": 2586,
-      "to_id": 24419
+      "to_id": 24419,
+      "value": {
+        "id": 2646,
+        "value": "MenuSiteComponent",
+        "link_id": 24420
+      }
     },
     {
       "id": 24423,
@@ -21199,6 +21277,26 @@ export default {
           "id": 2612,
           "value": "async (req, res, next, { deep, require, gql }) => {\r\n  console.log(\"test\")\r\n  res.header('Access-Control-Allow-Origin', '*');\r\n  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');\r\n  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');\r\n\r\n  if(req.method === 'OPTIONS') {\r\n    res.send();\r\n    return;\r\n  }\r\n\r\n  if(!req.body.username){\r\n    res.send({\r\n      \"error\": \"Username is empty\"\r\n    });\r\n    return;\r\n  }\r\n  if(!req.body.password){\r\n    res.send({\r\n      \"error\": \"Password is empty\"\r\n    });\r\n    return;\r\n  }\r\n  var path = require('path');\r\n  var express = require('express');\r\n  var passport = require('passport');\r\n  var LocalStrategy = require('passport-local');\r\n  var session = require('express-session');\r\n  var crypto = require('crypto');\r\n\r\n  \r\n\r\n  const getJWT = async (linkId) => {\r\n    const result = await deep.apolloClient.query({\r\n      query: gql`query GET_JWT($linkId: Int) { \r\n        jwt(input: {linkId: $linkId}) {\r\n\t\t      linkId,\r\n          token\r\n        } \r\n      }`,\r\n      variables: { linkId },\r\n    });\r\n    console.log(result);\r\n    return result;\r\n  }\r\n\r\n  const insertRule = async (options) => {\r\n    const { data: [{ id: ruleId }] } = await deep.insert({\r\n      type_id: await deep.id('@deep-foundation/core', 'Rule'),\r\n      out: { data: [\r\n        {\r\n          type_id: await deep.id('@deep-foundation/core', 'RuleSubject'),\r\n          to: { data: {\r\n            type_id: await deep.id('@deep-foundation/core', 'Selector'),\r\n            out: { data: options.subject },\r\n          } }\r\n        },\r\n        {\r\n          type_id: await deep.id('@deep-foundation/core', 'RuleObject'),\r\n          to: { data: {\r\n            type_id: await deep.id('@deep-foundation/core', 'Selector'),\r\n            out: { data: options.object },\r\n          } }\r\n        },\r\n        {\r\n          type_id: await deep.id('@deep-foundation/core', 'RuleAction'),\r\n          to: { data: {\r\n            type_id: await deep.id('@deep-foundation/core', 'Selector'),\r\n            out: { data: options.action },\r\n          } }\r\n        },\r\n      ] },\r\n    });\r\n  };\r\n\r\n\r\n  const currentLinkId = req.body.linkId;\r\n\r\n  let globalUserId = null;\r\n\r\n  const router = express.Router();\r\n  router.use(session({\r\n    secret: 'keyboard cat',\r\n    resave: false,\r\n    saveUninitialized: false,\r\n  }));\r\n  router.use(passport.initialize());\r\n  router.use(passport.session());\r\n  router.use(passport.authenticate('session'));\r\n\r\n  passport.serializeUser(function(user, cb) {\r\n    process.nextTick(function() {\r\n      console.log('serializeUser', user);\r\n      cb(null, { id: user.id });\r\n    });\r\n  });\r\n  passport.deserializeUser(function(user, cb) {\r\n    process.nextTick(function() {\r\n      console.log('deserializeUser', user);\r\n      return cb(null, user);\r\n    });\r\n  });\r\n\r\n  passport.use(new LocalStrategy(async function verify(username, password, cb) {\r\n    crypto.pbkdf2(password, 'salt', 310000, 32, 'sha256', async function(err, hashedPassword) {\r\n      if (err) {\r\n        // if error, return error\r\n        console.log(err);\r\n        cb(err, null);\r\n        return;\r\n      }\r\n      // try to found exists username      \r\n      const { data: usernames } = await deep.select({\r\n        type_id: await deep.id('@l4legenda/passport-username-password', 'Username'),\r\n        string: { value: { _eq: username } },\r\n      });\r\n\r\n      if (usernames.length) {\r\n        // if username found\r\n        const usernameId = usernames[0].id;\r\n\r\n        const { data: passwords } = await deep.select({\r\n          type_id: await deep.id('@l4legenda/passport-username-password', 'Password'),\r\n          from_id: usernameId,\r\n        });\r\n\r\n        if (!passwords.length) {\r\n          // if password not found\r\n          cb(\"Password not found\", null);\r\n          return;\r\n        }\r\n        const foundedPassword = passwords?.[0]?.value?.value;\r\n        console.log(passwords,foundedPassword )\r\n        console.log(hashedPassword.toString() )\r\n        if (foundedPassword != hashedPassword.toString()) {\r\n          // if password incorrect\r\n          cb('Incorrect password', null);\r\n          return;\r\n        }\r\n        // if password correct\r\n        const { data: [{id: userId}] } = await deep.select({\r\n          type_id: await deep.id('@deep-foundation/core', 'User'),\r\n          in: {\r\n            id: passwords[0].id\r\n          },\r\n        });\r\n\r\n        \r\n        globalUserId = userId;\r\n        cb(null, usernameId);\r\n      } else {\r\n        // if username not found, create new username\r\n        const { data: [{ id: usernameId }] } = await deep.insert({\r\n          type_id: await deep.id('@l4legenda/passport-username-password', 'Username'),\r\n          string: { data: { value: username } },\r\n        });\r\n        // create new user\r\n        const { data: [{ id: userId }] } = await deep.insert({\r\n          type_id: await deep.id('@deep-foundation/core', 'User'),\r\n          out: { \r\n            data: [\r\n              {\r\n                type_id: await deep.id('@deep-foundation/core', 'Join'),\r\n                to_id: await deep.id('deep', 'users')\r\n              },\r\n            ] \r\n          }\r\n        });\r\n\r\n        const t = await deep.insert({\r\n          type_id: await deep.id('@l4legenda/auth-core', 'ActionSelectUser'),\r\n          from_id: userId,\r\n          to_id: userId,\r\n        })\r\n\r\n        console.log(t);\r\n\r\n        // and create new password\r\n        const { data: [{ id: passwordId }] } = await deep.insert({\r\n          type_id: await deep.id('@l4legenda/passport-username-password', 'Password'),\r\n          string: { data: { value: hashedPassword.toString() } },\r\n          from_id: usernameId,\r\n          to_id: userId,\r\n        });\r\n        // and set authorization\r\n        globalUserId = userId;\r\n        cb(null, usernameId);\r\n\r\n      }\r\n\r\n      const hasAllowLogin = await deep.can(\r\n        currentLinkId,\r\n        globalUserId,\r\n        await deep.id('@deep-foundation/core', 'AllowLogin')\r\n      )\r\n      if(!hasAllowLogin) {\r\n        const r = await deep.insert({\r\n          type_id: await deep.id('@l4legenda/auth-core', 'ActionLoginUser'),\r\n          from_id: currentLinkId,\r\n          to_id: globalUserId,\r\n        })\r\n        console.log(r);\r\n      }\r\n      \r\n\r\n    return;\r\n\r\n\r\n    });\r\n  }));\r\n  router.use('*', passport.authenticate('local', {}));\r\n\r\n  router.handle(req, res, async (err) => {\r\n    if(err) {\r\n      res.send({ \"error\": err });\r\n    } else {\r\n      const {data: {jwt: {linkId, token}}} = await getJWT(globalUserId);\r\n      res.send({ linkId, token });\r\n    }\r\n\r\n  });\r\n}",
           "link_id": 31246
+        },
+        "__typename": "links"
+      },
+      "__typename": "handlers"
+    },
+    {
+      "dist_id": 31349,
+      "src_id": 31339,
+      "handler_id": 31343,
+      "execution_provider_id": 33,
+      "isolation_provider_id": 144,
+      "dist": {
+        "id": 31349,
+        "type_id": 30,
+        "from_id": 0,
+        "to_id": 0,
+        "value": {
+          "id": 2639,
+          "value": "({ deep, data, require, Go }) => {\n    const React = require('react');\n    const dc = '@deep-foundation/core';\n    const dnpm = '@deep-foundation/npm-packager';\n    const dpl = '@deep-foundation/perception-links';\n    const c = require('@chakra-ui/react');\n    const Stack = deep.idLocal(dpl, 'Stack');\n    const promiseTree = deep.idLocal(dc, 'promiseTree');\n    const Then = deep.idLocal(dc, 'Then');\n    const PackageVersion = deep.idLocal(dc, 'PackageVersion');\n    const Publish = deep.idLocal(dnpm, 'Publish');\n    return ({ go, goHandler, handlerId, Component, linkId, link, children, isActive, ...props }, ref) => {\n        const { data: [version] } = deep.useSubscription({\n            type_id: PackageVersion,\n            to_id: linkId,\n        });\n        const { data: publishs } = deep.useSubscription({\n            type_id: Publish,\n            from_id: linkId,\n        });\n        return React.createElement(go.On, { do: {} },\n            React.createElement(c.Button, { isDisabled: true, w: '100%' }, version ? `${version.symbol} ${version.value}` : 'no version'),\n            React.createElement(c.Button, { w: '100%' }, \"publish\"),\n            React.createElement(React.Fragment, null, \"Handler of \\uD83D\\uDCE6 26423 @deep-foundation/readme\"),\n            React.createElement(go.Provider, { linkId: Stack },\n                React.createElement(go.Handler, { handlerId: Stack, links: publishs })));\n    };\n};\n//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibW9kdWxlLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsibW9kdWxlLnRzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEVBQUUsSUFBSSxFQUFFLElBQUksRUFBRSxPQUFPLEVBQUUsRUFBRSxFQUFFLEVBQUUsRUFBRTtJQUM5QixNQUFNLEtBQUssR0FBRyxPQUFPLENBQUMsT0FBTyxDQUFDLENBQUM7SUFFL0IsTUFBTSxFQUFFLEdBQUcsdUJBQXVCLENBQUM7SUFDbkMsTUFBTSxJQUFJLEdBQUcsK0JBQStCLENBQUM7SUFDN0MsTUFBTSxHQUFHLEdBQUcsbUNBQW1DLENBQUM7SUFDaEQsTUFBTSxDQUFDLEdBQUcsT0FBTyxDQUFDLGtCQUFrQixDQUFDLENBQUM7SUFFdEMsTUFBTSxLQUFLLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxHQUFHLEVBQUUsT0FBTyxDQUFDLENBQUM7SUFDekMsTUFBTSxXQUFXLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsYUFBYSxDQUFDLENBQUM7SUFDcEQsTUFBTSxJQUFJLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsTUFBTSxDQUFDLENBQUM7SUFDdEMsTUFBTSxjQUFjLEdBQUcsSUFBSSxDQUFDLE9BQU8sQ0FBQyxFQUFFLEVBQUUsZ0JBQWdCLENBQUMsQ0FBQztJQUMxRCxNQUFNLE9BQU8sR0FBRyxJQUFJLENBQUMsT0FBTyxDQUFDLElBQUksRUFBRSxTQUFTLENBQUMsQ0FBQztJQUU5QyxPQUFPLENBQUMsRUFDTixFQUFFLEVBQ0YsU0FBUyxFQUVULFNBQVMsRUFDVCxTQUFTLEVBRVQsTUFBTSxFQUNOLElBQUksRUFFSixRQUFRLEVBRVIsUUFBUSxFQUVSLEdBQUcsS0FBSyxFQUNULEVBQUUsR0FBRyxFQUFFLEVBQUU7UUFDUixNQUFNLEVBQUUsSUFBSSxFQUFFLENBQUMsT0FBTyxDQUFDLEVBQUUsR0FBRyxJQUFJLENBQUMsZUFBZSxDQUFDO1lBQy9DLE9BQU8sRUFBRSxjQUFjO1lBQ3ZCLEtBQUssRUFBRSxNQUFNO1NBQ2QsQ0FBQyxDQUFDO1FBQ0gsTUFBTSxFQUFFLElBQUksRUFBRSxRQUFRLEVBQUUsR0FBRyxJQUFJLENBQUMsZUFBZSxDQUFDO1lBQzlDLE9BQU8sRUFBRSxPQUFPO1lBQ2hCLE9BQU8sRUFBRSxNQUFNO1NBQ2hCLENBQUMsQ0FBQztRQWlCSCxPQUFPLG9CQUFDLEVBQUUsQ0FBQyxFQUFFLElBQ1gsRUFBRSxFQUFFLEVBQ0g7WUFFRCxvQkFBQyxDQUFDLENBQUMsTUFBTSxJQUFDLFVBQVUsUUFBQyxDQUFDLEVBQUMsTUFBTSxJQUFFLE9BQU8sQ0FBQyxDQUFDLENBQUMsR0FBRyxPQUFPLENBQUMsTUFBTSxJQUFJLE9BQU8sQ0FBQyxLQUFLLEVBQUUsQ0FBQyxDQUFDLENBQUMsWUFBWSxDQUFZO1lBQ3hHLG9CQUFDLENBQUMsQ0FBQyxNQUFNLElBQUMsQ0FBQyxFQUFDLE1BQU0sY0FBbUI7WUFDckMsa0dBQWdEO1lBQ2hELG9CQUFDLEVBQUUsQ0FBQyxRQUFRLElBQUMsTUFBTSxFQUFFLEtBQUs7Z0JBQ3hCLG9CQUFDLEVBQUUsQ0FBQyxPQUFPLElBQUMsU0FBUyxFQUFFLEtBQUssRUFBRSxLQUFLLEVBQUUsUUFBUSxHQUFHLENBQ3BDLENBQ1IsQ0FBQztJQUNYLENBQUMsQ0FBQztBQUNKLENBQUMsQ0FBQSIsInNvdXJjZXNDb250ZW50IjpbIih7IGRlZXAsIGRhdGEsIHJlcXVpcmUsIEdvIH0pID0+IHtcbiAgY29uc3QgUmVhY3QgPSByZXF1aXJlKCdyZWFjdCcpO1xuICBcbiAgY29uc3QgZGMgPSAnQGRlZXAtZm91bmRhdGlvbi9jb3JlJztcbiAgY29uc3QgZG5wbSA9ICdAZGVlcC1mb3VuZGF0aW9uL25wbS1wYWNrYWdlcic7XG4gIGNvbnN0IGRwbCA9ICdAZGVlcC1mb3VuZGF0aW9uL3BlcmNlcHRpb24tbGlua3MnO1xuICBjb25zdCBjID0gcmVxdWlyZSgnQGNoYWtyYS11aS9yZWFjdCcpO1xuXG4gIGNvbnN0IFN0YWNrID0gZGVlcC5pZExvY2FsKGRwbCwgJ1N0YWNrJyk7XG4gIGNvbnN0IHByb21pc2VUcmVlID0gZGVlcC5pZExvY2FsKGRjLCAncHJvbWlzZVRyZWUnKTtcbiAgY29uc3QgVGhlbiA9IGRlZXAuaWRMb2NhbChkYywgJ1RoZW4nKTtcbiAgY29uc3QgUGFja2FnZVZlcnNpb24gPSBkZWVwLmlkTG9jYWwoZGMsICdQYWNrYWdlVmVyc2lvbicpO1xuICBjb25zdCBQdWJsaXNoID0gZGVlcC5pZExvY2FsKGRucG0sICdQdWJsaXNoJyk7XG5cbiAgcmV0dXJuICh7XG4gICAgZ28sXG4gICAgZ29IYW5kbGVyLFxuXG4gICAgaGFuZGxlcklkLFxuICAgIENvbXBvbmVudCxcblxuICAgIGxpbmtJZCxcbiAgICBsaW5rLFxuXG4gICAgY2hpbGRyZW4sXG5cbiAgICBpc0FjdGl2ZSxcblxuICAgIC4uLnByb3BzXG4gIH0sIHJlZikgPT4ge1xuICAgIGNvbnN0IHsgZGF0YTogW3ZlcnNpb25dIH0gPSBkZWVwLnVzZVN1YnNjcmlwdGlvbih7XG4gICAgICB0eXBlX2lkOiBQYWNrYWdlVmVyc2lvbixcbiAgICAgIHRvX2lkOiBsaW5rSWQsXG4gICAgfSk7XG4gICAgY29uc3QgeyBkYXRhOiBwdWJsaXNocyB9ID0gZGVlcC51c2VTdWJzY3JpcHRpb24oe1xuICAgICAgdHlwZV9pZDogUHVibGlzaCxcbiAgICAgIGZyb21faWQ6IGxpbmtJZCxcbiAgICB9KTtcbiAgICAvLyBjb25zdCBwID0gZGVlcC51c2VTdWJzY3JpcHRpb24oe1xuICAgIC8vICAgbGltaXQ6IDEsXG4gICAgLy8gICBmcm9tX2lkOiBsaW5rSWQsXG4gICAgLy8gICB0eXBlX2lkOiBUaGVuLFxuICAgIC8vICAgcmV0dXJuOiB7XG4gICAgLy8gICAgIF9kb3duOiB7XG4gICAgLy8gICAgICAgcmVsYXRpb246ICdkb3duJyxcbiAgICAvLyAgICAgICB0cmVlX2lkOiBwcm9taXNlVHJlZSxcbiAgICAvLyAgICAgICByZXR1cm46IHtcbiAgICAvLyAgICAgICAgIF9saW5rOiB7XG4gICAgLy8gICAgICAgICAgIHJlbGF0aW9uOiAnbGluaycsXG4gICAgLy8gICAgICAgICB9LFxuICAgIC8vICAgICAgIH0sXG4gICAgLy8gICAgIH1cbiAgICAvLyAgIH0sXG4gICAgLy8gfSk7XG4gICAgcmV0dXJuIDxnby5PblxuICAgICAgZG89e3tcbiAgICAgIH19XG4gICAgPlxuICAgICAgPGMuQnV0dG9uIGlzRGlzYWJsZWQgdz0nMTAwJSc+e3ZlcnNpb24gPyBgJHt2ZXJzaW9uLnN5bWJvbH0gJHt2ZXJzaW9uLnZhbHVlfWAgOiAnbm8gdmVyc2lvbid9PC9jLkJ1dHRvbj5cbiAgICAgIDxjLkJ1dHRvbiB3PScxMDAlJz5wdWJsaXNoPC9jLkJ1dHRvbj5cbiAgICAgIDw+SGFuZGxlciBvZiDwn5OmIDI2NDIzIEBkZWVwLWZvdW5kYXRpb24vcmVhZG1lPC8+XG4gICAgICA8Z28uUHJvdmlkZXIgbGlua0lkPXtTdGFja30+XG4gICAgICAgIDxnby5IYW5kbGVyIGhhbmRsZXJJZD17U3RhY2t9IGxpbmtzPXtwdWJsaXNoc30vPlxuICAgICAgPC9nby5Qcm92aWRlcj5cbiAgICA8L2dvLk9uPjtcbiAgfTtcbn0iXX0=",
+          "link_id": 31349
         },
         "__typename": "links"
       },
