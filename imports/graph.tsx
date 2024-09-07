@@ -1,4 +1,4 @@
-import { Box, Button, Portal, useColorMode, useTheme, VStack } from "@chakra-ui/react";
+import { Box, Button, Portal, useColorMode, useDisclosure, useTheme, VStack } from "@chakra-ui/react";
 import cytoscape from 'cytoscape';
 import edgeConnections from 'cytoscape-edge-connections';
 import { createContext, forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -17,7 +17,8 @@ import cola from 'cytoscape-cola';
 // import cxtmenu from 'cytoscape-cxtmenu';
 // import cxtmenu from '@lsvih/cytoscape-cxtmenu/src/index';
 import edgehandles from 'cytoscape-edgehandles';
-// import cytoscapeLasso from 'cytoscape-lasso';
+// @ts-ignore
+import nodeHtmlLabel from 'cytoscape-node-html-label/dist/cytoscape-node-html-label';
 import dynamic from 'next/dynamic';
 import { Planet } from 'react-planet';
 import { IoInfiniteSharp } from "react-icons/io5";
@@ -27,7 +28,7 @@ import { useChakraColor, getChakraVar as _getChakraVar, getChakraColor, getChakr
 import { FocusContext, PathContext, GoContext } from "./orientation";
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 
-import { MdOutlineCenterFocusWeak } from "react-icons/md";
+import { MdOutlineCenterFocusWeak, MdOutlineDraw, MdDraw } from "react-icons/md";
 import { LuChevronLast, LuChevronFirst } from "react-icons/lu";
 import { useResizeDetector } from "react-resize-detector";
 
@@ -46,7 +47,7 @@ import difference from 'lodash/difference';
 import cloneDeep from 'lodash/cloneDeep';
 import { useChakraVar } from "@deep-foundation/perception-imports/imports/hooks";
 import { ReactHandlersContext } from "@deep-foundation/perception-imports/imports/react-handler";
-import { useHandlersGo } from "@deep-foundation/perception-imports/imports/client-handler";
+import { CatchErrors, useHandlersGo } from "@deep-foundation/perception-imports/imports/client-handler";
 
 const dpl = '@deep-foundation/perception-links';
 
@@ -69,11 +70,39 @@ cytoscape.use(cola);
 cytoscape.use(edgeConnections);
 cytoscape.use(edgehandles);
 
+let cytoscapeLasso;
+import('cytoscape-lasso/dist/cytoscape-lasso').then((m) => {
+  cytoscapeLasso = m.default;
+  cytoscape.use(cytoscapeLasso);
+});
+
+nodeHtmlLabel(cytoscape);
+
 export const Graph = memo(function Graph({
   onLoaded: _onLoaded,
+  onInsert,
+
+  spaceId = 0,
+  onSpaceId,
+  containerId = 0,
+  onContainerId,
+
+  buttons = true,
+  buttonsChildren = null,
+
   children = null,
 }: {
   onLoaded?: (cy) => void;
+  onInsert?: (inserted, insertQuery) => void;
+
+  spaceId?: Id;
+  onSpaceId?: (id) => void;
+  containerId?: Id;
+  onContainerId?: (id) => void;
+
+  buttons?: boolean;
+  buttonsChildren?: any,
+
   children?: any;
 }){
   // console.log('https://github.com/deep-foundation/deepcase-app/issues/236', 'CytoGraph', 'links', links);
@@ -82,6 +111,7 @@ export const Graph = memo(function Graph({
 
   const [_cy, setCy] = useState<any>();
   const cyRef = useRef<any>(); cyRef.current = _cy;
+  const ceRef = useRef<any>();
   const layoutRef = useRef<any>();
   const overlayRef = useRef<any>();
   const bgRef = useRef<any>();
@@ -94,27 +124,24 @@ export const Graph = memo(function Graph({
 
   const line = useChakraColor('deepLine');
 
-  const active = useCallback((id, __cy) => {
-    const cy = __cy || _cy;
-    const pos = cy.$(`#${id}`).position();
-    const pan = cy.pan();
-    const zoom = cy.zoom();
-    if (cy && id) {
-      // cy.$('.link-node-active').not(cy.$(`#${id}`)).removeClass('link-node-active').unlock();
-      // cy.$(`#${id}`).addClass('link-node-active').lock();
-    }
-    // if (pos) {
-    //   planetRef.current.style['left'] = `${pos.x}px`;
-    //   planetRef.current.style['top'] = `${pos.y}px`;
-    //   planetRef.current.style['display'] = `block`;
-    // }
-    // go({
-    //   itemIndex: pathItemIndex, index: resultIndex,
-    //   linkId: id, position: 'next',
-    // });
-  }, [_cy]);
-  const activeRef = useRef(active);
-  activeRef.current = active;
+  const [space, setSpace] = useState<any>();
+  useEffect(() => {
+    spaceId && setSpace(deep.get(spaceId));
+  }, [spaceId]);
+  useEffect(() => {
+    if (space && onSpaceId) onSpaceId(space?.id);
+  }, [space]);
+  const [container, setContainer] = useState<any>();
+  useEffect(() => {
+    containerId && setContainer(deep.get(containerId));
+  }, [containerId]);
+  useEffect(() => {
+    if (container && onContainerId) onContainerId(container?.id);
+  }, [container]);
+  const containerRef = useRef(container); containerRef.current = container;
+
+  const spaceDisclosure = useDisclosure();
+  const containerDisclosure = useDisclosure();
 
   const onLoaded = useCallback((cy) => {
     console.log('Graph onLoaded', cy);
@@ -122,25 +149,46 @@ export const Graph = memo(function Graph({
     setCy(cy); cyRef.current = cy;
     if (go?.data) go.data.cy = cy;
 
-    const active = activeRef.current;
-
     const viewport = (event) => {
       const pan = cy.pan();
       const zoom = cy.zoom();
       // setViewport({ pan, zoom });
       bgRef.current.style['background-size'] = `${zoom * 3}em ${zoom * 3}em`;
       bgRef.current.style['background-position'] = `${pan.x}px ${pan.y}px`;
-      overlayRef.current.style['transform'] = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+      if (pan) overlayRef.current.style['transform'] = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
     };
 
     const mouseover = (event) => {
       const linkId = +(event?.target?.id ? event?.target.id() : 0);
-      active(linkId, cy);
     };
 
     const mouseout = (event) => {
       const linkId = +(event?.target?.id ? event?.target.id() : 0);
     };
+
+    const ehpreviewoff = (event, source, target, preview) => {
+      // console.log('ehpreviewoff', preview, preview?.json());
+    };
+    const ehcomplete = (event, source, target, added) => {
+      const s = source.data();
+      const t = target.data();
+      added.remove();
+      console.log('ehcomplete', s, t);
+      if (s.linkId && t?.linkId) {
+        setInsert({ from: s.linkId, to: t.linkId, containerId: containerRef?.current?.id });
+      }
+    };
+
+    const bgtap = (event) => {
+      console.log(event);
+      if (event.target === cy && !event?.originalEvent?.shiftKey && ehRef.current) {
+        setInsert({ from: 0, to: 0, containerId: containerRef?.current?.id });
+      }
+    };
+
+    cy.on('ehpreviewoff', ehpreviewoff);
+    cy.on('ehcomplete', ehcomplete);
+    cy.on('tap', bgtap);
 
     cy.on('viewport', viewport);
     cy.on('mouseover', mouseover);
@@ -157,6 +205,10 @@ export const Graph = memo(function Graph({
       cy.removeListener('viewport', viewport);
       cy.removeListener('mouseover', mouseover);
       cy.removeListener('mouseout', mouseout);
+
+      cy.removeListener('ehpreviewoff', ehpreviewoff);
+      cy.removeListener('ehcomplete', ehcomplete);
+      cy.removeListener('tap', bgtap);
     };
   }, [_cy]);
 
@@ -314,16 +366,26 @@ export const Graph = memo(function Graph({
 
   const [cytoscape, setCytoscape] = useState<any>(null);
   useEffect(() => {
-    if (!!rootRef.current) setCytoscape(<CytoscapeComponent
-      cy={onLoaded}
-      elements={elements}
-      layout={layout}
-      stylesheet={newStylesheets()}
-      panningEnabled={true}
-      pan={viewport?.pan}
-      zoom={viewport?.zoom}
-      style={{ width: '100%', height: '100%' }}
-    />);
+    if (!!rootRef.current) setCytoscape(<CatchErrors
+      errorRenderer={(error, reset, catcher) => {
+        if (!catcher.tries) {
+          catcher.tries = 1;
+          reset();
+        }
+        return <></>;
+      }}
+    >
+        <CytoscapeComponent
+        cy={onLoaded}
+        elements={elements}
+        layout={layout}
+        stylesheet={newStylesheets()}
+        panningEnabled={true}
+        pan={viewport?.pan}
+        zoom={viewport?.zoom}
+        style={{ width: '100%', height: '100%' }}
+      />
+    </CatchErrors>);
   }, [onLoaded, newStylesheets]);
 
   const center = useCallback(() => {
@@ -341,8 +403,75 @@ export const Graph = memo(function Graph({
     }
   }, [_cy]);
 
+  const [insert, setInsert] = useState<{ from?: Id; to?: Id; containerId?: Id; }>(null);
+  const insertDisclosure = useDisclosure();
+  useEffect(() => {
+    if (!insertDisclosure.isOpen) setInsert(null);
+  }, [insertDisclosure.isOpen]);
+  useEffect(() => {
+    if (insert) insertDisclosure.onOpen();
+  }, [insert]);
+
+  const [eh, setEh] = useState<any>(null);
+  const ehRef = useRef(eh); ehRef.current = eh;
+  const toggleDrawMode = useCallback(() => {
+    if (!_cy) return;
+    if (eh) {
+      eh.disableDrawMode();
+      eh.destroy();
+      setEh(null);
+    } else {
+      const eh = _cy.edgehandles({
+        canLink: (source, target) => {
+          const s = source.data();
+          const t = target.data();
+          const sCan = typeof(s.canLink) === 'function' ? s.canLink(source, target) : !!s.canLink;
+          const tCan = typeof(t.canLink) === 'function' ? t.canLink(source, target) : !!t.canLink;
+          // whether an edge can be created between source and target
+          return (sCan && tCan);
+        },
+        edgeParams: (source, target) => {
+          const s = source.data();
+          const t = target.data();
+          console.log('edgeParams', source, s, target, t);
+          if (s.linkId && t?.linkId) {
+            // setInsert({ from: s.linkId, to: t.linkId });
+            // insertDisclosure.onOpen();
+          }
+          return {};
+        },
+      });
+      eh.enableDrawMode();
+      setEh(eh);
+    }
+  }, [_cy, eh]);
+
   const returning = (<>
+    <go.Component path={[dpl, 'Finder']}
+      disclosure={spaceDisclosure} initialId={space?.id || deep?.linkId}
+      onSubmit={(id) => {
+        go.do('containerId', { id });
+        go.do('spaceId', { id });
+        spaceDisclosure.onClose();
+      }}
+    />
+    <go.Component path={[dpl, 'Finder']}
+      disclosure={containerDisclosure} initialId={container?.id || deep?.linkId}
+      onSubmit={(id) => {
+        go.do('containerId', { id });
+        containerDisclosure.onClose();
+      }}
+    />
     <Box position='absolute' left='0' top='0' right='0' bottom='0' ref={rootRef}>
+      {!!insertDisclosure.isOpen && !!insert && <go.Component path={[dpl, 'LinkInsertModal']}
+        disclosure={insertDisclosure}
+        defaultFromId={insert.from}
+        defaultToId={insert.to}
+        defaultContainerId={insert.containerId}
+        onInsert={(inserted, insertQuery) => {
+          onInsert && onInsert(inserted, insertQuery);
+        }}
+      />}
       <Box ref={bgRef}
         position='absolute' left='0' top='0' right='0' bottom='0'
         backgroundImage={`linear-gradient(${line} .1em, transparent .1em), linear-gradient(90deg, ${line} .1em, transparent .1em)`}
@@ -351,14 +480,32 @@ export const Graph = memo(function Graph({
       ></Box>
       {cytoscape}
       <VStack
+        alignItems='end'
         position='absolute' right='1em' top='1em'
+        pointerEvents='none'
+        sx={{
+          '& > *': {
+            'pointer-events': 'all',
+          },
+        }}
       >
-        <Button
-          w='3em' h='3em' onClick={() => relayout()}
-        >🩼</Button>
-        <Button
-          w='3em' h='3em' onClick={center}
-        ><MdOutlineCenterFocusWeak/></Button>
+        {!!buttons && <>
+          <Button onClick={containerDisclosure.onOpen}
+          >🗃️: {container ? `${container.symbol} ${container.name}` : `no containerId`}</Button>
+          <Button onClick={spaceDisclosure.onOpen}
+          >🔮: {space ? `${space.symbol} ${space.name}` : `no spaceId`}</Button>
+          <Button
+            w='3em' h='3em' onClick={() => relayout()}
+            >🩼</Button>
+          <Button
+            w='3em' h='3em' onClick={center}
+            ><MdOutlineCenterFocusWeak/></Button>
+          <Button
+            w='3em' h='3em' onClick={toggleDrawMode}
+            variant={!!eh ? 'active' : undefined}
+            >{!!eh ? <MdDraw/> : <MdOutlineDraw/>}</Button>
+        </>}
+        {buttonsChildren}
       </VStack>
     </Box>
   </>);
@@ -376,21 +523,6 @@ export const Graph = memo(function Graph({
   </GraphContext.Provider>
 });
 
-export const PlanetButton = memo(({
-  isActive,
-  icon,
-  ...props
-}: {
-  isActive: boolean;
-  icon: any;
-  [key:string]: any;
-}) => {
-  return <Button
-    variant={isActive ? 'planetActive' : 'planet'}
-    pointerEvents='all' {...props}
-  >{icon}</Button>
-}, () => true)
-
 export const GraphContext = createContext<any>(null);
 export function useGraph() {
   return useContext(GraphContext);
@@ -405,6 +537,7 @@ export const GraphNode = memo(forwardRef(function GraphNode({
   element,
   ghost = false,
   children = null,
+  onAdded,
   ...props
 }: {
   element?: {
@@ -421,6 +554,7 @@ export const GraphNode = memo(forwardRef(function GraphNode({
   };
   ghost?: boolean;
   children?: any;
+  onAdded?: (el, cy) => void;
   [key: string]: any
 }, _ref: any = {}) {
   const ref = _ref || {};
@@ -456,7 +590,7 @@ export const GraphNode = memo(forwardRef(function GraphNode({
       console.log('GraphNode define new', i, id, { ghost, el });
 
       const onClick = (e) => {
-        console.log('GraphNode onClick', i, id, { e, el });
+        console.log('GraphNode onClick', i, id, { e, el, props });
         props.onClick && props.onClick(e);
       };
       el.on('click', onClick);
@@ -480,12 +614,13 @@ export const GraphNode = memo(forwardRef(function GraphNode({
         if (boxRef.current) {
           // go().do('position', { id: d.linkId, cytoscapeEvent: e });
           const p = e.target.position();
-          boxRef.current.style['transform'] = `translate(${p.x}px,${p.y}px)`;
+          if (p) boxRef.current.style['transform'] = `translate(${p.x}px,${p.y}px)`;
         }
       };
       el.on('position', onPosition);
       el.on('data', onPosition);
 
+      onAdded && onAdded(el, cy);
       return el;
     }
     else {
@@ -503,31 +638,33 @@ export const GraphNode = memo(forwardRef(function GraphNode({
   useEffect(() => {
     const el = cy.$id(id);
     const p = el.position();
-    boxRef.current.style['transform'] = `translate(${p.x}px,${p.y}px)`;
+    if (p) boxRef.current.style['transform'] = `translate(${p.x}px,${p.y}px)`;
   });
 
   // undefine
   useEffect(() => {
     return () => {
-      const el = cy.$id(id);
-      if (el.length) {
-        el.removeClass(cls);
-        const classes = el.classes();
-        if (!classes.find(c => !!~c.indexOf('ni-'))) {
-          el.remove();
-          relayout();
-          console.log('GraphNode undefine', i, id, { el });
-        } else {
-          // ghost if not last real
-          if (!ghost) {
-            const hasGhost = classes.find(c => c.slice(0, 3) === 'ni-' && c.slice(-5) === 'ghost');
-            if (hasGhost) {
-              el.emit('ghost');
-              console.log('GraphNode undefine ghost', i, id, { el, ghost, hasGhost });
+      try {
+        const el = cy.$id(id);
+        if (el.length) {
+          el.removeClass(cls);
+          const classes = el.classes();
+          if (!classes.find(c => !!~c.indexOf('ni-'))) {
+            el.remove();
+            relayout();
+            console.log('GraphNode undefine', i, id, { el });
+          } else {
+            // ghost if not last real
+            if (!ghost) {
+              const hasGhost = classes.find(c => c.slice(0, 3) === 'ni-' && c.slice(-5) === 'ghost');
+              if (hasGhost) {
+                el.emit('ghost');
+                console.log('GraphNode undefine ghost', i, id, { el, ghost, hasGhost });
+              }
             }
           }
         }
-      }
+      } catch(e) {}
     };
   }, []);
   
@@ -559,25 +696,27 @@ export const GraphNode = memo(forwardRef(function GraphNode({
     const classes = classesRef.current;
     const prev = prevClassesRef.current;
     const next = element.classes;
-    const hasNotGhost = el.classes().find(c => c.slice(0, 3) === 'ni-' && c.slice(-5) !== 'ghost');
-    if ((!ghost || (ghost && !hasNotGhost)) && !isEqual(prev, next)) {
-      const removed = difference(prev, next);
-      const added = difference(next, prev);
-      classes[id] = classes[id] || {};
-      const toRemove = [];
-      const toAdd = [];
-      for (let r in removed) {
-        classes[id][removed[r]] = (classes[id]?.[removed[r]] || 1) - 1
-        if (!classes[id][removed[r]]) toRemove.push(removed[r]);
+    if (el.length) {
+      const hasNotGhost = el.classes().find(c => c.slice(0, 3) === 'ni-' && c.slice(-5) !== 'ghost');
+      if ((!ghost || (ghost && !hasNotGhost)) && !isEqual(prev, next)) {
+        const removed = difference(prev, next);
+        const added = difference(next, prev);
+        classes[id] = classes[id] || {};
+        const toRemove = [];
+        const toAdd = [];
+        for (let r in removed) {
+          classes[id][removed[r]] = (classes[id]?.[removed[r]] || 1) - 1
+          if (!classes[id][removed[r]]) toRemove.push(removed[r]);
+        }
+        for (let a in added) {
+          classes[id][added[a]] = (classes[id]?.[added[a]] || 0) + 1;
+          if (classes[id][added[a]] === 1) toAdd.push(added[a]);
+        }
+        // console.log('GraphNode classes', i, id, {classes, prev, next, added, removed, toAdd, toRemove});
+        if (toRemove.length) el.removeClass(toRemove);
+        if (toAdd.length) el.addClass(toAdd);
+        prevClassesRef.current = element.classes || [];
       }
-      for (let a in added) {
-        classes[id][added[a]] = (classes[id]?.[added[a]] || 0) + 1;
-        if (classes[id][added[a]] === 1) toAdd.push(added[a]);
-      }
-      console.log('GraphNode classes', i, id, {classes, prev, next, added, removed, toAdd, toRemove});
-      if (toRemove.length) el.removeClass(toRemove);
-      if (toAdd.length) el.addClass(toAdd);
-      prevClassesRef.current = element.classes || [];
     }
   }, [element.classes]);
 
@@ -589,7 +728,7 @@ export const GraphNode = memo(forwardRef(function GraphNode({
         classes[id][prev[c]] = (classes[id][prev[c]] || 1) - 1;
         if (!classes[id][prev[c]]) delete classes[id][prev[c]];
       }
-      console.log('GraphNode unclasses', i, id, {classes, prev});
+      // console.log('GraphNode unclasses', i, id, {classes, prev});
     };
   }, []);
 
@@ -688,7 +827,7 @@ export const GraphEdge = memo(function GraphEdge({
       const el = cy.add(toAdd);
 
       const onClick = (e) => {
-        console.log('GraphEdge onClick', i, id, { e, el });
+        console.log('GraphEdge onClick', i, id, { e, el, props });
         props.onClick && props.onClick(e);
       };
       el.on('click', onClick);
@@ -697,9 +836,11 @@ export const GraphEdge = memo(function GraphEdge({
 
   // undefine
   useEffect(() => () => {
-    const el = cy.$id(`${element.data.id}`);
-    console.log('GraphEdge remove', i, id, { element, el });
-    cy.remove(`#${element.data.id}`);
+    try {
+      const el = cy.$id(`${element.data.id}`);
+      console.log('GraphEdge remove', i, id, { element, el });
+      cy.remove(`#${element.data.id}`);
+    } catch(e) {}
   }, []);
 
   // define redefine
@@ -739,7 +880,7 @@ export const GraphEdge = memo(function GraphEdge({
           classes[id][added[a]] = (classes[id]?.[added[a]] || 0) + 1;
           if (classes[id][added[a]] === 1) toAdd.push(added[a]);
         }
-        console.log('GraphEdge classes', i, id, { el, classes, prev, next, added, removed, toAdd, toRemove});
+        // console.log('GraphEdge classes', i, id, { el, classes, prev, next, added, removed, toAdd, toRemove});
         if (toRemove.length) el.removeClass(...toRemove);
         if (toAdd.length) el.addClass(...toAdd);
         prevClassesRef.current = element.classes || [];
@@ -755,7 +896,7 @@ export const GraphEdge = memo(function GraphEdge({
         classes[id][prev[c]] = (classes[id][prev[c]] || 1) - 1;
         if (!classes[id][prev[c]]) delete classes[id][prev[c]];
       }
-      console.log('GraphEdge unclasses', i, id, { classes, prev });
+      // console.log('GraphEdge unclasses', i, id, { classes, prev });
     };
   }, []);
 

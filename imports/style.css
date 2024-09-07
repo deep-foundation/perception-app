@@ -1,2 +1,7 @@
-button:focus {outline:0;}
-html,body {overflow: hidden;}
+button:focus {
+    outline: 0;
+}
+html,body {
+    overflow: hidden;
+    overscroll-behavior-x: none;
+}

@@ -78,6 +78,7 @@ import * as matchSorter from 'match-sorter';
 import * as useAsyncMemo from "use-async-memo";
 import * as planet from "react-planet";
 import * as ni from "next/image";
+import EmojiPicker from 'emoji-picker-react';
 
 // @ts-ignore
 const GraphQL = dynamic(() => import('./graphql').then(m => m.GraphQL), { ssr: false })
@@ -187,5 +188,6 @@ export const requires: any = {
   'use-async-memo': useAsyncMemo,
   'react-planet': planet,
   'next/image': ni,
+  'emoji-picker-react': EmojiPicker,
 };
 

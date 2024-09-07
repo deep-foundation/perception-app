@@ -31,6 +31,7 @@ import { i18nGetStaticProps } from '../src/i18n';
 import { useDeepPath } from '../src/provider';
 
 import preloaded from '../imports/preloaded.js';
+import { Wysiwyg } from '../imports/wysiwyg';
 console.log('preloaded packages', preloaded?.packages?.length);
 console.log('preloaded handlers', preloaded?.handlers?.length);
 
@@ -158,21 +159,28 @@ export const Content = memo(function Content() {
   const { t } = useTranslation();
   const [isPreloaded, reloadPreloads] = usePreload();
 
-  if (deep) {
-    deep.local = false;
+  useEffect(() => {
+    if (deep) {
+      deep.local = false;
 
-    (global as any).deep = deep;
-    (global as any).ml = deep?.minilinks;
+      (global as any).deep = deep;
+      (global as any).ml = deep?.minilinks;
 
-    if (typeof(window) === 'object') {
-      // @ts-ignore
-      if (!window.deep) console.log('deep', deep);
-      // @ts-ignore
-      window.deep = deep;
-      // @ts-ignore
-      window.require = require;
+      if (typeof(window) === 'object') {
+        // @ts-ignore
+        if (!window.deep) console.log('deep', deep);
+        // @ts-ignore
+        window.deep = deep;
+        // @ts-ignore
+        window.require = require;
+      }
+
+      deep.handleOperation = (operation, query, value, options) => {
+        console.log('handleOperation', operation, options);
+        if (operation === 'delete' || operation === 'update') options.local = true;
+      };
     }
-  }
+  }, [deep]);
 
   const user = useAsyncMemo(async () => {
     if (deep) return (await deep.select({ id: deep.linkId }, { apply: 'user' })).data?.[0];
@@ -205,7 +213,10 @@ export default function Page({
   const [ssl, setSsl] = useState(defaultSsl);
   const [portal, setPortal] = useState(true);
   
-  const customGo = useMemo(() => ({ Graph, GraphEdge, GraphNode, GraphStyle, useGraph }), []);
+  const customGo = useMemo(() => ({
+    Graph, GraphEdge, GraphNode, GraphStyle, useGraph,
+    Wysiwyg,
+  }), []);
 
   return (<>
     <HotkeysProvider>
@@ -214,7 +225,7 @@ export default function Page({
           <AutoGuest/>
           <Mounted>
             <PreloadProvider preloaded={preloaded}>
-              <ReactHandlersProvider requires={requires} sync={true}>
+              <ReactHandlersProvider requires={requires} sync={false}>
                 <GoCustomProvider value={customGo}>
                   <Content/>
                 </GoCustomProvider>
