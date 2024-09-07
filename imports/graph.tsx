@@ -71,10 +71,12 @@ cytoscape.use(edgeConnections);
 cytoscape.use(edgehandles);
 
 let cytoscapeLasso;
-import('cytoscape-lasso/dist/cytoscape-lasso').then((m) => {
-  cytoscapeLasso = m.default;
-  cytoscape.use(cytoscapeLasso);
-});
+if (typeof(window) === 'object') {
+  import('cytoscape-lasso/dist/cytoscape-lasso').then((m) => {
+    cytoscapeLasso = m.default;
+    cytoscape.use(cytoscapeLasso);
+  });
+}
 
 nodeHtmlLabel(cytoscape);
 
@@ -768,6 +770,7 @@ export const GraphNode = memo(forwardRef(function GraphNode({
     const next = element.data;
     if (!isEqual(prev, next)) {
       const el = cy.$id(id);
+      if (!el) return;
       const hasNotGhost = el.classes().find(c => c.slice(0, 3) === 'ni-' && c.slice(-5) !== 'ghost');
       if (!ghost || (ghost && !hasNotGhost)) {
         console.log('GraphNode data', i, id, { prev, next, now: el.data(), ghost, hasNotGhost });
@@ -832,7 +835,7 @@ export const GraphEdge = memo(function GraphEdge({
       };
       el.on('click', onClick);
     }
-  }, [isMounted]);
+  }, [element, isMounted]);
 
   // undefine
   useEffect(() => () => {
@@ -846,7 +849,8 @@ export const GraphEdge = memo(function GraphEdge({
   // define redefine
   useEffect(() => {
     const el = cy.$id(`${element.data.id}`);
-    if (!!isMounted && (!el.length || (el.data.source != element?.data?.source || el.data.target != element?.data?.target))) {
+    const eld = el ? el.data() : undefined;
+    if (!!isMounted && (!el.length || (eld?.source != element?.data?.source || eld?.target != element?.data?.target))) {
       if (el.length) {
         cy.remove(`#${element.data.id}`);
         console.log('GraphEdge update', i, id, { el, element });
