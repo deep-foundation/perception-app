@@ -183,7 +183,7 @@ export const Content = memo(function Content() {
   }, [deep]);
 
   const user = useAsyncMemo(async () => {
-    if (deep) return (await deep.select({ id: deep.linkId }, { apply: 'user' })).data?.[0];
+    if (deep?.linkId) return (await deep.select({ id: deep.linkId }, { apply: 'user' })).data?.[0];
   }, [deep]);
 
   return (<>
