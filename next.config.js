@@ -22,6 +22,7 @@ const config =  {
   images: {
     unoptimized: true,
   },
+  compress: false,
   optimization: {
     minimize: false,
   },
