@@ -22,6 +22,9 @@ const config =  {
   images: {
     unoptimized: true,
   },
+  optimization: {
+    minimize: false,
+  },
   webpack: (config, { defaultLoaders: { babel } }) => {
     // config.module = {
     //   ...config.module,
