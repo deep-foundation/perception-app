@@ -36,8 +36,6 @@ jobs:
         run: npm ci
       - name: check envs
         run: |
-          echo "DOCKER: $DOCKER"
-          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
           echo "NEXT_PUBLIC_GRAPHQL_URL: $NEXT_PUBLIC_GQL_PATH"
       - name: build next
         run: npm run build
