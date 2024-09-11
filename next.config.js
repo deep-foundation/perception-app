@@ -9,7 +9,9 @@ const withNextEnv = nextEnv();
 
  /** @type {import('next').NextConfig}*/
 const config =  {
-  ...(process.env.GITHUB_REPOSITORY ? {
+  ...(process.env.BASE_PATH ? {
+    basePath: process.env.BASE_PATH,
+  } : process.env.GITHUB_REPOSITORY ? {
     basePath: `/${process.env.GITHUB_REPOSITORY.split('/')[1]}`,
   } : {}),
   distDir: 'app',

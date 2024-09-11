@@ -36,6 +36,7 @@ jobs:
         run: npm ci
       - name: check envs
         run: |
+          echo "BASE_PATH: /"
           echo "NEXT_PUBLIC_GRAPHQL_URL: $NEXT_PUBLIC_GQL_PATH"
       - name: build next
         run: npm run build
