@@ -24,6 +24,8 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  NEXT_PUBLIC_GQL_PATH: https://deeplinks.deep.foundation/gql
 jobs:
   # Build job
   build:
