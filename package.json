@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.59",
+  "version": "0.0.60",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -26,7 +26,7 @@
     "build": "npm run preload && rimraf app && next build",
     "start": "next start",
     "dev-core": "npm run preload && (rm -rf ./app); (cd ./perception-imports; npm run app:sync); (cd ./deeplinks; npm run package:build; rsync -a ./imports ../node_modules/@deep-foundation/deeplinks/; npm run package:unbuild); (cd ./store; npm run package:build; rsync -a ./imports ../node_modules/@deep-foundation/store/; npm run package:unbuild); next dev",
-    "dev": "NEXT_PUBLIC_GRAPHQL_URL=https://deeplinks.deep.foundation/gql npm run dev-core",
+    "dev": "npm run dev-core",
     "run-ios": "npx cap run ios",
     "open-ios": "npx cap open ios",
     "build-ios": "npm version prerelease --no-git-tag-version --no-commit-hook && rimraf app && NEXT_PUBLIC_BUILD=\"ios\" npm run export && npx cap sync ios",
