@@ -1,5 +1,5 @@
 import { Button, Box, Heading, useColorMode, Text, OrderedList, UnorderedList, ListItem, Flex } from '@chakra-ui/react';
-import { useDeep } from '@deep-foundation/deeplinks/imports/client';
+import { useDeep, Id } from '@deep-foundation/deeplinks';
 import { useDebounceCallback } from '@react-hook/debounce';
 import { motion, useAnimation } from 'framer-motion';
 import isHotkey from 'is-hotkey';
@@ -41,9 +41,8 @@ import { withHistory } from 'slate-history';
 import { htmlToSlate, slateToHtml } from 'slate-serializers';
 // import { State, MarkdownParser } from 'markup-it';
 import dynamic from 'next/dynamic';
-import { noScrollBar } from '@deep-foundation/perception-imports/imports/go';
-import { useChakraColor } from '@deep-foundation/perception-imports/imports/hooks';
-import { Id } from '@deep-foundation/deeplinks/imports/minilinks';
+import { noScrollBar } from '@deep-foundation/perception-imports';
+import { useChakraColor } from '@deep-foundation/perception-imports';
 
 export const ClientHandlerSlateProxy = ({ children }) => {
   const [handlerId, setHandlerId] = useState();

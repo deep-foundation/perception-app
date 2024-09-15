@@ -1,9 +1,9 @@
 import * as chakra from '@chakra-ui/react';
 import * as icons from '@chakra-ui/icons';
 import dynamic from 'next/dynamic';
-import { DeepClient, useDeep, useDeepSubscription } from "@deep-foundation/deeplinks/imports/client";
-import { evalClientHandler as deepclientEvalClientHandler } from '@deep-foundation/deeplinks/imports/client-handler';
-import { Id, useMinilinksFilter, useMinilinksSubscription } from "@deep-foundation/deeplinks/imports/minilinks";
+import { DeepClient, useDeep, useDeepSubscription, evalClientHandler as deepclientEvalClientHandler, Id, useMinilinksFilter, useMinilinksSubscription } from "@deep-foundation/deeplinks";
+import deeplinks from '@deep-foundation/deeplinks';
+import perception from '@deep-foundation/perception-imports';
 import axios from 'axios';
 import * as axiosHooks from 'axios-hooks';
 import * as classnames from 'classnames';
@@ -128,9 +128,8 @@ export const requires: any = {
   //   useEditorTabs,
   //   useCytoEditor,
   // },
-  '@deep-foundation/deeplinks': {
-    useMinilinksFilter
-  },
+  '@deep-foundation/deeplinks': deeplinks,
+  '@deep-foundation/perception-imports': perception,
   '@deep-foundation/perception-app': {
     TypedIcon,
     DownIcon,

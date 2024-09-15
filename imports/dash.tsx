@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDeep } from "@deep-foundation/deeplinks/imports/client";
+import { useDeep } from "@deep-foundation/deeplinks";
 import { Box } from '@chakra-ui/react';
 import { LinkButton } from './link';
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer } from 'recharts';

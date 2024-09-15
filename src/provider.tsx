@@ -1,13 +1,12 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { DeepProvider } from '@deep-foundation/deeplinks/imports/client';
-import { TokenProvider, useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
+import { DeepProvider, TokenProvider, useTokenController } from '@deep-foundation/deeplinks';
 import { ApolloClientTokenizedProvider } from '@deep-foundation/react-hasura/apollo-client-tokenized-provider';
 import { CapacitorStoreProvider } from '@deep-foundation/store/capacitor';
 import { CookiesStoreProvider } from '@deep-foundation/store/cookies';
 import { LocalStoreProvider, useLocalStore } from '@deep-foundation/store/local';
 import { QueryStoreProvider } from '@deep-foundation/store/query';
 import { CustomI18nProvider } from './i18n';
-import theme from '@deep-foundation/perception-imports/imports/theme';
+import { theme } from '@deep-foundation/perception-imports';
 import { memo, useEffect } from 'react';
 
 const defaultPath = "https://deeplinks.deep.foundation/gql";

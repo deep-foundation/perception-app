@@ -2,8 +2,7 @@ import {
   Box,
   useBreakpointValue
 } from '@chakra-ui/react';
-import { useDeep } from "@deep-foundation/deeplinks/imports/client";
-import { Id, Link } from '@deep-foundation/deeplinks/imports/minilinks';
+import { useDeep, Id, Link } from '@deep-foundation/deeplinks';
 import { createContext, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys, useHotkeysContext } from 'react-hotkeys-hook';
 import { useResizeDetector } from 'react-resize-detector';

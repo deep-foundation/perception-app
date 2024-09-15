@@ -6,7 +6,7 @@ import { createContext, forwardRef, memo, useCallback, useContext, useEffect, us
 // import klay from 'cytoscape-klay';
 import dagre from 'cytoscape-dagre';
 // import elk from 'cytoscape-elk';
-import { useDeep } from '@deep-foundation/deeplinks/imports/client';
+import { useDeep, Id, Link, useMinilinksApply, useMinilinksConstruct } from '@deep-foundation/deeplinks';
 // import COSEBilkent from 'cytoscape-cose-bilkent';
 // import d3Force from 'cytoscape-d3-force';
 // import deepd3Force from 'cytoscape-deep-d3-force';
@@ -23,8 +23,7 @@ import dynamic from 'next/dynamic';
 import { Planet } from 'react-planet';
 import { IoInfiniteSharp } from "react-icons/io5";
 
-import { Id, Link, useMinilinksApply, useMinilinksConstruct } from '@deep-foundation/deeplinks/imports/minilinks';
-import { useChakraColor, getChakraVar as _getChakraVar, getChakraColor, getChakraVar } from "@deep-foundation/perception-imports/imports/hooks";
+import { useChakraColor, getChakraVar as _getChakraVar, getChakraColor, getChakraVar } from "@deep-foundation/perception-imports";
 import { FocusContext, PathContext, GoContext } from "./orientation";
 import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
 
@@ -40,14 +39,14 @@ import { InIcon } from './icons/in';
 import { OutIcon } from './icons/out';
 import { FromIcon } from './icons/from';
 import { ToIcon } from './icons/to';
-import { GoContextI, useGoCore } from "@deep-foundation/perception-imports/imports/go";
+import { GoContextI, useGoCore } from "@deep-foundation/perception-imports";
 import isEqual from 'lodash/isEqual';
 import flatten from 'lodash/flatten';
 import difference from 'lodash/difference';
 import cloneDeep from 'lodash/cloneDeep';
-import { useChakraVar } from "@deep-foundation/perception-imports/imports/hooks";
-import { ReactHandlersContext } from "@deep-foundation/perception-imports/imports/react-handler";
-import { CatchErrors, useHandlersGo } from "@deep-foundation/perception-imports/imports/client-handler";
+import { useChakraVar } from "@deep-foundation/perception-imports";
+import { ReactHandlersContext } from "@deep-foundation/perception-imports";
+import { CatchErrors, useHandlersGo } from "@deep-foundation/perception-imports";
 
 const dpl = '@deep-foundation/perception-links';
 

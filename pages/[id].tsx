@@ -1,12 +1,12 @@
 import {
   Box
 } from '@chakra-ui/react';
-import { DeepNamespaceProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
-import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
-import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
-import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports/imports/go';
-import { PreloadProvider, usePreload } from '@deep-foundation/perception-imports/imports/hooks';
-import { ReactHandlersProvider } from '@deep-foundation/perception-imports/imports/react-handler';
+import { DeepNamespaceProvider, useDeep } from '@deep-foundation/deeplinks';
+import { MinilinksProvider } from '@deep-foundation/deeplinks';
+import { AutoGuest } from '@deep-foundation/perception-imports';
+import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports';
+import { PreloadProvider, usePreload } from '@deep-foundation/perception-imports';
+import { ReactHandlersProvider } from '@deep-foundation/perception-imports';
 import isEqual from 'lodash/isEqual';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';

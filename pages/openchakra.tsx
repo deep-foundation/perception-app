@@ -1,9 +1,9 @@
 import { i18nGetStaticProps } from '../src/i18n';
-// import { DeepNamespaceProvider } from '@deep-foundation/deeplinks/imports/client';
-// import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
-// import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
-// import { PreloadProvider } from '@deep-foundation/perception-imports/imports/hooks';
-// import { ReactHandlersProvider } from '@deep-foundation/perception-imports/imports/react-handler';
+// import { DeepNamespaceProvider } from '@deep-foundation/deeplinks';
+// import { MinilinksProvider } from '@deep-foundation/deeplinks';
+// import { AutoGuest } from '@deep-foundation/perception-imports';
+// import { PreloadProvider } from '@deep-foundation/perception-imports';
+// import { ReactHandlersProvider } from '@deep-foundation/perception-imports';
 // import { memo, useState } from 'react';
 // import { HotkeysProvider } from 'react-hotkeys-hook';
 // import { FinderProvider } from '../imports/finder';

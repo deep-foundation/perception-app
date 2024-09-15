@@ -10,7 +10,7 @@ ports:
     visibility: public
 
 tasks:
-  - init: sudo apt-get -y install rsync && npm install && npm run build && git clone https://github.com/deep-foundation/perception-imports.git && (cd ./perception-imports && npm ci)
+  - init: sudo apt-get -y install rsync && npm install && git clone https://github.com/deep-foundation/perception-imports.git && (cd ./perception-imports && npm ci)
     command: npm run dev
 
 

@@ -8,14 +8,12 @@ import {
   Text,
   VStack
 } from '@chakra-ui/react';
-import { DeepNamespaceProvider, useDeep } from '@deep-foundation/deeplinks/imports/client';
-import { MinilinksProvider } from '@deep-foundation/deeplinks/imports/minilinks';
-import { useTokenController } from '@deep-foundation/deeplinks/imports/react-token';
-import { AutoGuest } from '@deep-foundation/perception-imports/imports/auto-guest';
-import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports/imports/go';
-import { Packages, PreloadProvider, usePreload } from '@deep-foundation/perception-imports/imports/hooks';
-import { ReactHandlersProvider } from '@deep-foundation/perception-imports/imports/react-handler';
-import { ColorMode } from '@deep-foundation/perception-imports/imports/theme';
+import { DeepNamespaceProvider, useDeep, MinilinksProvider, useTokenController } from '@deep-foundation/deeplinks';
+import { AutoGuest } from '@deep-foundation/perception-imports';
+import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports';
+import { Packages, PreloadProvider, usePreload } from '@deep-foundation/perception-imports';
+import { ReactHandlersProvider } from '@deep-foundation/perception-imports';
+import { ColorMode } from '@deep-foundation/perception-imports';
 import isEqual from 'lodash/isEqual';
 import { useTranslation } from 'next-i18next';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';

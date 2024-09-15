@@ -1,5 +1,5 @@
 // import { Box } from '@chakra-ui/react';
-// import { useDeep } from '@deep-foundation/deeplinks/imports/client';
+// import { useDeep } from '@deep-foundation/deeplinks';
 // import React, { useMemo, useState } from 'react';
 // import { useDropzone } from 'react-dropzone';
 // import axios from 'axios';
