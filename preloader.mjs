@@ -1,6 +1,5 @@
 import { DeepClient } from '@deep-foundation/deeplinks/imports/client.js';
 import { generateApolloClient } from '@deep-foundation/hasura/client.js';
-import { stackOrderReverse } from 'd3';
 import fs from 'fs';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';

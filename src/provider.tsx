@@ -11,7 +11,6 @@ import { memo, useEffect } from 'react';
 
 const defaultPath = "https://deeplinks.deep.foundation/gql";
 
-console.log('process?.env', process?.env);
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL || defaultPath) {
   return useLocalStore('dc-dg-path', defaultValue);
 }
