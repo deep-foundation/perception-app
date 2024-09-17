@@ -21,7 +21,7 @@ const deep = new DeepClient({
 })
 
 var init = async () => {
-  const packages = await deep.select({
+  const { plainLinks: packages } = await deep.select({
     type_id: { _nin: [
       deep.idLocal('@deep-foundation/core', 'Promise'),
       deep.idLocal('@deep-foundation/core', 'Then'),
@@ -36,7 +36,13 @@ var init = async () => {
         string: { value: { _neq: 'deep' } },
       },
     },
-  });
+    return: {
+      _version: {
+        relation: 'in',
+        type_id: deep.idLocal('@deep-foundation/core', 'PackageVersion')
+      },
+    },
+  }, { apply: 'packages' });
 
   const { data: handlers } = await deep.select({
     execution_provider_id: { _eq: deep.idLocal('@deep-foundation/core', 'JSExecutionProvider') },
@@ -45,9 +51,9 @@ var init = async () => {
     },
   }, { table: 'handlers' });
 
-  console.log('preloader packages', packages?.data?.length || 0);
+  console.log('preloader packages', packages?.length || 0);
   console.log('preloader handlers', handlers?.length || 0);
-  if (!packages?.data?.length || !handlers?.length) {
+  if (!packages?.length || !handlers?.length) {
     console.log('preloader ignored');
     return;
   }
