@@ -27,11 +27,10 @@ import { Mounted } from '../imports/mounted';
 import { requires } from '../imports/requires';
 import { i18nGetStaticProps } from '../src/i18n';
 import { useDeepPath } from '../src/provider';
-
-import preloaded from '../imports/preloaded.js';
 import { Wysiwyg } from '../imports/wysiwyg';
-console.log('preloaded packages', preloaded?.packages?.length);
-console.log('preloaded handlers', preloaded?.handlers?.length);
+import axios from 'axios';
+
+import _preloaded from '../imports/preloaded.js';
 
 const dpl = '@deep-foundation/perception-links';
 const dc = '@deep-foundation/core';
@@ -199,6 +198,7 @@ export default function Page({
   deeplinksUrl,
   appVersion,
   disableConnector,
+  preloaded,
 }: {
   defaultPath: string;
   defaultSsl: boolean;
@@ -206,6 +206,7 @@ export default function Page({
   deeplinksUrl: string;
   appVersion: string;
   disableConnector: boolean;
+  preloaded?: any;
 }) {
   const [path, setPath] = useDeepPath(defaultPath);
   const [ssl, setSsl] = useState(defaultSsl);
@@ -236,8 +237,17 @@ export default function Page({
   </>);
 };
 
-export async function getStaticProps(arg) {
-  const result: any = await i18nGetStaticProps(arg);
+// export async function getStaticProps(arg) {
+//   const result: any = await i18nGetStaticProps(arg);
+//   result.props = result?.props || {};
+//   result.props.preloaded = _preloaded;
+//   return result;
+// }
+
+export async function getServerSideProps() {
+  const result: any = await i18nGetStaticProps({ locale: 'ru' });
+  const preload = await axios.get(`${process.env.__NEXT_PRIVATE_ORIGIN}/api/preload`);
   result.props = result?.props || {};
+  result.props.preloaded = preload.data;
   return result;
 }

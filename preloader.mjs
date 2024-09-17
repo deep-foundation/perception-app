@@ -7,13 +7,14 @@ import { fileURLToPath } from 'url';
 let path, ssl = true;
 try { path = process.env.GQL || process.env.NEXT_PUBLIC_GRAPHQL_URL || 'https://deeplinks.deep.foundation/gql' } catch(e) {}
 try { ssl = new URL(path).protocol === "https:" } catch(e) {}
+path = path.replace(/(^\w+:|^)\/\//, '');
 
 const secret = process.env.SECRET || process.env.DEEPLINKS_HASURA_SECRET;
 const token = process.env.TOKEN || process.env.NEXT_PUBLIC_DEEP_TOKEN;
 
 const deep = new DeepClient({
   apolloClient: generateApolloClient({
-    path: `${path}`.replace(/(^\w+:|^)\/\//, ''),
+    path: path,
     ssl: ssl,
     secret: secret,
     token: token,

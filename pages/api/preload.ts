@@ -2,6 +2,14 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { generateApolloClient } from '@deep-foundation/hasura/client';
 import { DeepClient } from '@deep-foundation/deeplinks';
 
+let path, ssl = true;
+try { path = process.env.GQL || process.env.NEXT_PUBLIC_GRAPHQL_URL || 'https://deeplinks.deep.foundation/gql' } catch(e) {}
+try { ssl = new URL(path).protocol === "https:" } catch(e) {}
+path = path.replace(/(^\w+:|^)\/\//, '');
+
+const secret = process.env.SECRET || process.env.DEEPLINKS_HASURA_SECRET;
+const token = process.env.TOKEN || process.env.NEXT_PUBLIC_DEEP_TOKEN;
+
 type Preloaded = {
     handlers: any[];
     packages: any[];
@@ -10,9 +18,11 @@ type Preloaded = {
 console.log('process.env', process.env);
 const deep = new DeepClient({
     apolloClient: generateApolloClient({
-        path: `${process.env.DEEPLINKS}/gql`.replace(/(^\w+:|^)\/\//, ''),
-        ssl: !!+process.env.SSL,
-        secret: process.env.SECRET,
+        path: path,
+        ssl: ssl,
+        secret: secret,
+        token: token,
+        ws: true,
     }),
 });
 
@@ -47,6 +57,7 @@ deep.subscribe({
 }, { apply: 'packages' }).subscribe({
     // @ts-ignore
     next: ({ plainLinks: packages }) => {
+        // console.log('packages', packages);
         preloaded.packages = packages;
     },
 });
