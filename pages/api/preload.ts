@@ -26,12 +26,7 @@ const deep = new DeepClient({
     }),
 });
 
-const preloaded = {
-    handlers: [],
-    packages: [],
-};
-
-deep.subscribe({
+const packagesQ = {
     type_id: {
         _nin: [
             deep.idLocal('@deep-foundation/core', 'Promise'),
@@ -54,7 +49,25 @@ deep.subscribe({
             type_id: deep.idLocal('@deep-foundation/core', 'PackageVersion')
         },
     },
-}, { apply: 'packages' }).subscribe({
+};
+
+const packagesO = { apply: 'packages' };
+
+const handlersQ = {
+    execution_provider_id: { _eq: deep.idLocal('@deep-foundation/core', 'JSExecutionProvider') },
+    return: {
+        dist: { relation: 'dist' }
+    },
+};
+
+const handlersO: any = { table: 'handlers' };
+
+const preloaded = {
+    packages: [],
+    handlers: [],
+};
+
+deep.subscribe(packagesQ, packagesO).subscribe({
     // @ts-ignore
     next: ({ plainLinks: packages }) => {
         // console.log('packages', packages);
@@ -62,21 +75,21 @@ deep.subscribe({
     },
 });
 
-deep.subscribe({
-    execution_provider_id: { _eq: deep.idLocal('@deep-foundation/core', 'JSExecutionProvider') },
-    return: {
-        dist: { relation: 'dist' }
-    },
-}, { table: 'handlers' }).subscribe({
+deep.subscribe(handlersQ, handlersO).subscribe({
     // @ts-ignore
     next: ({ data: handlers }) => {
         preloaded.handlers = handlers;
     },
 });
 
-export default function handler(
+let initial = false;
+export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Preloaded>
 ) {
+    if (initial) {
+        preloaded.packages = (await deep.select(packagesQ, packagesO))?.plainLinks;
+        preloaded.handlers = (await deep.select(handlersQ, handlersO))?.data;
+    }
     res.status(200).json(preloaded);
 }

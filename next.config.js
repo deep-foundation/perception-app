@@ -25,9 +25,6 @@ const config =  {
     unoptimized: true,
   },
   compress: false,
-  optimization: {
-    minimize: false,
-  },
   webpack: (config, { defaultLoaders: { babel } }) => {
     // config.module = {
     //   ...config.module,
@@ -40,6 +37,7 @@ const config =  {
     //     },
     //   ],
     // };
+    config.optimization.minimize = false;
     config.resolve.fallback = {
       "buffer":false,
       "events": false,
