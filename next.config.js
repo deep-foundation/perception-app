@@ -24,7 +24,10 @@ const config =  {
   images: {
     unoptimized: true,
   },
-  compress: false,
+  compress: true,
+  experimental: {
+    serverSourceMaps: true,
+  },
   webpack: (config, { defaultLoaders: { babel } }) => {
     // config.module = {
     //   ...config.module,
@@ -37,7 +40,7 @@ const config =  {
     //     },
     //   ],
     // };
-    config.optimization.minimize = false;
+    // config.optimization.minimize = false;
     config.resolve.fallback = {
       "buffer":false,
       "events": false,
