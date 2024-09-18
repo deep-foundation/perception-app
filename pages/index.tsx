@@ -29,8 +29,7 @@ import { i18nGetStaticProps } from '../src/i18n';
 import { useDeepPath } from '../src/provider';
 import { Wysiwyg } from '../imports/wysiwyg';
 import axios from 'axios';
-
-import _preloaded from '../imports/preloaded.js';
+import { getServerSidePropsPreload } from '@deep-foundation/perception-imports';
 
 const dpl = '@deep-foundation/perception-links';
 const dc = '@deep-foundation/core';
@@ -237,6 +236,7 @@ export default function Page({
   </>);
 };
 
+// import _preloaded from '../imports/preloaded.js';
 // export async function getStaticProps(arg) {
 //   const result: any = await i18nGetStaticProps(arg);
 //   result.props = result?.props || {};
@@ -244,10 +244,9 @@ export default function Page({
 //   return result;
 // }
 
-export async function getServerSideProps() {
-  const result: any = await i18nGetStaticProps({ locale: 'ru' });
-  const preload = await axios.get(`${process.env.__NEXT_PRIVATE_ORIGIN}/api/preload`);
-  result.props = result?.props || {};
-  result.props.preloaded = preload.data;
+export async function getServerSideProps(arg) {
+  const result: any = {};
+  await i18nGetStaticProps({ locale: 'ru' }, result);
+  await getServerSidePropsPreload(arg, result);
   return result;
 }

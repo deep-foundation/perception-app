@@ -8,12 +8,11 @@ import createClient from 'next-i18next/dist/commonjs/createClient';
 import i18nConfig from '../next-i18next.config';
 import { useRouter } from "next/router";
 
-export async function i18nGetStaticProps({ locale }: any = {}) {
-  return +(process?.env?.NEXT_PUBLIC_I18N_DISABLE || 0) ? { props: {} } : {
-    props: {
-      ...(await serverSideTranslations(locale, i18nConfig.i18n.requiredNamespaces)),
-    },
-  }
+export async function i18nGetStaticProps({ locale }: any = {}, result = {}) {
+  const _result: any = result || {};
+  return +(process?.env?.NEXT_PUBLIC_I18N_DISABLE || 0) ? (_result.props = {}) : (_result.props = {
+    ...(await serverSideTranslations(locale, i18nConfig.i18n.requiredNamespaces)),
+  });
 }
 
 export function CustomI18nProvider({ children }: { children?: any }) {
