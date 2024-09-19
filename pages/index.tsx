@@ -191,26 +191,10 @@ export const Content = memo(function Content() {
 }, () => true);
 
 export default function Page({
-  defaultPath,
-  defaultSsl,
-  serverUrl,
-  deeplinksUrl,
-  appVersion,
-  disableConnector,
   preloaded,
 }: {
-  defaultPath: string;
-  defaultSsl: boolean;
-  serverUrl: string;
-  deeplinksUrl: string;
-  appVersion: string;
-  disableConnector: boolean;
   preloaded?: any;
 }) {
-  const [path, setPath] = useDeepPath(defaultPath);
-  const [ssl, setSsl] = useState(defaultSsl);
-  const [portal, setPortal] = useState(true);
-  
   const customGo = useMemo(() => ({
     Graph, GraphEdge, GraphNode, GraphStyle, useGraph,
     Wysiwyg,
