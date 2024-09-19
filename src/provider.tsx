@@ -9,9 +9,7 @@ import { CustomI18nProvider } from './i18n';
 import { theme } from '@deep-foundation/perception-imports';
 import { memo, useEffect } from 'react';
 
-const defaultPath = "https://deeplinks.deep.foundation/gql";
-
-export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL || defaultPath) {
+export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
   return useLocalStore('dc-dg-path', defaultValue);
 }
 export function useDeepToken(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_DEEP_TOKEN) {
