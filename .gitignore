@@ -3,6 +3,7 @@
 ./deeplinks
 ./deepcase-app
 ./store
+./react-hasura
 
 # Logs
 *.log

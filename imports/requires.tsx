@@ -1,5 +1,5 @@
 import * as perception from '@deep-foundation/perception-imports';
-import { requires as piRequires } from '@deep-foundation/perception-imports';
+import { requires as piRequires } from '@deep-foundation/perception-imports/imports/requires';
 import dynamic from 'next/dynamic';
 
 // @ts-ignore

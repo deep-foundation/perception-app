@@ -1,4 +1,4 @@
-import { Box, Button, Portal, useColorMode, useDisclosure, useTheme, VStack } from "@chakra-ui/react";
+import { Box, Button, Portal, useColorMode, useDisclosure, VStack } from "@chakra-ui/react";
 import cytoscape from 'cytoscape';
 import edgeConnections from 'cytoscape-edge-connections';
 import { createContext, forwardRef, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -6,12 +6,12 @@ import { createContext, forwardRef, memo, useCallback, useContext, useEffect, us
 // import klay from 'cytoscape-klay';
 import dagre from 'cytoscape-dagre';
 // import elk from 'cytoscape-elk';
-import { useDeep, Id, Link, useMinilinksApply, useMinilinksConstruct } from '@deep-foundation/deeplinks';
+import { Id, useDeep } from '@deep-foundation/deeplinks';
 // import COSEBilkent from 'cytoscape-cose-bilkent';
 // import d3Force from 'cytoscape-d3-force';
 // import deepd3Force from 'cytoscape-deep-d3-force';
-import fcose from 'cytoscape-fcose';
 import cola from 'cytoscape-cola';
+import fcose from 'cytoscape-fcose';
 // import euler from 'cytoscape-euler';
 // import elk from 'cytoscape-elk';
 // import cxtmenu from 'cytoscape-cxtmenu';
@@ -20,33 +20,18 @@ import edgehandles from 'cytoscape-edgehandles';
 // @ts-ignore
 import nodeHtmlLabel from 'cytoscape-node-html-label/dist/cytoscape-node-html-label';
 import dynamic from 'next/dynamic';
-import { Planet } from 'react-planet';
-import { IoInfiniteSharp } from "react-icons/io5";
 
-import { useChakraColor, getChakraVar as _getChakraVar, getChakraColor, getChakraVar } from "@deep-foundation/perception-imports";
-import { FocusContext, PathContext, GoContext } from "./orientation";
-import {useDebounce, useDebounceCallback} from '@react-hook/debounce';
+import { useChakraColor } from "@deep-foundation/perception-imports";
+import { useDebounceCallback } from '@react-hook/debounce';
 
-import { MdOutlineCenterFocusWeak, MdOutlineDraw, MdDraw } from "react-icons/md";
-import { LuChevronLast, LuChevronFirst } from "react-icons/lu";
+import { MdDraw, MdOutlineCenterFocusWeak, MdOutlineDraw } from "react-icons/md";
 import { useResizeDetector } from "react-resize-detector";
 
-import { TypedIcon } from './icons/typed';
-import { DownIcon } from './icons/down';
-import { UpIcon } from './icons/up';
-import { TypeIcon } from './icons/type';
-import { InIcon } from './icons/in';
-import { OutIcon } from './icons/out';
-import { FromIcon } from './icons/from';
-import { ToIcon } from './icons/to';
-import { GoContextI, useGoCore } from "@deep-foundation/perception-imports";
-import isEqual from 'lodash/isEqual';
-import flatten from 'lodash/flatten';
-import difference from 'lodash/difference';
+import { CatchErrors, ReactHandlersContext, useChakraVar, useGoCore, useHandlersGo } from "@deep-foundation/perception-imports";
 import cloneDeep from 'lodash/cloneDeep';
-import { useChakraVar } from "@deep-foundation/perception-imports";
-import { ReactHandlersContext } from "@deep-foundation/perception-imports";
-import { CatchErrors, useHandlersGo } from "@deep-foundation/perception-imports";
+import difference from 'lodash/difference';
+import flatten from 'lodash/flatten';
+import isEqual from 'lodash/isEqual';
 
 const dpl = '@deep-foundation/perception-links';
 

@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import { ChakraProvider } from '@chakra-ui/react';
 import { DeepProvider, TokenProvider, useTokenController } from '@deep-foundation/deeplinks';
 import { ApolloClientTokenizedProvider } from '@deep-foundation/react-hasura/apollo-client-tokenized-provider';
@@ -59,23 +60,21 @@ export function Provider({
 }: {
   children: JSX.Element;
 }) {
-  return (
+  return (<>
     <ChakraProvider theme={theme}>
-      <CapacitorStoreProvider>
-        <QueryStoreProvider>
-          <CookiesStoreProvider>
-            <LocalStoreProvider>
-              <TokenProvider>
-                <ProviderCore>
-                  <CustomI18nProvider>
-                    {children}
-                  </CustomI18nProvider>
-                </ProviderCore>
-              </TokenProvider>
-            </LocalStoreProvider>
-          </CookiesStoreProvider>
-        </QueryStoreProvider>
-      </CapacitorStoreProvider>
+      <QueryStoreProvider useRouter={useRouter}>
+        <CookiesStoreProvider>
+          <LocalStoreProvider>
+            <TokenProvider>
+              <ProviderCore>
+                <CustomI18nProvider>
+                  {children}
+                </CustomI18nProvider>
+              </ProviderCore>
+            </TokenProvider>
+          </LocalStoreProvider>
+        </CookiesStoreProvider>
+      </QueryStoreProvider>
     </ChakraProvider>
-  );
+  </>);
 };
