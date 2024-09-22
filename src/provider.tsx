@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { ChakraProvider } from '@chakra-ui/react';
 import { DeepProvider, TokenProvider, useTokenController } from '@deep-foundation/deeplinks';
 import { ApolloClientTokenizedProvider } from '@deep-foundation/react-hasura/apollo-client-tokenized-provider';
-import { CapacitorStoreProvider } from '@deep-foundation/store/capacitor';
+// import { CapacitorStoreProvider } from '@deep-foundation/store/capacitor';
 import { CookiesStoreProvider } from '@deep-foundation/store/cookies';
 import { LocalStoreProvider, useLocalStore } from '@deep-foundation/store/local';
 import { QueryStoreProvider } from '@deep-foundation/store/query';
