@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.84",
+  "version": "0.0.85",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/perception-imports": "^0.0.119",
+    "@deep-foundation/perception-imports": "^0.0.121",
     "@deep-foundation/store": "^0.0.32",
     "@react-hook/debounce": "^4.0.0",
     "@uiw/codemirror-extensions-color": "^4.23.0",
@@ -58,6 +58,7 @@
     "cytoscape-fcose": "^2.2.0",
     "cytoscape-lasso": "^1.1.4",
     "cytoscape-node-html-label": "^1.2.2",
+    "cytoscape-tidytree": "^0.1.1",
     "dotenv-load": "^2.0.1",
     "graphcool-styles": "^0.2.10",
     "graphql-playground-react": "^1.7.28",

@@ -55,10 +55,15 @@ cytoscape.use(edgeConnections);
 cytoscape.use(edgehandles);
 
 let cytoscapeLasso;
+let cytoscapeTidyTree;
 if (typeof(window) === 'object') {
   import('cytoscape-lasso/dist/cytoscape-lasso').then((m) => {
     cytoscapeLasso = m.default;
     cytoscape.use(cytoscapeLasso);
+  });
+  import('cytoscape-tidytree').then((m) => {
+    cytoscapeTidyTree = m.default;
+    cytoscape.use(cytoscapeTidyTree);
   });
 }
 
@@ -75,6 +80,7 @@ export const Graph = memo(function Graph({
 
   buttons = true,
   buttonsChildren = null,
+  layout: _layout,
 
   children = null,
 }: {
@@ -88,6 +94,7 @@ export const Graph = memo(function Graph({
 
   buttons?: boolean;
   buttonsChildren?: any,
+  layout?: any;
 
   children?: any;
 }){
@@ -237,7 +244,7 @@ export const Graph = memo(function Graph({
 
   const elements = useMemo(() => [], []);
 
-  const layout = useMemo(() => ({
+  const layout = useMemo(() => (typeof(_layout) === 'object' ? _layout : typeof(_layout) === 'function' ? _layout(_cy) : {
     name: 'cola',
     // animate: false, // whether to show the layout as it's running
     refresh: 10, // number of ticks per frame; higher is faster but more jerky
@@ -335,7 +342,7 @@ export const Graph = memo(function Graph({
     // randomize: false, // use random node positions at beginning of layout
     // // infinite layout options
     // infinite: true // overrides all other options for a forces-all-the-time mode
-  }), []);
+  }), [_layout]);
 
   const relayout = useDebounceCallback((callback?: () => any) => {
     if (!cyRef.current) return;
