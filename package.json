@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.85",
+  "version": "0.0.86",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/perception-imports": "^0.0.121",
+    "@deep-foundation/perception-imports": "^0.0.123",
     "@deep-foundation/store": "^0.0.32",
     "@react-hook/debounce": "^4.0.0",
     "@uiw/codemirror-extensions-color": "^4.23.0",
