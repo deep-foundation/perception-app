@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.87",
+  "version": "0.0.88",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -32,15 +32,17 @@
     "open-ios": "npx cap open ios",
     "build-ios": "npm version prerelease --no-git-tag-version --no-commit-hook && rimraf app && NEXT_PUBLIC_BUILD=\"ios\" npm run export && npx cap sync ios",
     "preload": "node ./preloader.mjs",
-    "sync-versions": "node ./sync-version.js && git add . ./electron/package.json"
+    "sync-versions": "node ./sync-version.js && git add . ./electron/package.json",
+    "analizer": "webpack-bundle-analyzer ./webpack-stats.json"
   },
   "pre-commit": [
     "sync-versions"
   ],
   "dependencies": {
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/perception-imports": "^0.0.124",
+    "@deep-foundation/perception-imports": "^0.0.128",
     "@deep-foundation/store": "^0.0.32",
+    "@next/bundle-analyzer": "^14.2.13",
     "@react-hook/debounce": "^4.0.0",
     "@uiw/codemirror-extensions-color": "^4.23.0",
     "aframe": "^1.6.0",
@@ -108,6 +110,8 @@
     "run-script-os": "^1.1.6",
     "ts-node": "^10.9.1",
     "typescript-json-schema": "^0.56.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-stats-plugin": "^1.1.3"
   }
 }

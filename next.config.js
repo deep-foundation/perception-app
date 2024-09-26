@@ -2,6 +2,10 @@ const nextEnv = require('next-env');
 const dotenvLoad = require('dotenv-load');
 const { i18n } = require('./next-i18next.config');
 const path = require('path');
+const { StatsWriterPlugin } = require('webpack-stats-plugin');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 dotenvLoad();
  
@@ -28,7 +32,24 @@ const config =  {
   experimental: {
     serverSourceMaps: true,
   },
-  webpack: (config, { defaultLoaders: { babel } }) => {
+  // Automatically bundle external packages in the Pages Router:
+  bundlePagesRouterDependencies: true,
+  // Opt specific packages out of bundling for both App and Pages Router:
+  serverExternalPackages: ['react-icons'],
+  webpack: (config, options) => {
+    const { defaultLoaders: { babel } } = options;
+    if (!options.dev && !options.isServer) {
+      config.plugins.push(
+        new StatsWriterPlugin({
+          filename: '../webpack-stats.json',
+          stats: {
+            assets: true,
+            chunks: true,
+            modules: true
+          }
+        })
+      );
+    }
     // config.module = {
     //   ...config.module,
     //   rules: [
@@ -65,4 +86,5 @@ const config =  {
   ...(+(process?.env?.NEXT_PUBLIC_I18N_DISABLE || 0) ? {} : { i18n }),
 }
 
+// module.exports = withBundleAnalyzer(withNextEnv(config));
 module.exports = withNextEnv(config);
