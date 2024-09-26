@@ -11,7 +11,7 @@ import { Id, useDeep } from '@deep-foundation/deeplinks';
 // import d3Force from 'cytoscape-d3-force';
 // import deepd3Force from 'cytoscape-deep-d3-force';
 import cola from 'cytoscape-cola';
-import fcose from 'cytoscape-fcose';
+// import fcose from 'cytoscape-fcose';
 // import euler from 'cytoscape-euler';
 // import elk from 'cytoscape-elk';
 // import cxtmenu from 'cytoscape-cxtmenu';
@@ -48,7 +48,7 @@ cytoscape.use(dagre);
 // cytoscape.use(euler);
 // cytoscape.use(d3Force);
 // cytoscape.use(deepd3Force);
-cytoscape.use(fcose);
+// cytoscape.use(fcose);
 cytoscape.use(cola);
 
 cytoscape.use(edgeConnections);
