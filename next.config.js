@@ -33,9 +33,9 @@ const config =  {
     serverSourceMaps: true,
   },
   // Automatically bundle external packages in the Pages Router:
-  bundlePagesRouterDependencies: true,
+  // bundlePagesRouterDependencies: true,
   // Opt specific packages out of bundling for both App and Pages Router:
-  serverExternalPackages: ['react-icons'],
+  // serverExternalPackages: ['react-icons'],
   webpack: (config, options) => {
     const { defaultLoaders: { babel } } = options;
     if (!options.dev && !options.isServer) {
