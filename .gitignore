@@ -144,4 +144,4 @@ extension/*.html
 /*.pem
 
 .env*.local
-webpack-stats.son
+webpack-stats.json

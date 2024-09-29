@@ -31,6 +31,11 @@ import { useDeepPath } from '../src/provider';
 import { Wysiwyg } from '../imports/wysiwyg';
 import axios from 'axios';
 import { getServerSidePropsPreload } from '@deep-foundation/perception-imports';
+import dynamic from 'next/dynamic.js';
+
+export const Editor = dynamic(() => import('@deep-foundation/perception-imports/imports/editor').then(m => m.Editor), {
+  loading: () => <></>,
+})
 
 const dpl = '@deep-foundation/perception-links';
 const dc = '@deep-foundation/core';
@@ -207,8 +212,8 @@ export default function Page({
         <MinilinksProvider>
           <AutoGuest/>
           <Mounted>
-            <PreloadProvider preloaded={preloaded}>
-              <ReactHandlersProvider requires={requires} sync={false}>
+            <PreloadProvider preloaded={preloaded} Editor={Editor}>
+              <ReactHandlersProvider requires={requires} sync={false} >
                 <GoCustomProvider value={customGo}>
                   <Content/>
                 </GoCustomProvider>
@@ -229,9 +234,9 @@ export default function Page({
 //   return result;
 // }
 
-export async function getServerSideProps(arg) {
+export async function getServerSideProps(arg: any) {
   const result: any = {};
-  await i18nGetStaticProps({ locale: 'ru' }, result);
+  await i18nGetStaticProps({ locale: arg.locale }, result);
   await getServerSidePropsPreload(arg, result);
   return result;
 }
