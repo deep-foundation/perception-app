@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.90",
+  "version": "0.0.91",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -25,7 +25,7 @@
     "export": "(cross-env NEXT_PUBLIC_EXPORT=1 NEXT_PUBLIC_I18N_DISABLE=1 next build)",
     "build": "rimraf app && next build",
     "start": "next start",
-    "sync": "(cd ./perception-imports; npm run app:sync); (cd ./deeplinks; npm run package:build; rsync -a ./imports ../node_modules/@deep-foundation/deeplinks/; npm run package:unbuild);",
+    "sync": "(cd ./perception-imports; npm run app:sync); (cd ./deeplinks; npm run package:build; rsync -a ./imports ../node_modules/@deep-foundation/deeplinks/; cp ./import.js ../node_modules/@deep-foundation/deeplinks/import.js; npm run package:unbuild);",
     "dev-core": "(rm -rf ./app); npm run sync; next dev",
     "dev": "npm run dev-core",
     "run-ios": "npx cap run ios",
