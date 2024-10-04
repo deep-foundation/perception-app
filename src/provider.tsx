@@ -12,7 +12,7 @@ import { memo, useEffect } from 'react';
 
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
   const r = useLocalStore('dc-dg-path', defaultValue);
-  console.log('useDeepPath', 'defaultValue', defaultValue, 'result', r[0]);
+  console.log('useDeepPath', 'defaultValue', defaultValue, 'result', r[0], process.env);
   return r;
 }
 export function useDeepToken(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_DEEP_TOKEN) {
