@@ -11,7 +11,9 @@ import { theme } from '@deep-foundation/perception-imports';
 import { memo, useEffect } from 'react';
 
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
-  return useLocalStore('dc-dg-path', defaultValue);
+  const r = useLocalStore('dc-dg-path', defaultValue);
+  console.log('useDeepPath', 'defaultValue', defaultValue, 'result', r[0]);
+  return r;
 }
 export function useDeepToken(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_DEEP_TOKEN) {
   return useTokenController(defaultValue);
@@ -53,7 +55,7 @@ export const ProviderCore = memo(function ProviderCore({
       ) : <>{children}</>}
     </>
   );
-}, () => true);
+});
 
 export function Provider({
   children,
