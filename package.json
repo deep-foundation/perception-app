@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.94",
+  "version": "0.0.95",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",

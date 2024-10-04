@@ -10,6 +10,7 @@ import { CustomI18nProvider } from './i18n';
 import { theme } from '@deep-foundation/perception-imports';
 import { memo, useEffect } from 'react';
 
+console.log('process?.env', process?.env);
 export function useDeepPath(defaultValue: string | undefined = process?.env?.NEXT_PUBLIC_GRAPHQL_URL) {
   const r = useLocalStore('dc-dg-path', defaultValue);
   console.log('useDeepPath', 'defaultValue', defaultValue, 'result', r[0], process.env);
