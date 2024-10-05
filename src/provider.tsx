@@ -55,15 +55,13 @@ export function Provider({
                     <MinilinksProvider>
                       <AutoGuest/>
                       <Mounted>
-                        {/* <CustomI18nProvider> */}
-                          <PreloadProvider preloaded={preloaded} Editor={Editor}>
-                            <ReactHandlersProvider requires={requires} sync={false}>
-                              <GoCustomProvider value={customGo}>
-                                {children}
-                              </GoCustomProvider>
-                            </ReactHandlersProvider>
-                          </PreloadProvider>
-                        {/* </CustomI18nProvider> */}
+                        <PreloadProvider preloaded={preloaded} Editor={Editor}>
+                          <ReactHandlersProvider requires={requires} sync={false}>
+                            <GoCustomProvider value={customGo}>
+                              {children}
+                            </GoCustomProvider>
+                          </ReactHandlersProvider>
+                        </PreloadProvider>
                       </Mounted>
                     </MinilinksProvider>
                   </DeepNamespaceProvider>
