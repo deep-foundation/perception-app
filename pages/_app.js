@@ -28,7 +28,7 @@ function App({ Component, pageProps }) {
         <link rel="icon" type="image/x-icon" href="/favicon.ico"></link>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <Provider>
+        <Provider {...pageProps}>
           <Component {...pageProps} />
         </Provider>
       </main>

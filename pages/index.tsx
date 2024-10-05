@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Button,
@@ -9,12 +8,8 @@ import {
   Text,
   VStack
 } from '@chakra-ui/react';
-import { DeepNamespaceProvider, useDeep, MinilinksProvider, useTokenController } from '@deep-foundation/deeplinks';
-import { AutoGuest } from '@deep-foundation/perception-imports';
-import { GoCustomProvider, GoProvider, useGoCore } from '@deep-foundation/perception-imports';
-import { Packages, PreloadProvider, usePreload } from '@deep-foundation/perception-imports';
-import { ReactHandlersProvider } from '@deep-foundation/perception-imports';
-import { ColorMode } from '@deep-foundation/perception-imports';
+import { DeepNamespaceProvider, MinilinksProvider, useDeep, useTokenController, getServerSidePropsDeep, useDeepPath, useDeepToken } from '@deep-foundation/deeplinks';
+import { AutoGuest, ColorMode, getServerSidePropsPreload, GoProvider, useGoCore, usePreload } from '@deep-foundation/perception-imports';
 import isEqual from 'lodash/isEqual';
 import { useTranslation } from 'next-i18next';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -25,17 +20,9 @@ import { IoEnterOutline, IoExitOutline } from "react-icons/io5";
 import { useAsyncMemo } from 'use-async-memo';
 import { Graph, GraphEdge, GraphNode, GraphStyle, useGraph } from '../imports/graph';
 import { Mounted } from '../imports/mounted';
-import { requires } from '../imports/requires';
-import { i18nGetStaticProps } from '../src/i18n';
-import { useDeepPath } from '../src/provider';
 import { Wysiwyg } from '../imports/wysiwyg';
-import axios from 'axios';
-import { getServerSidePropsPreload } from '@deep-foundation/perception-imports';
-import dynamic from 'next/dynamic.js';
+import { i18nGetStaticProps } from '../src/i18n';
 
-export const Editor = dynamic(() => import('@deep-foundation/perception-imports/imports/editor').then(m => m.Editor), {
-  loading: () => <></>,
-})
 
 const dpl = '@deep-foundation/perception-links';
 const dc = '@deep-foundation/core';
@@ -201,28 +188,8 @@ export default function Page({
 }: {
   preloaded?: any;
 }) {
-  const customGo = useMemo(() => ({
-    Graph, GraphEdge, GraphNode, GraphStyle, useGraph,
-    Wysiwyg,
-  }), []);
-
   return (<>
-    <HotkeysProvider>
-      <DeepNamespaceProvider>
-        <MinilinksProvider>
-          <AutoGuest/>
-          <Mounted>
-            <PreloadProvider preloaded={preloaded} Editor={Editor}>
-              <ReactHandlersProvider requires={requires} sync={false} >
-                <GoCustomProvider value={customGo}>
-                  <Content/>
-                </GoCustomProvider>
-              </ReactHandlersProvider>
-            </PreloadProvider>
-          </Mounted>
-        </MinilinksProvider>
-      </DeepNamespaceProvider>
-    </HotkeysProvider>
+    <Content/>
   </>);
 };
 
@@ -236,7 +203,8 @@ export default function Page({
 
 export async function getServerSideProps(arg: any) {
   const result: any = {};
-  await i18nGetStaticProps({ locale: arg.locale }, result);
+  await i18nGetStaticProps(arg, result);
   await getServerSidePropsPreload(arg, result);
+  await getServerSidePropsDeep(arg, result);
   return result;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@deep-foundation/perception-app",
-  "version": "0.0.95",
+  "version": "0.0.96",
   "description": "",
   "license": "Unlicense",
   "main": "./bin/server.js",
@@ -26,7 +26,6 @@
     "build": "rimraf app && next build",
     "start": "next start",
     "sync": "(cd ./perception-imports; npm run app:sync); (cd ./deeplinks; npm run package:build; rsync -a ./imports ../node_modules/@deep-foundation/deeplinks/; cp ./import.js ../node_modules/@deep-foundation/deeplinks/import.js; npm run package:unbuild);",
-    "mklsi": "(cd ./perception-imports; npm run build; rsync -a ./imports /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/perception-imports/; cp ./import.js /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/perception-imports/import.js; npm run unbuild; (cd /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/perception-imports/imports; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx; (cd icons; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx))); (cd ./deeplinks; npm run build; rsync -a ./imports /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/deeplinks/; cp ./import.js /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/deeplinks/import.js; npm run unbuild; (cd /Users/ivanglazunov/mklsi/mklsi2/node_modules/@deep-foundation/deeplinks/imports; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx; (cd cyber; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx); (cd experimental; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx); (cd gql; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx); (cd router; rimraf -g \"./!(*.d).ts\" && rimraf ./*.tsx)));",
     "dev-core": "(rm -rf ./app); npm run sync; next dev",
     "dev": "npm run dev-core",
     "run-ios": "npx cap run ios",
@@ -41,7 +40,7 @@
   ],
   "dependencies": {
     "@chakra-ui/theme-tools": "^2.1.2",
-    "@deep-foundation/perception-imports": "^0.0.133",
+    "@deep-foundation/perception-imports": "^0.0.134",
     "@deep-foundation/store": "^0.0.32",
     "@next/bundle-analyzer": "^14.2.13",
     "@react-hook/debounce": "^4.0.0",
