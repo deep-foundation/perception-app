@@ -40,7 +40,7 @@ export function Provider({
 }) {
   const customGo = useMemo(() => ({
     Graph, GraphEdge, GraphNode, GraphStyle, useGraph,
-    Wysiwyg,
+    Wysiwyg, Editor
   }), []);
 
   return (<>
@@ -55,13 +55,13 @@ export function Provider({
                     <MinilinksProvider>
                       <AutoGuest/>
                       <Mounted>
-                        <PreloadProvider preloaded={preloaded} Editor={Editor}>
-                          <ReactHandlersProvider requires={requires} sync={false}>
-                            <GoCustomProvider value={customGo}>
+                        <GoCustomProvider value={customGo}>
+                          <PreloadProvider preloaded={preloaded}>
+                            <ReactHandlersProvider requires={requires} sync={false}>
                               {children}
-                            </GoCustomProvider>
-                          </ReactHandlersProvider>
-                        </PreloadProvider>
+                            </ReactHandlersProvider>
+                          </PreloadProvider>
+                        </GoCustomProvider>
                       </Mounted>
                     </MinilinksProvider>
                   </DeepNamespaceProvider>
